@@ -1,0 +1,542 @@
+// Nova — data model (Phase 1)
+// Translated from "Data Model ERD" — 19 entities across 7 domains, with the
+// exact PK/FK/unique/index constraints and the 22 relations' cascade rules.
+//
+// Conventions:
+//   • ids are cuids; money is stored as integer minor units (cents).
+//   • createdAt/updatedAt are managed by Prisma.
+//   • onDelete rules mirror the ERD edge labels (Cascade / Restrict / SetNull).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────
+// Enums
+// ─────────────────────────────────────────────────────────────
+
+enum Role {
+  CUSTOMER
+  STAFF
+  ADMIN
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum CouponType {
+  PERCENT
+  FIXED
+  FREE_SHIPPING
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FULFILLED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+}
+
+enum RefundStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+}
+
+enum ShipmentStatus {
+  PENDING
+  SHIPPED
+  IN_TRANSIT
+  DELIVERED
+  RETURNED
+}
+
+enum InvReason {
+  RESTOCK
+  SALE
+  RETURN
+  ADJUSTMENT
+  RESERVATION
+}
+
+// Auth infrastructure (Phase 2) — single-use email/reset tokens.
+enum TokenType {
+  EMAIL_VERIFY
+  PASSWORD_RESET
+  INVITE
+}
+
+// ─────────────────────────────────────────────────────────────
+// Identity
+// ─────────────────────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String
+  // Legacy coarse account type; feeds baseline permissions. Fine-grained
+  // capability now comes from RoleAssignment (see Access control below).
+  role          Role      @default(CUSTOMER)
+  // Phase 8: is this identity part of the internal staff directory? In prod
+  // this (and role assignments) is provisioned by SSO/SCIM, not self-set.
+  isEmployee    Boolean   @default(false)
+  // Optional profile picture — an uploaded (downscaled) data URL or a pasted
+  // image URL. Shown in the header account menu and settings.
+  image         String?
+  // The single primary (owner) admin: outranks all other admins, can transfer
+  // this status to another admin, and can deactivate any account. At most one
+  // user should have this set to true.
+  isPrimaryAdmin Boolean  @default(false)
+  // When set, the account is deactivated: sign-in is refused and protected
+  // areas reject it. Reversible (primary admin can reactivate).
+  deactivatedAt DateTime?
+  passwordHash  String
+  // Phase 2: null until the emailed verification token is confirmed.
+  emailVerified DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  addresses       Address[]
+  carts           Cart[]
+  wishlist        Wishlist[]
+  reviews         Review[]
+  orders          Order[]
+  inventoryLogs   InventoryLog[]
+  auditLogs       AuditLog[]
+  roleAssignments RoleAssignment[] @relation("UserRoleAssignments")
+
+  @@index([createdAt])
+}
+
+model Address {
+  id         String  @id @default(cuid())
+  userId     String
+  // Phase 5: address-book label ("Home"/"Work") + recipient name.
+  label      String?
+  name       String?
+  line1      String
+  line2      String?
+  city       String
+  region     String
+  postalCode String
+  country    String
+  isDefault  Boolean @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// Single-use tokens for email verification + password reset (Phase 2).
+// Only a SHA-256 hash of the token is stored; issuing a new token of a type
+// invalidates prior ones for the same identifier.
+model VerificationToken {
+  id         String    @id @default(cuid())
+  identifier String // email address
+  tokenHash  String    @unique
+  type       TokenType
+  expiresAt  DateTime
+  createdAt  DateTime  @default(now())
+
+  @@index([identifier, type])
+}
+
+// ─────────────────────────────────────────────────────────────
+// Catalog
+// ─────────────────────────────────────────────────────────────
+
+model Category {
+  id        String   @id @default(cuid())
+  parentId  String?
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+
+  // Self-referential tree — deleting a parent nulls its children's parentId.
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children Category[] @relation("CategoryTree")
+  products Product[]
+
+  @@index([parentId])
+}
+
+model Product {
+  id         String        @id @default(cuid())
+  categoryId String
+  name       String
+  // Optional manufacturer/brand (e.g. "Samsung", "Apple"). Null for unbranded
+  // or generic products.
+  brand      String?
+  slug       String        @unique
+  status     ProductStatus @default(DRAFT)
+  deletedAt  DateTime?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  category Category         @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  variants ProductVariant[]
+  images   ProductImage[]
+  reviews  Review[]
+  wishlist Wishlist[]
+
+  @@index([categoryId, status])
+  @@index([createdAt])
+}
+
+model ProductVariant {
+  id         String   @id @default(cuid())
+  productId  String
+  sku        String   @unique
+  priceMinor Int
+  currency   String   @default("USD")
+  stock      Int      @default(0)
+  attributes Json     @default("{}")
+  createdAt  DateTime @default(now())
+
+  product       Product            @relation(fields: [productId], references: [id], onDelete: Cascade)
+  cartItems     CartItem[]
+  orderItems    OrderItem[]
+  inventoryLogs InventoryLog[]
+  reservations  StockReservation[]
+
+  @@index([productId])
+}
+
+model ProductImage {
+  id        String @id @default(cuid())
+  productId String
+  url       String
+  alt       String
+  position  Int    @default(0)
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// Cart
+// ─────────────────────────────────────────────────────────────
+
+model Cart {
+  id             String    @id @default(cuid())
+  userId         String?
+  sessionId      String?
+  currency       String    @default("USD")
+  // Phase 7: set once when an abandoned-cart reminder has been sent (dedupe).
+  reminderSentAt DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  // A user's cart survives account deletion detachment (SetNull, not Cascade).
+  user         User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+  items        CartItem[]
+  reservations StockReservation[]
+
+  @@index([userId])
+  @@index([sessionId])
+}
+
+model CartItem {
+  id             String @id @default(cuid())
+  cartId         String
+  variantId      String
+  quantity       Int    @default(1)
+  unitPriceMinor Int
+
+  cart    Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  variant ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  // A variant appears at most once per cart; quantity merges.
+  @@unique([cartId, variantId])
+  @@index([cartId])
+  @@index([variantId])
+}
+
+// Phase 4: soft holds on stock during checkout. available-to-promise =
+// variant.stock − SUM(qty of unexpired reservations). A TTL sweeper (and a
+// lazy check on read) releases expired rows; physical stock is only
+// decremented at capture time in the Stripe webhook.
+model StockReservation {
+  id        String   @id @default(cuid())
+  variantId String
+  cartId    String
+  qty       Int
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  variant ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  cart    Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
+  @@index([variantId])
+  @@index([cartId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// Marketing
+// ─────────────────────────────────────────────────────────────
+
+model Wishlist {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  productId String
+  userId    String
+  rating    Int
+  title     String
+  body      String
+  createdAt DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, userId])
+  @@index([productId])
+  @@index([userId])
+}
+
+model Coupon {
+  id             String     @id @default(cuid())
+  code           String     @unique
+  type           CouponType
+  value          Int
+  minSpendMinor  Int        @default(0)
+  maxRedemptions Int        @default(0)
+  timesRedeemed  Int        @default(0)
+  active         Boolean    @default(true)
+  expiresAt      DateTime?
+
+  orders Order[]
+}
+
+// ─────────────────────────────────────────────────────────────
+// Orders
+// ─────────────────────────────────────────────────────────────
+
+model Order {
+  id            String      @id @default(cuid())
+  orderNumber   String      @unique
+  userId        String
+  couponId      String?
+  // Phase 4: the cart this order was created from — used to consume its
+  // stock reservations at capture time.
+  cartId        String?
+  status        OrderStatus @default(PENDING)
+  currency      String      @default("USD")
+  subtotalMinor Int
+  discountMinor Int         @default(0)
+  shippingMinor Int         @default(0)
+  taxMinor      Int         @default(0)
+  totalMinor    Int
+  createdAt     DateTime    @default(now())
+
+  user      User        @relation(fields: [userId], references: [id], onDelete: Restrict)
+  coupon    Coupon?     @relation(fields: [couponId], references: [id], onDelete: SetNull)
+  items     OrderItem[]
+  payments  Payment[]
+  shipments Shipment[]
+
+  // Matches the verified index in Phase 7 — Order_userId_createdAt_idx.
+  @@index([userId, createdAt])
+  @@index([couponId])
+}
+
+model OrderItem {
+  id             String @id @default(cuid())
+  orderId        String
+  variantId      String?
+  productName    String
+  sku            String
+  unitPriceMinor Int
+  quantity       Int
+
+  order   Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  // Nullable + SetNull: a product can be permanently deleted while its order
+  // lines survive on their snapshot (productName, sku, unitPriceMinor).
+  variant ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@index([variantId])
+}
+
+model Payment {
+  id          String        @id @default(cuid())
+  orderId     String
+  provider    String        @default("stripe")
+  providerRef String
+  amountMinor Int
+  currency    String        @default("USD")
+  status      PaymentStatus @default(PENDING)
+  createdAt   DateTime      @default(now())
+
+  order   Order    @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  refunds Refund[]
+
+  @@index([orderId])
+}
+
+model Refund {
+  id          String       @id @default(cuid())
+  paymentId   String
+  amountMinor Int
+  reason      String
+  status      RefundStatus @default(PENDING)
+  createdAt   DateTime     @default(now())
+
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+
+  @@index([paymentId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// Fulfillment
+// ─────────────────────────────────────────────────────────────
+
+model Shipment {
+  id             String         @id @default(cuid())
+  orderId        String
+  carrier        String
+  trackingNumber String
+  status         ShipmentStatus @default(PENDING)
+  shippedAt      DateTime?
+  deliveredAt    DateTime?
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// System
+// ─────────────────────────────────────────────────────────────
+
+model InventoryLog {
+  id        String    @id @default(cuid())
+  variantId String
+  delta     Int
+  reason    InvReason
+  actorId   String?
+  createdAt DateTime  @default(now())
+
+  variant ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  actor   User?          @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([variantId])
+  @@index([createdAt])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  action     String
+  targetType String
+  targetId   String
+  diff       Json     @default("{}")
+  createdAt  DateTime @default(now())
+
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([actorId])
+  @@index([createdAt])
+}
+
+model WebhookEvent {
+  id          String    @id @default(cuid())
+  provider    String
+  eventId     String    @unique
+  type        String
+  payload     Json      @default("{}")
+  processedAt DateTime?
+}
+
+// Phase 7: one row per day, written by the nightly sales-report job (idempotent).
+model SalesReport {
+  id           String   @id @default(cuid())
+  date         DateTime @unique
+  revenueMinor Int
+  orders       Int
+  createdAt    DateTime @default(now())
+}
+
+// ─────────────────────────────────────────────────────────────
+// Access control (Phase 8) — permission-based RBAC with roles-as-data and
+// Just-In-Time, time-boxed role assignments. Capability = union of the
+// permissions of a user's active (unexpired) role assignments.
+// ─────────────────────────────────────────────────────────────
+
+model Permission {
+  id          String           @id @default(cuid())
+  key         String           @unique // e.g. "orders:refund", or "*"
+  description String
+  roles       RolePermission[]
+}
+
+model AppRole {
+  id              String  @id @default(cuid())
+  name            String  @unique // e.g. "finance", "fulfillment", "admin"
+  description     String
+  // May a staff member self-grant this via break-glass JIT elevation, or does
+  // it require an admin to assign? (admin role is never self-requestable)
+  selfRequestable Boolean @default(false)
+
+  permissions RolePermission[]
+  assignments RoleAssignment[]
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+
+  role       AppRole    @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+}
+
+model RoleAssignment {
+  id        String    @id @default(cuid())
+  userId    String
+  roleId    String
+  grantedBy String? // actor user id (null = system/bootstrap)
+  reason    String?
+  // null = standing grant; a timestamp = JIT elevation that auto-expires.
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+
+  user User    @relation("UserRoleAssignments", fields: [userId], references: [id], onDelete: Cascade)
+  role AppRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
