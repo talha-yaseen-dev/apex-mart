@@ -1,0 +1,67 @@
+import Link from "next/link";
+import { STORE } from "@/lib/delivery-config";
+import { LocationBar } from "./LocationBar";
+import { SearchBar } from "./SearchBar";
+import { CartButton } from "./CartButton";
+
+/**
+ * Sticky storefront header: a dark utility bar (delivery location + promises)
+ * over the main bar (logo, search, cart). Mobile-first — the logo and cart sit
+ * on the top row and search drops to its own full-width row below <sm.
+ */
+export function SiteHeader() {
+  return (
+    <header className="sticky top-0 z-40">
+      {/* Utility bar */}
+      <div className="bg-slate-900 text-slate-300">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-1.5 text-xs">
+          <LocationBar />
+          <div className="hidden items-center gap-3 sm:flex">
+            <span>Free delivery over Rs. 1,500</span>
+            <span className="text-slate-600">·</span>
+            <span>Cash on Delivery</span>
+            <span className="text-slate-600">·</span>
+            <span>Dispatch before 6pm</span>
+          </div>
+          <span className="font-medium sm:hidden">Free over Rs. 1,500</span>
+        </div>
+      </div>
+
+      {/* Main bar */}
+      <div className="border-b border-border bg-background/90 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-2.5">
+          <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label={`${STORE.name} home`}>
+            <span className="flex size-9 items-center justify-center rounded-xl bg-primary text-base font-extrabold text-primary-foreground">
+              M
+            </span>
+            <span className="hidden leading-tight xs:block">
+              <span className="block text-base font-extrabold tracking-tight text-foreground">
+                {STORE.name}
+              </span>
+              <span className="block text-[11px] font-medium text-muted-foreground">
+                {STORE.tagline}
+              </span>
+            </span>
+          </Link>
+
+          <SearchBar className="hidden sm:block" />
+
+          <div className="ml-auto flex items-center gap-2">
+            <Link
+              href="/account"
+              className="tap-target hidden items-center rounded-xl px-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted md:inline-flex"
+            >
+              Account
+            </Link>
+            <CartButton />
+          </div>
+        </div>
+
+        {/* Mobile search row */}
+        <div className="px-4 pb-2.5 sm:hidden">
+          <SearchBar />
+        </div>
+      </div>
+    </header>
+  );
+}
