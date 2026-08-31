@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Minus, Plus, Truck } from "lucide-react";
 import type { ProductVariantView } from "@/lib/storefront";
 import { formatPKR } from "@/lib/format";
+import { useCart } from "@/components/cart/CartProvider";
 import { cn } from "@/lib/utils";
 
 type ProductPurchaseProps = {
@@ -21,21 +22,24 @@ function stockLabel(stock: number): { text: string; tone: "in" | "low" | "out" }
 
 /**
  * Pack-size switcher + price/stock + add-to-cart. Selecting a variant updates
- * the price, unit price and stock. Quantity is local UI state — real cart
- * persistence lands with the cart (page 6).
+ * price/unit/stock; the add control writes the selected variant to the real
+ * cart and mirrors its quantity.
  */
 export function ProductPurchase({
   variants,
   saleOriginalMinor,
   deliveryEstimate,
 }: ProductPurchaseProps) {
+  const { itemForVariant, add, setQty, remove, pending } = useCart();
   const cheapestId = variants[0]?.id;
   const [selectedId, setSelectedId] = useState(cheapestId);
-  const [qty, setQty] = useState(0);
 
   const selected = variants.find((v) => v.id === selectedId) ?? variants[0];
   const stock = selected?.stock ?? 0;
   const label = stockLabel(stock);
+  const item = itemForVariant(selected?.id);
+  const qty = item?.qty ?? 0;
+
   const onSale =
     selectedId === cheapestId &&
     !!saleOriginalMinor &&
@@ -43,6 +47,13 @@ export function ProductPurchase({
   const discount = onSale
     ? Math.round((1 - selected.priceMinor / saleOriginalMinor!) * 100)
     : 0;
+
+  const dec = () => {
+    if (!item) return;
+    if (qty <= 1) remove(item.itemId);
+    else setQty(item.itemId, qty - 1);
+  };
+  const inc = () => item && setQty(item.itemId, qty + 1);
 
   const priceBlock = (
     <div className="flex items-baseline gap-2.5">
@@ -62,28 +73,35 @@ export function ProductPurchase({
     </div>
   );
 
-  const addControl = (variantClass?: string) =>
-    stock <= 0 ? (
-      <div
-        className={cn(
-          "flex items-center justify-center rounded-xl bg-muted py-3 text-sm font-bold text-muted-foreground",
-          variantClass,
-        )}
-      >
-        Out of stock
-      </div>
-    ) : qty === 0 ? (
-      <button
-        type="button"
-        onClick={() => setQty(1)}
-        className={cn(
-          "tap-target rounded-xl bg-primary px-6 text-sm font-extrabold text-primary-foreground transition-colors hover:bg-primary/90",
-          variantClass,
-        )}
-      >
-        Add to cart
-      </button>
-    ) : (
+  const addControl = (variantClass?: string) => {
+    if (stock <= 0) {
+      return (
+        <div
+          className={cn(
+            "flex items-center justify-center rounded-xl bg-muted py-3 text-sm font-bold text-muted-foreground",
+            variantClass,
+          )}
+        >
+          Out of stock
+        </div>
+      );
+    }
+    if (qty === 0) {
+      return (
+        <button
+          type="button"
+          onClick={() => add(selected.id)}
+          disabled={pending}
+          className={cn(
+            "tap-target rounded-xl bg-primary px-6 text-sm font-extrabold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60",
+            variantClass,
+          )}
+        >
+          Add to cart
+        </button>
+      );
+    }
+    return (
       <div
         className={cn(
           "flex items-center justify-between rounded-xl border border-primary/30 bg-primary/5",
@@ -92,9 +110,10 @@ export function ProductPurchase({
       >
         <button
           type="button"
-          onClick={() => setQty((q) => Math.max(0, q - 1))}
+          onClick={dec}
+          disabled={pending}
           aria-label="Decrease quantity"
-          className="tap-target flex items-center justify-center px-4 text-primary"
+          className="tap-target flex items-center justify-center px-4 text-primary disabled:opacity-50"
         >
           <Minus className="size-4" />
         </button>
@@ -103,18 +122,19 @@ export function ProductPurchase({
         </span>
         <button
           type="button"
-          onClick={() => setQty((q) => q + 1)}
+          onClick={inc}
+          disabled={pending || qty >= (item?.available ?? stock)}
           aria-label="Increase quantity"
-          className="tap-target flex items-center justify-center px-4 text-primary"
+          className="tap-target flex items-center justify-center px-4 text-primary disabled:opacity-50"
         >
           <Plus className="size-4" />
         </button>
       </div>
     );
+  };
 
   return (
     <div className="flex flex-col gap-5">
-      {/* Price block */}
       <div className="flex flex-col gap-1">
         {priceBlock}
         {selected.attrs.unitPrice && (
@@ -122,7 +142,6 @@ export function ProductPurchase({
         )}
       </div>
 
-      {/* Pack-size switcher */}
       {variants.length > 1 && (
         <div>
           <p className="mb-2 text-xs font-extrabold uppercase tracking-wide text-muted-foreground">
@@ -155,7 +174,6 @@ export function ProductPurchase({
         </div>
       )}
 
-      {/* Stock + delivery */}
       <div className="flex flex-col gap-2 rounded-2xl border border-border bg-muted/40 p-4">
         <div className="flex items-center gap-2 text-sm font-bold">
           <span
@@ -166,11 +184,7 @@ export function ProductPurchase({
               label.tone === "out" && "bg-muted-foreground",
             )}
           />
-          <span
-            className={cn(
-              label.tone === "out" ? "text-muted-foreground" : "text-foreground",
-            )}
-          >
+          <span className={cn(label.tone === "out" ? "text-muted-foreground" : "text-foreground")}>
             {label.text}
           </span>
         </div>
@@ -180,10 +194,8 @@ export function ProductPurchase({
         </div>
       </div>
 
-      {/* Inline add (desktop) */}
       <div className="hidden md:block">{addControl("w-full")}</div>
 
-      {/* Sticky add bar (mobile) — sits above the bottom nav, respects safe area */}
       <div className="fixed inset-x-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-40 border-t border-border bg-background/95 px-4 py-3 backdrop-blur md:hidden">
         <div className="mx-auto flex max-w-7xl items-center gap-3">
           <div className="min-w-0">

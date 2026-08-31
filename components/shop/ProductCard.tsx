@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { Minus, Plus } from "lucide-react";
 import type { StoreCard } from "@/lib/catalog-filter";
 import { formatPKR } from "@/lib/format";
+import { useCart } from "@/components/cart/CartProvider";
 import { cn } from "@/lib/utils";
 
 type ProductCardProps = {
@@ -15,21 +15,26 @@ type ProductCardProps = {
 };
 
 /**
- * Storefront product card: image, pack size, name, price (+ optional sale
- * original / unit price) and an add control that expands into a quantity
- * stepper. Reused on home, category, and search grids.
- *
- * NOTE: the quantity is local UI state for now — real cart persistence and the
- * header badge are wired when the cart lands (page 6).
+ * Storefront product card. The add control writes the cheapest variant to the
+ * real cart and mirrors its quantity; reused on home, category, and search.
  */
 export function ProductCard({ card, originalMinor, isNew }: ProductCardProps) {
-  const [qty, setQty] = useState(0);
+  const { itemForVariant, add, setQty, remove, pending } = useCart();
+  const item = itemForVariant(card.variantId);
+  const qty = item?.qty ?? 0;
 
   const href = `/products/${card.slug}`;
   const onSale = !!originalMinor && originalMinor > card.minPriceMinor;
   const discount = onSale
     ? Math.round((1 - card.minPriceMinor / originalMinor!) * 100)
     : 0;
+
+  const dec = () => {
+    if (!item) return;
+    if (qty <= 1) remove(item.itemId);
+    else setQty(item.itemId, qty - 1);
+  };
+  const inc = () => item && setQty(item.itemId, qty + 1);
 
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-shadow hover:shadow-[0_8px_24px_-14px_rgba(15,23,42,0.25)]">
@@ -50,7 +55,6 @@ export function ProductCard({ card, originalMinor, isNew }: ProductCardProps) {
           <div className="flex size-full items-center justify-center text-3xl">🛒</div>
         )}
 
-        {/* Top-left tags */}
         <div className="absolute left-2 top-2 flex flex-col items-start gap-1">
           {isNew && (
             <span className="rounded-md bg-primary px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-primary-foreground">
@@ -59,7 +63,6 @@ export function ProductCard({ card, originalMinor, isNew }: ProductCardProps) {
           )}
         </div>
 
-        {/* Discount badge */}
         {onSale && discount > 0 && (
           <div className="absolute right-2 top-2 flex size-10 flex-col items-center justify-center rounded-full bg-deal text-deal-foreground shadow-sm">
             <span className="text-[11px] font-extrabold leading-none">{discount}%</span>
@@ -67,7 +70,6 @@ export function ProductCard({ card, originalMinor, isNew }: ProductCardProps) {
           </div>
         )}
 
-        {/* Out of stock */}
         {!card.inStock && (
           <div className="absolute inset-0 flex items-center justify-center bg-background/70">
             <span className="text-[11px] font-extrabold uppercase tracking-widest text-muted-foreground">
@@ -103,15 +105,16 @@ export function ProductCard({ card, originalMinor, isNew }: ProductCardProps) {
       </div>
 
       <div className="p-3 pt-2">
-        {!card.inStock ? (
+        {!card.inStock || !card.variantId ? (
           <div className="rounded-xl bg-muted py-2.5 text-center text-xs font-bold text-muted-foreground">
             Unavailable
           </div>
         ) : qty === 0 ? (
           <button
             type="button"
-            onClick={() => setQty(1)}
-            className="tap-target w-full rounded-xl bg-primary text-xs font-extrabold text-primary-foreground transition-colors hover:bg-primary/90"
+            onClick={() => add(card.variantId!)}
+            disabled={pending}
+            className="tap-target w-full rounded-xl bg-primary text-xs font-extrabold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
           >
             + Add to cart
           </button>
@@ -119,9 +122,10 @@ export function ProductCard({ card, originalMinor, isNew }: ProductCardProps) {
           <div className="flex items-center justify-between rounded-xl border border-primary/30 bg-primary/5">
             <button
               type="button"
-              onClick={() => setQty((q) => Math.max(0, q - 1))}
+              onClick={dec}
+              disabled={pending}
               aria-label="Decrease quantity"
-              className="tap-target flex items-center justify-center px-3 text-primary"
+              className="tap-target flex items-center justify-center px-3 text-primary disabled:opacity-50"
             >
               <Minus className="size-4" />
             </button>
@@ -130,9 +134,10 @@ export function ProductCard({ card, originalMinor, isNew }: ProductCardProps) {
             </span>
             <button
               type="button"
-              onClick={() => setQty((q) => q + 1)}
+              onClick={inc}
+              disabled={pending || (item ? qty >= item.available : false)}
               aria-label="Increase quantity"
-              className="tap-target flex items-center justify-center px-3 text-primary"
+              className="tap-target flex items-center justify-center px-3 text-primary disabled:opacity-50"
             >
               <Plus className="size-4" />
             </button>

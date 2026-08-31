@@ -112,6 +112,7 @@ function toCard(p: CardRow): StoreCard {
     brand: p.brand,
     categoryName: p.category.name,
     categorySlug: p.category.slug,
+    variantId: cheapest?.id ?? null,
     pack: cheapestAttrs.pack ?? null,
     unitPrice: cheapestAttrs.unitPrice ?? null,
     // Keep the raw url here (data URL or remote) so the cached card + the

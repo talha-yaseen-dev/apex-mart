@@ -16,6 +16,8 @@ export type StoreCard = {
    *  base64 data-URL image for the lightweight `/api/images/<id>` route. */
   imageId: string | null;
   minPriceMinor: number;
+  /** Cheapest variant's id — the default add-to-cart target from a grid card. */
+  variantId: string | null;
   /** Cheapest variant's pack label (e.g. "5kg") from variant.attributes.pack. */
   pack: string | null;
   /** Cheapest variant's per-unit price (e.g. "Rs. 224/kg") from attributes. */

@@ -4,6 +4,7 @@ import "./globals.css";
 import { SiteHeader } from "@/components/shell/SiteHeader";
 import { BottomNav } from "@/components/shell/BottomNav";
 import { Toaster } from "@/components/ui/sonner";
+import { CartProvider } from "@/components/cart/CartProvider";
 import { STORE } from "@/lib/delivery-config";
 
 const inter = Inter({
@@ -27,13 +28,15 @@ export default function RootLayout({
   return (
     <html lang="en" dir="ltr" className={inter.variable} suppressHydrationWarning>
       <body className="min-h-dvh bg-background text-foreground antialiased">
-        <div className="flex min-h-dvh flex-col">
-          <SiteHeader />
-          {/* pb clears the fixed mobile bottom nav */}
-          <main className="flex-1 pb-24 md:pb-10">{children}</main>
-          <BottomNav />
-        </div>
-        <Toaster position="top-center" richColors />
+        <CartProvider>
+          <div className="flex min-h-dvh flex-col">
+            <SiteHeader />
+            {/* pb clears the fixed mobile bottom nav */}
+            <main className="flex-1 pb-24 md:pb-10">{children}</main>
+            <BottomNav />
+          </div>
+          <Toaster position="top-center" richColors />
+        </CartProvider>
       </body>
     </html>
   );

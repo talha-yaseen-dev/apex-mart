@@ -1,11 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import { ShoppingCart } from "lucide-react";
+import { useCart } from "@/components/cart/CartProvider";
 
-/**
- * Header cart entry point. The count badge is wired to the real cart when cart
- * features land (page 6); for now it renders the shell affordance.
- */
-export function CartButton({ count = 0 }: { count?: number }) {
+/** Header cart entry point — badge reflects the live cart count. */
+export function CartButton() {
+  const { count } = useCart();
   return (
     <Link
       href="/cart"
