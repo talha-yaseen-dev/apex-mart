@@ -77,10 +77,11 @@ export async function placeOrder(raw: CheckoutFormInput): Promise<PlaceOrderErro
       userId,
       d.email || "",
       { shipMethod: "standard", address },
-      { deliveryFeeOverride, skipTax: true },
+      { deliveryFeeOverride, skipTax: true, currency: "PKR" },
     );
     // COD: confirm immediately (Stripe unconfigured → no online payment step).
-    await confirmOrderFor(userId, created.orderId, "cod");
+    // Pass the real contact email so the receipt reaches the shopper.
+    await confirmOrderFor(userId, created.orderId, "cod", d.email || undefined);
     orderNumber = created.orderNumber;
   } catch (e) {
     return {

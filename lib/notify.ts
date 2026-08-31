@@ -18,13 +18,16 @@ async function safe(fn: () => Promise<void>) {
   }
 }
 
-export function notifyOrderConfirmed(orderId: string) {
+export function notifyOrderConfirmed(orderId: string, contactEmail?: string) {
   return safe(async () => {
     const order = await prisma.order.findUnique({
       where: { id: orderId },
       include: { items: true, user: { select: { email: true, name: true } } },
     });
     if (!order) return;
+    // Guest checkout passes the real contact email (the User row carries a
+    // synthetic address); fall back to the account email otherwise.
+    const to = contactEmail || order.user.email;
     const { subject, html } = orderConfirmedEmail({
       name: order.user.name,
       orderNumber: order.orderNumber,
@@ -34,7 +37,8 @@ export function notifyOrderConfirmed(orderId: string) {
       })),
       totalMinor: order.totalMinor,
     });
-    await sendEmail({ to: order.user.email, subject, html });
+    logger.info({ orderId, orderNumber: order.orderNumber, to }, "order_receipt");
+    await sendEmail({ to, subject, html });
   });
 }
 

@@ -80,8 +80,9 @@ export async function createOrderFor(
   // delivery from lib/delivery-config (Rs.120 flat / free over Rs.1,500) and
   // does not itemise GST to end customers, so it passes an explicit delivery
   // fee and skips tax. Absent these, Nova's default shipping/tax apply.
-  opts?: { deliveryFeeOverride?: number; skipTax?: boolean },
+  opts?: { deliveryFeeOverride?: number; skipTax?: boolean; currency?: string },
 ) {
+  const orderCurrency = opts?.currency ?? "USD";
   const { address, shipMethod, couponCode } = input;
 
   const view = await getCartViewFor(userId);
@@ -136,7 +137,7 @@ export async function createOrderFor(
         cartId: view.id,
         couponId: couponRow?.id ?? null,
         status: OrderStatus.PENDING,
-        currency: "USD",
+        currency: orderCurrency,
         subtotalMinor: q.subtotalMinor,
         discountMinor: q.discountMinor,
         shippingMinor: q.shippingMinor,
@@ -174,7 +175,7 @@ export async function createOrderFor(
       provider: "stripe",
       providerRef,
       amountMinor: q.totalMinor,
-      currency: "USD",
+      currency: orderCurrency,
       status: PaymentStatus.PENDING,
     },
   });
@@ -199,6 +200,9 @@ export async function confirmOrderFor(
   userId: string,
   orderId: string,
   method: "cod" | "card",
+  // Optional real contact email for the receipt (guest checkout). The stored
+  // user email may be synthetic; this routes the confirmation to the shopper.
+  contactEmail?: string,
 ) {
   const order = await prisma.order.findFirst({
     where: { id: orderId, userId },
@@ -216,7 +220,7 @@ export async function confirmOrderFor(
       where: { orderId: order.id },
       data: { provider: method === "cod" ? "cod" : "stripe" },
     });
-    await notifyOrderConfirmed(order.id);
+    await notifyOrderConfirmed(order.id, contactEmail);
   } catch {
     throw new ApiError(409, "Couldn't place your order — an item may have just sold out.");
   }
