@@ -63,6 +63,10 @@ export const SALE: Record<string, number> = {
 
 export const JUST_ARRIVED_LIMIT = 8;
 
+/** Promotional compare-at price (paisa) for a product, or null if not on sale. */
+export const saleOriginalMinor = (slug: string): number | null =>
+  SALE[slug] != null ? SALE[slug] * 100 : null;
+
 /** Compact trust points shown under the product sections. */
 export const TRUST_POINTS = [
   { icon: "🚚", title: "Free delivery over Rs. 1,500", body: "Rs. 120 flat below that. Same-day to most areas." },
