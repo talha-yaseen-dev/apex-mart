@@ -14,7 +14,7 @@ type Item = {
 
 const ITEMS: Item[] = [
   { href: "/", label: "Home", icon: Home, isActive: (p) => p === "/" },
-  { href: "/#categories", label: "Categories", icon: LayoutGrid, isActive: (p) => p.startsWith("/c") },
+  { href: "/c", label: "Categories", icon: LayoutGrid, isActive: (p) => p.startsWith("/c") },
   { href: "/cart", label: "Cart", icon: ShoppingCart, isActive: (p) => p.startsWith("/cart") },
   { href: "/account", label: "Account", icon: User, isActive: (p) => p.startsWith("/account") || p.startsWith("/signin") },
 ];

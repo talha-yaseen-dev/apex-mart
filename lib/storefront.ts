@@ -46,6 +46,34 @@ export async function getCatalog(
   return (json.data ?? json) as CatalogResponse;
 }
 
+/** The catalog query params the /api/v1/catalog route actually reads. */
+const CATALOG_PARAMS = ["q", "sort", "page", "stock", "min", "max", "color", "size"] as const;
+
+/** All categories (with counts) from the catalog facets — used by the /c index. */
+export async function getCategories(): Promise<CatalogFacets["categories"]> {
+  const { facets } = await getCatalog();
+  return facets.categories;
+}
+
+/**
+ * Category listing: products in one aisle plus the shared facets. Only forwards
+ * the params the catalog route understands (cat + q/sort/page/stock/min/max/
+ * color/size) — no invented params. `sp` is the page's searchParams.
+ */
+export async function getCategoryProducts(
+  slug: string,
+  sp: Record<string, string | string[] | undefined> = {},
+): Promise<CatalogResponse> {
+  const params = new URLSearchParams();
+  params.set("cat", slug);
+  for (const key of CATALOG_PARAMS) {
+    const raw = sp[key];
+    const value = Array.isArray(raw) ? raw[0] : raw;
+    if (value) params.set(key, value);
+  }
+  return getCatalog(params);
+}
+
 /**
  * Fetch the full active catalog by walking the paginated API (the route caps a
  * page at 12; facets are already computed over the whole catalogue). Used by the
