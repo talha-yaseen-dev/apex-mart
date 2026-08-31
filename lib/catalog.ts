@@ -102,12 +102,18 @@ function ratingOf(reviews: { rating: number }[]) {
 // ── Public card shape (type lives in the client-safe filter module) ──
 function toCard(p: CardRow): StoreCard {
   const { avg, count } = ratingOf(p.reviews);
+  // Variants are ordered by priceMinor asc, so the first is the cheapest — the
+  // one whose price the card shows. Surface its pack + unit price (grocery).
+  const cheapest = p.variants[0];
+  const cheapestAttrs = cheapest ? attrsOf(cheapest) : {};
   return {
     slug: p.slug,
     name: p.name,
     brand: p.brand,
     categoryName: p.category.name,
     categorySlug: p.category.slug,
+    pack: cheapestAttrs.pack ?? null,
+    unitPrice: cheapestAttrs.unitPrice ?? null,
     // Keep the raw url here (data URL or remote) so the cached card + the
     // native REST client stay self-contained; the web render swaps data URLs
     // for /api/images/<imageId> via webImageUrl().
