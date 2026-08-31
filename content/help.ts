@@ -85,40 +85,8 @@ const deliveryTopic: HelpTopic = {
   ],
 };
 
-const pickupTopic: HelpTopic = {
-  slug: "pickup",
-  icon: "🏬",
-  title: "Store pickup",
-  preview: "Collect your order from the store.",
-  metaTitle: "Store pickup",
-  metaDescription: "How store pickup works at Mart Shop.",
-  sections: [
-    {
-      id: "is-pickup-available",
-      heading: "Is pickup available?",
-      blocks: [
-        {
-          todo: "Confirm whether store pickup is actually offered. If it is not, this page should be hidden rather than published.",
-        },
-      ],
-    },
-    {
-      id: "how-to-pick-up",
-      heading: "How to pick up",
-      blocks: [{ todo: "Explain the pickup process — where to go, what to show, and timing after ordering." }],
-    },
-    {
-      id: "pickup-hours",
-      heading: "Pickup hours",
-      blocks: [{ todo: "Confirm pickup hours (these may differ from store opening hours)." }],
-    },
-    {
-      id: "bring-your-order-ref",
-      heading: "Bring your order reference",
-      blocks: [{ todo: "Confirm what the customer needs to bring — order reference, phone number, ID." }],
-    },
-  ],
-};
+// NOTE: /help/pickup intentionally omitted — store pickup is not offered, so
+// the page is hidden (dropped from HELP_TOPICS → 404) rather than published.
 
 const returnsTopic: HelpTopic = {
   slug: "returns",
@@ -192,7 +160,7 @@ const faqTopic: HelpTopic = {
   ],
 };
 
-export const HELP_TOPICS: HelpTopic[] = [deliveryTopic, pickupTopic, returnsTopic, faqTopic];
+export const HELP_TOPICS: HelpTopic[] = [deliveryTopic, returnsTopic, faqTopic];
 
 export const helpTopic = (slug: string): HelpTopic | undefined =>
   HELP_TOPICS.find((t) => t.slug === slug);
