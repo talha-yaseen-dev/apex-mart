@@ -92,6 +92,10 @@ model User {
   id            String    @id @default(cuid())
   email         String    @unique
   name          String
+  // Mart Shop guest checkout: phone is the guest identity (unique). isGuest
+  // marks accounts created at checkout with no password (cannot sign in).
+  phone         String?   @unique
+  isGuest       Boolean   @default(false)
   // Legacy coarse account type; feeds baseline permissions. Fine-grained
   // capability now comes from RoleAssignment (see Access control below).
   role          Role      @default(CUSTOMER)

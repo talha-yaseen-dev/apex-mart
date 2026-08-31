@@ -76,6 +76,11 @@ export async function createOrderFor(
   userId: string,
   email: string,
   input: CheckoutInput,
+  // Mart Shop override (opt-in, backward compatible): the storefront prices
+  // delivery from lib/delivery-config (Rs.120 flat / free over Rs.1,500) and
+  // does not itemise GST to end customers, so it passes an explicit delivery
+  // fee and skips tax. Absent these, Nova's default shipping/tax apply.
+  opts?: { deliveryFeeOverride?: number; skipTax?: boolean },
 ) {
   const { address, shipMethod, couponCode } = input;
 
@@ -94,8 +99,8 @@ export async function createOrderFor(
   const q = quote({
     lines,
     coupon: couponRow ? couponToQuote(couponRow) : null,
-    shippingMinor: ship.minor,
-    taxRate: taxRateFor(address.country),
+    shippingMinor: opts?.deliveryFeeOverride ?? ship.minor,
+    taxRate: opts?.skipTax ? 0 : taxRateFor(address.country),
   });
 
   let reservationExpiresAt: Date;
