@@ -170,7 +170,7 @@ export function CartView() {
                   {deliveryFree ? (
                     <span className="text-primary">Free</span>
                   ) : (
-                    formatPKR(deliveryMinor)
+                    `From ${formatPKR(deliveryMinor)}`
                   )}
                 </dd>
               </div>
