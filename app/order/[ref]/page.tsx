@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CheckCircle2, MapPin, Clock, Phone } from "lucide-react";
 import { fetchOrder } from "@/lib/order-access";
+import { readOrderEmailCookie } from "@/lib/order-cookie";
 import { formatPKR } from "@/lib/format";
 import { maskPhone } from "@/lib/phone";
 import { STORE } from "@/lib/delivery-config";
@@ -25,6 +26,9 @@ export default async function OrderConfirmationPage({ params, searchParams }: Pa
 
   const order = await fetchOrder(ref, phone ?? null);
   if (!order) notFound();
+
+  // Real email captured at checkout (if any), to pre-fill the signup upsell.
+  const presetEmail = order.isGuest ? await readOrderEmailCookie(order.orderNumber) : null;
 
   const isCod = (order.paymentProvider ?? "cod") === "cod";
   const trackHref = `/track?ref=${encodeURIComponent(order.orderNumber)}${
@@ -152,7 +156,7 @@ export default async function OrderConfirmationPage({ params, searchParams }: Pa
       {/* 7 — Signup upsell (guest only) */}
       {order.isGuest && (
         <div className="mt-6">
-          <SignupUpsell orderRef={order.orderNumber} />
+          <SignupUpsell orderRef={order.orderNumber} presetEmail={presetEmail} />
         </div>
       )}
 
