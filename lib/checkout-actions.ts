@@ -10,6 +10,7 @@ import { resolveGuestUser, GuestCheckoutError } from "@/lib/guest-user";
 import { getCartViewFor } from "@/lib/api/cart";
 import { createOrderFor, confirmOrderFor } from "@/lib/api/checkout";
 import { clearCartCookie } from "@/lib/cart-cookie";
+import { writeOrderRefCookie } from "@/lib/order-cookie";
 import { FREE_DELIVERY_THRESHOLD_MINOR, zoneById } from "@/lib/delivery-config";
 
 /**
@@ -91,5 +92,7 @@ export async function placeOrder(raw: CheckoutFormInput): Promise<PlaceOrderErro
   }
 
   await clearCartCookie();
+  // Grant the buyer access to their confirmation without re-entering a phone.
+  await writeOrderRefCookie(orderNumber);
   redirect(`/order/${orderNumber}`);
 }

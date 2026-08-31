@@ -13,3 +13,12 @@ export function normalizePhone(raw: string): string | null {
 }
 
 export const isValidPKPhone = (raw: string): boolean => normalizePhone(raw) !== null;
+
+/** Mask a PK mobile for display, e.g. +923001234567 → "+92 300 XXX XX67". */
+export function maskPhone(phone: string | null | undefined): string {
+  const p = normalizePhone(phone ?? "");
+  if (!p) return phone ?? "";
+  const m = p.replace(/^\+92/, ""); // 10 digits, 3XXXXXXXXX
+  if (m.length !== 10) return p;
+  return `+92 ${m.slice(0, 3)} XXX XX${m.slice(8)}`;
+}
