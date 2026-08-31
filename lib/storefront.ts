@@ -46,6 +46,50 @@ export async function getCatalog(
   return (json.data ?? json) as CatalogResponse;
 }
 
+export type ProductImageView = { id: string; url: string; alt: string };
+export type ProductVariantView = {
+  id: string;
+  sku: string;
+  priceMinor: number;
+  stock: number;
+  attrs: Record<string, string>;
+};
+export type ProductReviewView = {
+  name: string | null;
+  rating: number;
+  title: string;
+  body: string;
+  createdAt: string;
+};
+export type ProductDetailView = {
+  id: string;
+  slug: string;
+  name: string;
+  brand: string | null;
+  categoryName: string;
+  categorySlug: string;
+  images: ProductImageView[];
+  variants: ProductVariantView[];
+  minPriceMinor: number;
+  rating: number;
+  reviewCount: number;
+  reviews: ProductReviewView[];
+};
+
+/** Product detail from /api/v1/products/[slug]. Returns null on 404. */
+export async function getProduct(slug: string): Promise<ProductDetailView | null> {
+  const base = await baseUrl();
+  const res = await fetch(
+    `${base}/api/v1/products/${encodeURIComponent(slug)}`,
+    { next: { revalidate: 300, tags: ["catalog", `product:${slug}`] } },
+  );
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`product request failed: ${res.status}`);
+  const json = await res.json();
+  if (json?.ok === false) return null;
+  return (json.data ?? json) as ProductDetailView;
+}
+
 /** The catalog query params the /api/v1/catalog route actually reads. */
 const CATALOG_PARAMS = ["q", "sort", "page", "stock", "min", "max", "color", "size"] as const;
 

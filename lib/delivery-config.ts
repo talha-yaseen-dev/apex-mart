@@ -43,6 +43,9 @@ export const DELIVERY_SLOTS: string[] = [
 /** Order cutoff for same-day dispatch. */
 export const SAME_DAY_CUTOFF = "6pm";
 
+/** Static delivery estimate shown on product pages. */
+export const DELIVERY_ESTIMATE = "Delivery in 2 hours to selected zones";
+
 /** Store profile (address, hours, contact) used across the shell and About page. */
 export const STORE = {
   name: "Mart Shop",
