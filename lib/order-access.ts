@@ -25,6 +25,7 @@ export type OrderView = {
   userId: string;
   orderNumber: string;
   status: string;
+  placedAt: string;
   currency: string;
   subtotalMinor: number;
   shippingMinor: number;
@@ -38,9 +39,13 @@ export type OrderView = {
   items: OrderItemView[];
 };
 
+/** Client-safe order shape for the public tracking page (no internal userId). */
+export type TrackOrder = Omit<OrderView, "userId">;
+
 export async function fetchOrder(
   ref: string,
   phone?: string | null,
+  opts?: { ignoreCookie?: boolean },
 ): Promise<OrderView | null> {
   const order = await prisma.order.findUnique({
     where: { orderNumber: ref },
@@ -60,8 +65,9 @@ export async function fetchOrder(
   });
   if (!order) return null;
 
-  // Access guard: cookie (just-placed) or a matching phone.
-  const cookieRef = await readOrderRefCookie();
+  // Access guard: cookie (just-placed) or a matching phone. Public tracking
+  // ignores the cookie so a stale cookie can't bypass the phone check.
+  const cookieRef = opts?.ignoreCookie ? null : await readOrderRefCookie();
   const viaCookie = cookieRef === ref;
   const normalized = phone ? normalizePhone(phone) : null;
   const viaPhone = normalized != null && normalized === order.user.phone;
@@ -85,6 +91,7 @@ export async function fetchOrder(
     userId: order.user.id,
     orderNumber: order.orderNumber,
     status: order.status,
+    placedAt: order.createdAt.toISOString(),
     currency: order.currency,
     subtotalMinor: order.subtotalMinor,
     shippingMinor: order.shippingMinor,
