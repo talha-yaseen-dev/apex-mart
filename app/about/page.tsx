@@ -72,6 +72,10 @@ export default async function AboutPage() {
     address: {
       "@type": "PostalAddress",
       streetAddress: STORE.address,
+      // Only emit the parts that are actually filled in (no empty fields).
+      ...(STORE.addressLocality ? { addressLocality: STORE.addressLocality } : {}),
+      ...(STORE.addressRegion ? { addressRegion: STORE.addressRegion } : {}),
+      ...(STORE.postalCode ? { postalCode: STORE.postalCode } : {}),
       addressCountry: STORE.country,
     },
     openingHours: STORE.openingHours,
@@ -206,6 +210,15 @@ export default async function AboutPage() {
               <InfoRow icon="📍" label="Address">
                 {STORE.address}
               </InfoRow>
+              <InfoRow icon="🏙️" label="City">
+                {STORE.addressLocality || <Todo>add city</Todo>}
+              </InfoRow>
+              <InfoRow icon="🗺️" label="Region">
+                {STORE.addressRegion || <Todo>add region</Todo>}
+              </InfoRow>
+              <InfoRow icon="🏷️" label="Postal code">
+                {STORE.postalCode || <Todo>add postal code</Todo>}
+              </InfoRow>
               <InfoRow icon="🕒" label="Hours">
                 {STORE.hours}
               </InfoRow>
@@ -283,7 +296,7 @@ function InfoRow({
   return (
     <div className="flex items-center gap-4 px-5 py-3.5">
       <span aria-hidden className="text-lg">{icon}</span>
-      <dt className="w-24 shrink-0 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+      <dt className="w-28 shrink-0 text-xs font-bold uppercase tracking-wide text-muted-foreground">
         {label}
       </dt>
       <dd className="min-w-0 text-sm font-medium text-foreground">{children}</dd>

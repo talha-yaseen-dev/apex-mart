@@ -69,6 +69,12 @@ export const STORE = {
   openingHours: "Mo-Su 08:00-23:00", // TODO(owner): keep in sync with `hours`
   /** Single-line street address (shown as-is + used as PostalAddress.streetAddress). */
   address: "12 Main Street, Local Market", // TODO(owner): full street address
+  /** Structured PostalAddress parts for LocalBusiness JSON-LD (stronger local
+   *  SEO). Empty until known — the About page flags each, and the JSON-LD omits
+   *  any part left blank rather than emit an empty field. */
+  addressLocality: "", // TODO(owner): city / town
+  addressRegion: "", // TODO(owner): province / state
+  postalCode: "", // TODO(owner): postal code
   /** ISO 3166-1 alpha-2 country for the structured PostalAddress. */
   country: "PK",
 } as const;
