@@ -14,6 +14,15 @@ export function formatPKR(minorUnits: number): string {
   return `Rs. ${rupees.toLocaleString("en-PK")}`;
 }
 
+/** Format a date as `5 Sep 2026` (stable, locale-independent output). */
+export function formatDate(d: Date | string | number): string {
+  return new Date(d).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
 /**
  * Currency-aware storefront price. Defaults to PKR (the mart's currency). Any
  * other currency falls back to the standard Intl currency formatter so the
