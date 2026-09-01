@@ -119,6 +119,25 @@ export async function getCategoryProducts(
 }
 
 /**
+ * Search listing: text query (`q`) across every category, plus the shared
+ * facets/sort/pagination params. Same contract as getCategoryProducts but with
+ * no `cat` lock — the catalog route matches `q` against product name, brand,
+ * category name and SKU (substring, case-insensitive). `sp` is the page's
+ * searchParams; only the params the catalog route understands are forwarded.
+ */
+export async function getSearchResults(
+  sp: Record<string, string | string[] | undefined> = {},
+): Promise<CatalogResponse> {
+  const params = new URLSearchParams();
+  for (const key of CATALOG_PARAMS) {
+    const raw = sp[key];
+    const value = Array.isArray(raw) ? raw[0] : raw;
+    if (value) params.set(key, value);
+  }
+  return getCatalog(params);
+}
+
+/**
  * Fetch the full active catalog by walking the paginated API (the route caps a
  * page at 12; facets are already computed over the whole catalogue). Used by the
  * home page, whose curated rails reference products on any page. Capped to keep
