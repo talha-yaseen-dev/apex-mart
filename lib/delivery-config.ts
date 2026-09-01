@@ -46,15 +46,39 @@ export const SAME_DAY_CUTOFF = "6pm";
 /** Static delivery estimate shown on product pages. */
 export const DELIVERY_ESTIMATE = "Delivery in 2 hours to selected zones";
 
-/** Store profile (address, hours, contact) used across the shell and About page. */
+/**
+ * Store profile (address, hours, contact) used across the shell and About page.
+ *
+ * ⚠️ The contact + location values below are PLACEHOLDERS. Replace every field
+ * marked TODO(owner) with the real business details before launch — the About
+ * page renders them verbatim and also emits them as LocalBusiness structured
+ * data for Google, so wrong values here mislead customers and search engines.
+ * Nothing here is fabricated as "real"; the About page flags each as TODO.
+ */
 export const STORE = {
   name: "Mart Shop",
   tagline: "Your local mini-mart",
-  phone: "0321-1234567",
-  whatsapp: "923211234567",
-  hours: "8am – 11pm daily",
-  address: "12 Main Street, Local Market",
+  phone: "0321-1234567", // TODO(owner): real public phone number
+  /** WhatsApp number in E.164 without the leading + (used in wa.me links). */
+  whatsapp: "923211234567", // TODO(owner): real WhatsApp number
+  /** Contact inbox. `.example` is a reserved placeholder TLD — swap for real. */
+  email: "hello@martshop.example", // TODO(owner): real contact email
+  /** Human-readable opening hours shown on the About page. */
+  hours: "8am – 11pm daily", // TODO(owner): confirm; note weekend hours if different
+  /** schema.org openingHours form of the same hours, for LocalBusiness JSON-LD. */
+  openingHours: "Mo-Su 08:00-23:00", // TODO(owner): keep in sync with `hours`
+  /** Single-line street address (shown as-is + used as PostalAddress.streetAddress). */
+  address: "12 Main Street, Local Market", // TODO(owner): full street address
+  /** ISO 3166-1 alpha-2 country for the structured PostalAddress. */
+  country: "PK",
 } as const;
+
+/**
+ * Map coordinates for schema.org `geo`. Left null until the real location is
+ * known — the About page omits geo entirely rather than guess a pin.
+ * TODO(owner): set `{ latitude, longitude }` to add a map point for local SEO.
+ */
+export const STORE_GEO: { latitude: number; longitude: number } | null = null;
 
 export function zoneById(id: string | null | undefined): DeliveryZone {
   return DELIVERY_ZONES.find((z) => z.id === id) ?? DELIVERY_ZONES[0];
