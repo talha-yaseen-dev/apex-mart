@@ -1,6 +1,7 @@
 import "server-only";
 import { OrderStatus, ShipmentStatus } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { cardInclude, toCard } from "@/lib/catalog";
 
 const money = (c: number) => c;
 
@@ -156,6 +157,20 @@ export async function getWishlist(userId: string) {
       inStock: w.product.variants.some((v) => v.stock > 0),
     };
   });
+}
+
+/**
+ * Wishlist rows mapped to storefront `StoreCard`s so the account wishlist can
+ * reuse `ProductCard` (and its cart wiring) verbatim. Separate from `getWishlist`
+ * — that one's minimal shape is the /api/v1/wishlist response and must not change.
+ */
+export async function getWishlistCards(userId: string) {
+  const rows = await prisma.wishlist.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+    include: { product: { include: cardInclude } },
+  });
+  return rows.map((w) => ({ id: w.id, card: toCard(w.product) }));
 }
 
 // ── Reviews ───────────────────────────────────────────────────

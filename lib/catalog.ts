@@ -20,7 +20,7 @@ const productInclude = {
 // including *every* image of *every* active product (as the detail include
 // does) pulled megabytes of base64 into the cached card list and made the
 // storefront stutter as the catalog grew. Fetch just the first image's id/url.
-const cardInclude = {
+export const cardInclude = {
   images: {
     orderBy: { position: "asc" },
     take: 1,
@@ -35,7 +35,7 @@ type ProductRow = Prisma.ProductGetPayload<{ include: typeof productInclude }>;
 // The card row differs from ProductRow only in the (narrower) images shape, and
 // ProductRow is assignable to it — so the shared derivation helpers below type
 // their input as CardRow and still accept the richer detail row.
-type CardRow = Prisma.ProductGetPayload<{ include: typeof cardInclude }>;
+export type CardRow = Prisma.ProductGetPayload<{ include: typeof cardInclude }>;
 
 type Attrs = Record<string, string>;
 const attrsOf = (v: { attributes: Prisma.JsonValue }): Attrs =>
@@ -100,7 +100,7 @@ function ratingOf(reviews: { rating: number }[]) {
 }
 
 // ── Public card shape (type lives in the client-safe filter module) ──
-function toCard(p: CardRow): StoreCard {
+export function toCard(p: CardRow): StoreCard {
   const { avg, count } = ratingOf(p.reviews);
   // Variants are ordered by priceMinor asc, so the first is the cheapest — the
   // one whose price the card shows. Surface its pack + unit price (grocery).
