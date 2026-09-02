@@ -2,21 +2,25 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { hashPassword, verifyPassword } from "@/lib/password";
+import { normalizePhone } from "@/lib/phone";
 import { strongPasswordSchema } from "@/lib/validations/auth";
 import { isPasswordPwned, PWNED_PASSWORD_MESSAGE } from "@/lib/pwned";
 import { DEMO_ACCOUNT_LOCK_MESSAGE, isDemoAccount } from "@/lib/auth-constants";
 
-/** Update the signed-in user's display name and optional profile picture. */
+/** Update the signed-in user's display name, phone, and optional picture. */
 const profileSchema = z.object({
   name: z.string().trim().min(1, "Enter your name.").max(80, "That name is too long."),
+  // undefined = leave unchanged; "" = clear the phone; else a phone to validate.
+  phone: z.string().trim().optional(),
   // undefined = leave unchanged; "" = remove the picture; else a data/URL image.
   image: z.string().trim().max(3_000_000).optional(),
 });
 
-export async function updateProfileAction(input: { name: string; image?: string }) {
+export async function updateProfileAction(input: { name: string; phone?: string; image?: string }) {
   const user = await getCurrentUser();
   if (!user) return { ok: false as const, error: "Please sign in." };
 
@@ -25,13 +29,37 @@ export async function updateProfileAction(input: { name: string; image?: string 
     return { ok: false as const, error: parsed.error.issues[0]?.message ?? "Invalid name." };
   }
 
-  await prisma.user.update({
-    where: { id: user.id },
-    data: {
-      name: parsed.data.name,
-      ...(parsed.data.image !== undefined ? { image: parsed.data.image || null } : {}),
-    },
-  });
+  // Phone is optional + unique (it doubles as the guest identity). Only touch it
+  // when the caller sends the field; "" clears it, otherwise it must normalise.
+  let phoneUpdate: { phone?: string | null } = {};
+  if (parsed.data.phone !== undefined) {
+    if (parsed.data.phone === "") {
+      phoneUpdate = { phone: null };
+    } else {
+      const normalized = normalizePhone(parsed.data.phone);
+      if (!normalized) {
+        return { ok: false as const, error: "Enter a valid Pakistani phone number (e.g. 03001234567)." };
+      }
+      phoneUpdate = { phone: normalized };
+    }
+  }
+
+  try {
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        name: parsed.data.name,
+        ...phoneUpdate,
+        ...(parsed.data.image !== undefined ? { image: parsed.data.image || null } : {}),
+      },
+    });
+  } catch (e) {
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
+      return { ok: false as const, error: "That phone number is already in use." };
+    }
+    throw e;
+  }
+
   revalidatePath("/account/settings");
   return { ok: true as const };
 }

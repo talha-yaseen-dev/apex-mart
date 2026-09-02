@@ -23,10 +23,17 @@ export const getCurrentUser = cache(async () => {
   if (!user) return null;
   const dbUser = await prisma.user.findUnique({
     where: { id: user.id },
-    select: { deactivatedAt: true, image: true },
+    select: { deactivatedAt: true, image: true, name: true, phone: true },
   });
   if (dbUser?.deactivatedAt) return null;
-  return { ...user, image: dbUser?.image ?? user.image ?? null };
+  // Source name/phone/image from the DB (not the sign-in-time JWT) so profile
+  // edits show up on the next render without a re-login.
+  return {
+    ...user,
+    name: dbUser?.name ?? user.name,
+    phone: dbUser?.phone ?? null,
+    image: dbUser?.image ?? user.image ?? null,
+  };
 });
 
 /** Require a signed-in user or redirect to sign-in. */
