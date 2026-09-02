@@ -57,7 +57,8 @@ export async function getOrderForUser(orderId: string, userId: string) {
         },
       },
       shipments: { orderBy: { id: "desc" }, take: 1 },
-      user: { select: { email: true } },
+      payments: { orderBy: { createdAt: "desc" }, take: 1 },
+      user: { select: { email: true, phone: true } },
     },
   });
   if (!o) return null;
@@ -109,6 +110,13 @@ export async function getOrderForUser(orderId: string, userId: string) {
     shippingMinor: o.shippingMinor,
     taxMinor: o.taxMinor,
     totalMinor: o.totalMinor,
+    // COD-only store: an order carries a `cod` payment set SUCCEEDED at confirm.
+    // Fall back to `cod` so the detail page always shows a method.
+    payment: {
+      provider: o.payments[0]?.provider ?? "cod",
+      status: o.payments[0]?.status ?? null,
+    },
+    customerPhone: o.user.phone,
     canReturn: o.status === OrderStatus.DELIVERED,
     canReview: o.status === OrderStatus.DELIVERED,
   };
