@@ -1,55 +1,90 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-import { OrderStatus, PaymentStatus, RefundStatus } from "@prisma/client";
-import { z } from "zod";
-import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
+import { getOrderForUser } from "@/lib/account";
+import { sendEmail } from "@/lib/email";
+import { logger } from "@/lib/logger";
+import { env } from "@/lib/env";
+import { STORE } from "@/lib/delivery-config";
+import { formatPKR, formatDate } from "@/lib/format";
+import { reasonLabel, MAX_RETURN_NOTE } from "@/lib/return-reasons";
 
-const schema = z.object({
-  orderId: z.string().min(1),
-  itemIds: z.array(z.string()).min(1, "Select at least one item to return."),
-  reason: z.string().min(1, "Choose a reason."),
-  note: z.string().optional().default(""),
-});
+type Result = { ok: true } | { ok: false; error: string };
+
+const escapeHtml = (s: string) =>
+  s.replace(/[&<>]/g, (c) => (c === "&" ? "&amp;" : c === "<" ? "&lt;" : "&gt;"));
 
 /**
- * Request a return (RMA). Modeled as a PENDING Refund against the order's
- * captured payment; staff approve/settle it in the admin (Phase 6).
+ * Send a "report a problem" request for an order to the store inbox.
+ *
+ * This is a contact form, not a persisted return workflow: Nova's schema has no
+ * customer return-request entity and the store has no fulfilment path, so we
+ * email the details to STORE.email and persist nothing (no schema changes, no
+ * fabricated record). The order and user are re-loaded server-side — the client
+ * only supplies the order id, reason, and note.
  */
-export async function requestReturnAction(input: unknown) {
+export async function requestReturnAction(
+  orderId: string,
+  input: { reason: string; note?: string },
+): Promise<Result> {
   const user = await getCurrentUser();
-  if (!user) return { ok: false as const, error: "Please sign in." };
-  const parsed = schema.safeParse(input);
-  if (!parsed.success) {
-    return { ok: false as const, error: parsed.error.issues[0]?.message ?? "Invalid request." };
+  if (!user) return { ok: false, error: "Please sign in to continue." };
+
+  const label = reasonLabel(input.reason);
+  if (!label) return { ok: false, error: "Please choose a reason." };
+
+  const note = (input.note ?? "").trim();
+  if (note.length > MAX_RETURN_NOTE) {
+    return { ok: false, error: `Please keep the note under ${MAX_RETURN_NOTE} characters.` };
   }
-  const { orderId, itemIds, reason, note } = parsed.data;
 
-  const order = await prisma.order.findFirst({
-    where: { id: orderId, userId: user.id, status: OrderStatus.DELIVERED },
-    include: {
-      items: true,
-      payments: { where: { status: PaymentStatus.SUCCEEDED }, take: 1 },
-    },
-  });
-  if (!order) return { ok: false as const, error: "This order isn’t eligible for a return." };
-  const payment = order.payments[0];
-  if (!payment) return { ok: false as const, error: "No captured payment to refund against." };
+  // Authoritative order load — scoped to this user, so someone else's order (or
+  // a bad id) resolves to null and is rejected.
+  const order = await getOrderForUser(orderId, user.id);
+  if (!order) return { ok: false, error: "We couldn't find that order." };
 
-  const selected = order.items.filter((i) => itemIds.includes(i.id));
-  if (!selected.length) return { ok: false as const, error: "Select at least one item." };
-  const amountMinor = selected.reduce((s, i) => s + i.unitPriceMinor * i.quantity, 0);
+  const items = order.items
+    .map(
+      (it) =>
+        `  - ${it.qty}× ${it.name}${it.variantLabel ? ` (${it.variantLabel})` : ""} — ${formatPKR(
+          it.lineTotalMinor,
+        )}`,
+    )
+    .join("\n");
 
-  const refund = await prisma.refund.create({
-    data: {
-      paymentId: payment.id,
-      amountMinor,
-      reason: note ? `${reason}: ${note}` : reason,
-      status: RefundStatus.PENDING,
-    },
-  });
+  const body = [
+    `Customer: ${user.name ?? "—"} <${user.email}>${
+      order.customerPhone ? ` · ${order.customerPhone}` : ""
+    }`,
+    `Order ref: ${order.number}`,
+    `Placed: ${formatDate(order.placedDate)}`,
+    `Total: ${formatPKR(order.totalMinor)}`,
+    ``,
+    `Reason: ${label}`,
+    `Note: ${note || "—"}`,
+    ``,
+    `Items:`,
+    items,
+  ].join("\n");
 
-  revalidatePath(`/account/orders/${orderId}`);
-  return { ok: true as const, rma: `RMA-${refund.id.slice(-5).toUpperCase()}` };
+  // In dev without a Resend key, sendEmail only logs to/subject; print the full
+  // body too so the request is inspectable (same "log instead of send" idea).
+  if (!env.RESEND_API_KEY) {
+    console.log(`\n📨  [dev] return request for ${order.number}\n${body}\n`);
+  }
+
+  try {
+    await sendEmail({
+      to: STORE.email,
+      subject: `Return request: ${order.number}`,
+      html: `<pre style="font:14px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;color:#1f2b2a;">${escapeHtml(
+        body,
+      )}</pre>`,
+    });
+    logger.info({ orderId: order.id, orderNumber: order.number, to: STORE.email }, "return_request");
+    return { ok: true };
+  } catch (e) {
+    logger.error({ err: e, orderId: order.id }, "return_request_failed");
+    return { ok: false, error: "Something went wrong sending your request. Please try again." };
+  }
 }
