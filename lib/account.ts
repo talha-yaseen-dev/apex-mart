@@ -1,7 +1,7 @@
 import "server-only";
 import { OrderStatus, ShipmentStatus } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { cardInclude, toCard } from "@/lib/catalog";
+import { cardInclude, toCard, type StoreCard } from "@/lib/catalog";
 
 const money = (c: number) => c;
 
@@ -171,6 +171,39 @@ export async function getWishlistCards(userId: string) {
     include: { product: { include: cardInclude } },
   });
   return rows.map((w) => ({ id: w.id, card: toCard(w.product) }));
+}
+
+/** The set of product ids the user has wishlisted (one query, for batching). */
+export async function getWishlistedProductIds(userId: string): Promise<Set<string>> {
+  const rows = await prisma.wishlist.findMany({
+    where: { userId },
+    select: { productId: true },
+  });
+  return new Set(rows.map((r) => r.productId));
+}
+
+/** Whether a single product is in the user's wishlist (composite-key lookup). */
+export async function isWishlisted(userId: string, productId: string): Promise<boolean> {
+  const row = await prisma.wishlist.findUnique({
+    where: { userId_productId: { userId, productId } },
+    select: { id: true },
+  });
+  return Boolean(row);
+}
+
+/**
+ * Attach `isSaved` to each storefront card for the given user, batching the
+ * wishlist lookup into one query. A null/undefined userId (signed-out) returns
+ * the cards untouched. Storefront list pages call this after fetching the
+ * (user-agnostic) catalog so cards render with the correct heart state.
+ */
+export async function withWishlistState(
+  userId: string | null | undefined,
+  cards: StoreCard[],
+): Promise<StoreCard[]> {
+  if (!userId) return cards;
+  const saved = await getWishlistedProductIds(userId);
+  return cards.map((c) => (saved.has(c.id) ? { ...c, isSaved: true } : c));
 }
 
 // ── Reviews ───────────────────────────────────────────────────

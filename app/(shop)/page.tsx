@@ -1,4 +1,6 @@
 import { getAllCatalog } from "@/lib/storefront";
+import { getCurrentUser } from "@/lib/session";
+import { withWishlistState } from "@/lib/account";
 import { HomeHero } from "@/components/shop/HomeHero";
 import { CategoryRail } from "@/components/shop/CategoryRail";
 import { ProductSection, type SectionItem } from "@/components/shop/ProductSection";
@@ -14,7 +16,9 @@ const saleMinor = (slug: string): number | null =>
   SALE[slug] != null ? SALE[slug] * 100 : null;
 
 export default async function HomePage() {
-  const { items, facets } = await getAllCatalog();
+  const { items: rawItems, facets } = await getAllCatalog();
+  const user = await getCurrentUser();
+  const items = await withWishlistState(user?.id, rawItems);
   const bySlug = new Map(items.map((i) => [i.slug, i]));
 
   const order = Object.keys(CATEGORY_ICONS);

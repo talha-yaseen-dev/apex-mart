@@ -107,6 +107,7 @@ export function toCard(p: CardRow): StoreCard {
   const cheapest = p.variants[0];
   const cheapestAttrs = cheapest ? attrsOf(cheapest) : {};
   return {
+    id: p.id,
     slug: p.slug,
     name: p.name,
     brand: p.brand,
@@ -144,7 +145,7 @@ export const getActiveCards = unstable_cache(
     });
     return rows.map(toCard);
   },
-  ["catalog:cards:v2"],
+  ["catalog:cards:v3"],
   { tags: ["catalog"], revalidate: 300 },
 );
 

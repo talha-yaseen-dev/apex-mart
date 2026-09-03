@@ -6,6 +6,8 @@
  */
 
 export type StoreCard = {
+  /** Product id — used to toggle/check wishlist membership. */
+  id: string;
   slug: string;
   name: string;
   brand: string | null;
@@ -31,6 +33,10 @@ export type StoreCard = {
   createdAt: string;
   /** Variant SKUs, included so search can match them. */
   skus: string[];
+  /** Whether the current user has this product in their wishlist. Attached
+   *  per-request server-side (see withWishlistState); absent for the cached,
+   *  user-agnostic catalog and for signed-out visitors. */
+  isSaved?: boolean;
 };
 
 export type CatalogParams = {

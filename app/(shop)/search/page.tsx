@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Search } from "lucide-react";
 import { getSearchResults, type CatalogFacets } from "@/lib/storefront";
+import { getCurrentUser } from "@/lib/session";
+import { withWishlistState } from "@/lib/account";
 import { parseCatalogParams } from "@/lib/catalog-filter";
 import { CATEGORY_ICONS } from "@/lib/home-content";
 import { TRENDING_SEARCHES } from "@/content/search";
@@ -83,7 +85,10 @@ export default async function SearchPage({ searchParams }: PageProps) {
   }
 
   // ── With a query: faceted results (or no-results state) ───────
-  const { items, total, page, totalPages, facets } = await getSearchResults(sp);
+  const { items: rawItems, total, page, totalPages, facets } =
+    await getSearchResults(sp);
+  const user = await getCurrentUser();
+  const items = await withWishlistState(user?.id, rawItems);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-4">

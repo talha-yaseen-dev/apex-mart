@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { getCategoryProducts } from "@/lib/storefront";
+import { getCurrentUser } from "@/lib/session";
+import { withWishlistState } from "@/lib/account";
 import { CATEGORY_ICONS } from "@/lib/home-content";
 import { ResultsBrowser } from "./ResultsBrowser";
 import { Breadcrumbs, type Crumb } from "./Breadcrumbs";
@@ -24,10 +26,10 @@ export async function CategoryListing({
   breadcrumb,
   searchParams,
 }: CategoryListingProps) {
-  const { items, total, page, totalPages, facets } = await getCategoryProducts(
-    slug,
-    searchParams,
-  );
+  const { items: rawItems, total, page, totalPages, facets } =
+    await getCategoryProducts(slug, searchParams);
+  const user = await getCurrentUser();
+  const items = await withWishlistState(user?.id, rawItems);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-4">

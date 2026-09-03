@@ -5,6 +5,7 @@ import { Minus, Plus, Truck } from "lucide-react";
 import type { ProductVariantView } from "@/lib/storefront";
 import { formatPKR } from "@/lib/format";
 import { useCart } from "@/components/cart/CartProvider";
+import { WishlistButton } from "./WishlistButton";
 import { cn } from "@/lib/utils";
 
 type ProductPurchaseProps = {
@@ -12,6 +13,9 @@ type ProductPurchaseProps = {
   /** Promotional compare-at (paisa) for the cheapest variant, or null. */
   saleOriginalMinor: number | null;
   deliveryEstimate: string;
+  /** Product id + current wishlist state, for the Save button. */
+  productId: string;
+  savedInitial: boolean;
 };
 
 function stockLabel(stock: number): { text: string; tone: "in" | "low" | "out" } {
@@ -29,6 +33,8 @@ export function ProductPurchase({
   variants,
   saleOriginalMinor,
   deliveryEstimate,
+  productId,
+  savedInitial,
 }: ProductPurchaseProps) {
   const { itemForVariant, add, setQty, remove, pending } = useCart();
   const cheapestId = variants[0]?.id;
@@ -194,7 +200,15 @@ export function ProductPurchase({
         </div>
       </div>
 
-      <div className="hidden md:block">{addControl("w-full")}</div>
+      <div className="hidden gap-3 md:flex">
+        {addControl("flex-1")}
+        <WishlistButton
+          variant="labeled"
+          productId={productId}
+          initialSaved={savedInitial}
+          className="shrink-0"
+        />
+      </div>
 
       <div className="fixed inset-x-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-40 border-t border-border bg-background/95 px-4 py-3 backdrop-blur md:hidden">
         <div className="mx-auto flex max-w-7xl items-center gap-3">
@@ -206,7 +220,12 @@ export function ProductPurchase({
               {selected.attrs.pack}
             </div>
           </div>
-          {addControl("ml-auto min-w-[160px]")}
+          <WishlistButton
+            productId={productId}
+            initialSaved={savedInitial}
+            className="ml-auto border border-input"
+          />
+          {addControl("min-w-[140px]")}
         </div>
       </div>
     </div>

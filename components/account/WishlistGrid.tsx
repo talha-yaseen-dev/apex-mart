@@ -56,7 +56,7 @@ export function WishlistGrid({ items }: { items: WishlistItem[] }) {
           >
             <X className="size-4" aria-hidden />
           </button>
-          <ProductCard card={it.card} />
+          <ProductCard card={it.card} hideWishlist />
         </div>
       ))}
     </div>

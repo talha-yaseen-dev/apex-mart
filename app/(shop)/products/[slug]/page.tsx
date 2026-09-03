@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getProduct, getCategoryProducts } from "@/lib/storefront";
+import { getCurrentUser } from "@/lib/session";
+import { isWishlisted, withWishlistState } from "@/lib/account";
 import { saleOriginalMinor } from "@/lib/home-content";
 import { DELIVERY_ESTIMATE } from "@/lib/delivery-config";
 import { ProductGallery } from "@/components/shop/ProductGallery";
@@ -42,9 +44,13 @@ export default async function ProductPage({ params }: PageProps) {
   const prices = p.variants.map((v) => v.priceMinor);
   const anyInStock = p.variants.some((v) => v.stock > 0);
 
+  const user = await getCurrentUser();
+  const savedInitial = user ? await isWishlisted(user.id, p.id) : false;
+
   // Similar products from the same aisle (reuse ProductCard via ProductSection).
   const related = await getCategoryProducts(p.categorySlug, {});
-  const similar: SectionItem[] = related.items
+  const relatedItems = await withWishlistState(user?.id, related.items);
+  const similar: SectionItem[] = relatedItems
     .filter((c) => c.slug !== p.slug)
     .slice(0, 6)
     .map((card) => ({ card, originalMinor: saleOriginalMinor(card.slug) }));
@@ -118,6 +124,8 @@ export default async function ProductPage({ params }: PageProps) {
             variants={p.variants}
             saleOriginalMinor={saleOriginalMinor(p.slug)}
             deliveryEstimate={DELIVERY_ESTIMATE}
+            productId={p.id}
+            savedInitial={savedInitial}
           />
 
           {/* Product details — real facts only (no invented description/nutrition). */}

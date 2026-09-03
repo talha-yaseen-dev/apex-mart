@@ -5,6 +5,7 @@ import { Minus, Plus } from "lucide-react";
 import type { StoreCard } from "@/lib/catalog-filter";
 import { formatPKR } from "@/lib/format";
 import { useCart } from "@/components/cart/CartProvider";
+import { WishlistButton } from "./WishlistButton";
 import { cn } from "@/lib/utils";
 
 type ProductCardProps = {
@@ -12,13 +13,16 @@ type ProductCardProps = {
   /** Promotional compare-at price (paisa) — renders strike-through + discount. */
   originalMinor?: number | null;
   isNew?: boolean;
+  /** Suppress the built-in save heart (e.g. the account wishlist grid, which
+   *  has its own remove control in the same corner). */
+  hideWishlist?: boolean;
 };
 
 /**
  * Storefront product card. The add control writes the cheapest variant to the
  * real cart and mirrors its quantity; reused on home, category, and search.
  */
-export function ProductCard({ card, originalMinor, isNew }: ProductCardProps) {
+export function ProductCard({ card, originalMinor, isNew, hideWishlist }: ProductCardProps) {
   const { itemForVariant, add, setQty, remove, pending } = useCart();
   const item = itemForVariant(card.variantId);
   const qty = item?.qty ?? 0;
@@ -38,6 +42,14 @@ export function ProductCard({ card, originalMinor, isNew }: ProductCardProps) {
 
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-shadow hover:shadow-[0_8px_24px_-14px_rgba(15,23,42,0.25)]">
+      {/* Sibling of the image link so a save never triggers navigation. */}
+      {!hideWishlist && (
+        <WishlistButton
+          productId={card.id}
+          initialSaved={!!card.isSaved}
+          className="absolute right-2 top-2 z-10"
+        />
+      )}
       <Link
         href={href}
         className="relative block aspect-square overflow-hidden bg-muted"
@@ -64,7 +76,7 @@ export function ProductCard({ card, originalMinor, isNew }: ProductCardProps) {
         </div>
 
         {onSale && discount > 0 && (
-          <div className="absolute right-2 top-2 flex size-10 flex-col items-center justify-center rounded-full bg-deal text-deal-foreground shadow-sm">
+          <div className="absolute right-2 top-12 flex size-10 flex-col items-center justify-center rounded-full bg-deal text-deal-foreground shadow-sm">
             <span className="text-[11px] font-extrabold leading-none">{discount}%</span>
             <span className="text-[8px] font-bold leading-none opacity-80">OFF</span>
           </div>
