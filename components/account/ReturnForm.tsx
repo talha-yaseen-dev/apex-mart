@@ -5,12 +5,19 @@ import Link from "next/link";
 import { CheckCircle2, Send, Loader2, AlertCircle } from "lucide-react";
 import { requestReturnAction } from "@/lib/actions/returns";
 import { RETURN_REASONS, MAX_RETURN_NOTE } from "@/lib/return-reasons";
+import { STORE } from "@/lib/delivery-config";
 import { cn } from "@/lib/utils";
 
 const inputCls =
   "h-12 w-full rounded-xl border border-input bg-background px-3 text-base text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40";
 
-export function ReturnForm({ orderId }: { orderId: string }) {
+export function ReturnForm({
+  orderId,
+  orderNumber,
+}: {
+  orderId: string;
+  orderNumber: string;
+}) {
   const [reason, setReason] = useState("");
   const [note, setNote] = useState("");
   const [loading, setLoading] = useState(false);
@@ -41,12 +48,29 @@ export function ReturnForm({ orderId }: { orderId: string }) {
   };
 
   if (done) {
+    const reasonText =
+      RETURN_REASONS.find((r) => r.value === reason)?.label ?? reason;
+    const waHref = `https://wa.me/${STORE.whatsapp}?text=${encodeURIComponent(
+      `Hi, I need help with order ${orderNumber}. Reason: ${reasonText}.`,
+    )}`;
     return (
       <div className="rounded-2xl border border-border bg-card p-6 text-center">
         <CheckCircle2 className="mx-auto size-14 text-primary" aria-hidden />
         <h2 className="mt-3 text-lg font-extrabold text-foreground">Request received</h2>
         <p className="mx-auto mt-1 max-w-sm text-sm text-muted-foreground">
           We&apos;ve received your request. We&apos;ll reply within 24 hours.
+        </p>
+        <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
+          Or contact us directly:{" "}
+          <a
+            href={waHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold text-primary hover:underline"
+          >
+            message us on WhatsApp
+          </a>
+          .
         </p>
         <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-center">
           <Link

@@ -49,20 +49,21 @@ export const DELIVERY_ESTIMATE = "Delivery in 2 hours to selected zones";
 /**
  * Store profile (address, hours, contact) used across the shell and About page.
  *
- * ⚠️ The contact + location values below are PLACEHOLDERS. Replace every field
+ * Contact (phone / WhatsApp / country) below are the real business values.
+ * ⚠️ The location + hours values are still PLACEHOLDERS: replace every field
  * marked TODO(owner) with the real business details before launch — the About
  * page renders them verbatim and also emits them as LocalBusiness structured
  * data for Google, so wrong values here mislead customers and search engines.
- * Nothing here is fabricated as "real"; the About page flags each as TODO.
+ * Nothing here is fabricated as "real"; the About page flags each remaining as
+ * TODO. There is deliberately no `email` field — the store is contacted via
+ * WhatsApp (wa.me/<STORE.whatsapp>), not email.
  */
 export const STORE = {
   name: "Mart Shop",
   tagline: "Your local mini-mart",
-  phone: "0321-1234567", // TODO(owner): real public phone number
+  phone: "0342-4348110",
   /** WhatsApp number in E.164 without the leading + (used in wa.me links). */
-  whatsapp: "923211234567", // TODO(owner): real WhatsApp number
-  /** Contact inbox. `.example` is a reserved placeholder TLD — swap for real. */
-  email: "hello@martshop.example", // TODO(owner): real contact email
+  whatsapp: "923424348110",
   /** Human-readable opening hours shown on the About page. */
   hours: "8am – 11pm daily", // TODO(owner): confirm; note weekend hours if different
   /** schema.org openingHours form of the same hours, for LocalBusiness JSON-LD. */

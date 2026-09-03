@@ -55,7 +55,6 @@ export default async function AboutPage() {
 
   const waHref = `https://wa.me/${STORE.whatsapp}`;
   const telHref = `tel:${STORE.phone.replace(/[^\d+]/g, "")}`;
-  const mailHref = `mailto:${STORE.email}`;
 
   // LocalBusiness (GroceryStore) JSON-LD. Only emits fields we actually hold;
   // geo is omitted until STORE_GEO is set (no guessed coordinates).
@@ -67,7 +66,6 @@ export default async function AboutPage() {
     description: metadata.description,
     url: `${origin}/`,
     telephone: STORE.phone,
-    email: STORE.email,
     priceRange: "PKR",
     address: {
       "@type": "PostalAddress",
@@ -237,11 +235,6 @@ export default async function AboutPage() {
                   {STORE.whatsapp}
                 </a>
               </InfoRow>
-              <InfoRow icon="✉️" label="Email">
-                <a href={mailHref} className="font-semibold text-primary hover:underline">
-                  {STORE.email}
-                </a>
-              </InfoRow>
             </dl>
           </div>
         </section>
@@ -264,12 +257,6 @@ export default async function AboutPage() {
                 className="tap-target inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 text-sm font-extrabold text-primary-foreground transition-colors hover:bg-primary/90"
               >
                 💬 WhatsApp us
-              </a>
-              <a
-                href={mailHref}
-                className="tap-target inline-flex items-center justify-center gap-2 rounded-xl border border-input bg-background px-6 text-sm font-bold text-foreground transition-colors hover:bg-muted"
-              >
-                ✉️ Email us
               </a>
             </div>
           </div>

@@ -167,15 +167,20 @@ function linkify(text: string) {
 }
 
 function LegalFooter({ doc }: { doc: LegalDoc }) {
+  const waHref = `https://wa.me/${STORE.whatsapp}?text=${encodeURIComponent(
+    `Question about ${doc.title}`,
+  )}`;
   return (
     <div className="mt-12 border-t border-border pt-6 text-sm text-muted-foreground">
       <p>
         Questions?{" "}
         <a
-          href={`mailto:${STORE.email}`}
+          href={waHref}
+          target="_blank"
+          rel="noopener noreferrer"
           className="font-semibold text-primary hover:underline"
         >
-          Contact us
+          Contact us on WhatsApp
         </a>
         .
       </p>

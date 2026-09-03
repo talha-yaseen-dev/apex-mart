@@ -2,26 +2,24 @@
 
 import { getCurrentUser } from "@/lib/session";
 import { getOrderForUser } from "@/lib/account";
-import { sendEmail } from "@/lib/email";
 import { logger } from "@/lib/logger";
-import { env } from "@/lib/env";
-import { STORE } from "@/lib/delivery-config";
 import { formatPKR, formatDate } from "@/lib/format";
 import { reasonLabel, MAX_RETURN_NOTE } from "@/lib/return-reasons";
 
 type Result = { ok: true } | { ok: false; error: string };
 
-const escapeHtml = (s: string) =>
-  s.replace(/[&<>]/g, (c) => (c === "&" ? "&amp;" : c === "<" ? "&lt;" : "&gt;"));
-
 /**
- * Send a "report a problem" request for an order to the store inbox.
+ * Record a "report a problem" request for an order.
  *
- * This is a contact form, not a persisted return workflow: Nova's schema has no
- * customer return-request entity and the store has no fulfilment path, so we
- * email the details to STORE.email and persist nothing (no schema changes, no
- * fabricated record). The order and user are re-loaded server-side — the client
- * only supplies the order id, reason, and note.
+ * This is a lightweight contact flow, not a persisted return workflow: Nova's
+ * schema has no customer return-request entity and the store has no fulfilment
+ * path, so we persist nothing (no schema changes, no fabricated record). Mart
+ * Shop also has no email inbox — the store is reached via WhatsApp. So this
+ * action records the request server-side (a structured log line, plus the full
+ * body printed to the console in dev for inspection) and the success screen
+ * offers the customer a pre-filled WhatsApp link to contact the store directly.
+ * The order and user are re-loaded server-side — the client only supplies the
+ * order id, reason, and note.
  */
 export async function requestReturnAction(
   orderId: string,
@@ -67,24 +65,15 @@ export async function requestReturnAction(
     items,
   ].join("\n");
 
-  // In dev without a Resend key, sendEmail only logs to/subject; print the full
-  // body too so the request is inspectable (same "log instead of send" idea).
-  if (!env.RESEND_API_KEY) {
+  // No email is sent — Mart Shop is contacted via WhatsApp. In dev, print the
+  // full request so it's inspectable; always emit a structured log line.
+  if (process.env.NODE_ENV !== "production") {
     console.log(`\n📨  [dev] return request for ${order.number}\n${body}\n`);
   }
+  logger.info(
+    { orderId: order.id, orderNumber: order.number, reason: label },
+    "return_request",
+  );
 
-  try {
-    await sendEmail({
-      to: STORE.email,
-      subject: `Return request: ${order.number}`,
-      html: `<pre style="font:14px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;color:#1f2b2a;">${escapeHtml(
-        body,
-      )}</pre>`,
-    });
-    logger.info({ orderId: order.id, orderNumber: order.number, to: STORE.email }, "return_request");
-    return { ok: true };
-  } catch (e) {
-    logger.error({ err: e, orderId: order.id }, "return_request_failed");
-    return { ok: false, error: "Something went wrong sending your request. Please try again." };
-  }
+  return { ok: true };
 }

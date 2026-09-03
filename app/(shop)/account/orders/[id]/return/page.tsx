@@ -67,7 +67,7 @@ export default async function ReturnPage({ params }: PageProps) {
       </section>
 
       <div className="mt-5">
-        <ReturnForm orderId={order.id} />
+        <ReturnForm orderId={order.id} orderNumber={order.number} />
       </div>
     </div>
   );
