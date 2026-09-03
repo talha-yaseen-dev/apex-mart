@@ -11,8 +11,9 @@ import { AdminMobileNav } from "@/components/admin/admin-mobile-nav";
 import { SignOutButton } from "@/components/account/sign-out-button";
 
 // Sidebar sections, each with the permission that reveals it. Items without a
-// `need` are visible to every employee (dashboard, products, orders, and the
-// Team & Access page where staff request JIT elevation).
+// `need` are visible to every employee (dashboard, products, orders). The Team
+// & Access page is hidden from the nav for Mart Shop's single-admin scope (see
+// below) but still resolves directly at /admin/access.
 const NAV: (AdminNavItem & { need?: string })[] = [
   { href: "/admin", label: "Dashboard", exact: true },
   { href: "/admin/products", label: "Products" },
@@ -22,7 +23,9 @@ const NAV: (AdminNavItem & { need?: string })[] = [
   { href: "/admin/customers", label: "Customers", need: PERMISSIONS.CUSTOMERS_VIEW },
   { href: "/admin/coupons", label: "Coupons", need: PERMISSIONS.COUPONS_TOGGLE },
   { href: "/admin/reports", label: "Reports", need: PERMISSIONS.REPORTS_VIEW },
-  { href: "/admin/access", label: "Team & Access" },
+  // Hidden for single-admin scope (Mart Shop): the Team & Access page still
+  // exists and resolves at /admin/access, it just isn't surfaced in the nav.
+  // { href: "/admin/access", label: "Team & Access" },
 ];
 
 export default async function AdminLayout({
