@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { signIn } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
 import { signInSchema, type SignInInput } from "@/lib/validations/auth";
 import { AUTH_ERRORS } from "@/lib/auth-constants";
 import {
@@ -64,7 +64,10 @@ export function SignInForm({
       setFormError(messageFor(res?.error));
       return;
     }
-    router.push(res.url ?? dest);
+    // Employees land in the admin panel; everyone else keeps the normal
+    // destination (callbackUrl or /account). isEmployee comes from the session.
+    const session = await getSession();
+    router.push(session?.user?.isEmployee ? "/admin" : (res.url ?? dest));
     router.refresh();
   };
 
