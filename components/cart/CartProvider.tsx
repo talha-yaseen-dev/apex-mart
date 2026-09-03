@@ -32,7 +32,28 @@ type CartContextValue = {
   remove: (itemId: string) => void;
 };
 
-const CartContext = createContext<CartContextValue | null>(null);
+/**
+ * Inert fallback used when a consumer ends up outside CartProvider. The real
+ * provider is always mounted in the (shop) shell, but a transient dev
+ * Fast-Refresh / SSR module desync can momentarily render a card before the
+ * provider is in the tree — degrade to a no-op cart instead of throwing and
+ * blanking the page. Its object identity also lets useCart detect the
+ * no-provider case and warn in development.
+ */
+const NOOP_CART: CartContextValue = {
+  cart: null,
+  items: [],
+  count: 0,
+  subtotalMinor: 0,
+  pending: false,
+  ready: false,
+  itemForVariant: () => undefined,
+  add: () => {},
+  setQty: () => {},
+  remove: () => {},
+};
+
+const CartContext = createContext<CartContextValue>(NOOP_CART);
 
 /**
  * App-wide cart store. Hydrates from the guest/user cart on mount and updates
@@ -107,6 +128,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
 export function useCart(): CartContextValue {
   const ctx = useContext(CartContext);
-  if (!ctx) throw new Error("useCart must be used within CartProvider");
+  if (ctx === NOOP_CART && process.env.NODE_ENV !== "production") {
+    // Not fatal — the card renders inertly — but a real "forgot the provider"
+    // mistake in new code should still be visible during development.
+    console.warn(
+      "useCart was called outside a CartProvider; falling back to an inert cart.",
+    );
+  }
   return ctx;
 }
