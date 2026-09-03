@@ -6,9 +6,22 @@ import type { Role } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { authOptions } from "@/lib/auth";
 
-/** Current session (or null). */
-export function auth() {
-  return getServerSession(authOptions);
+/**
+ * Current session (or null). A stale or foreign `next-auth.session-token`
+ * cookie — e.g. one signed with a different NEXTAUTH_SECRET, which is easy to
+ * end up with on localhost where cookies are shared across ports/apps — fails
+ * JWT decryption and makes `getServerSession` throw. Public storefront pages
+ * now read the session (for the wishlist heart's saved state), so that failure
+ * must degrade to "signed out" rather than crash a public render. next-auth
+ * logs the underlying JWT_SESSION_ERROR itself; here we just treat it as no
+ * session. The next sign-in overwrites the bad cookie.
+ */
+export async function auth() {
+  try {
+    return await getServerSession(authOptions);
+  } catch {
+    return null;
+  }
 }
 
 /**
