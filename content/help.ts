@@ -122,39 +122,69 @@ const faqTopic: HelpTopic = {
     "Answers to common questions about ordering, payment, delivery, and accounts at Mart Shop.",
   faqGroups: [
     {
-      id: "ordering",
-      group: "Ordering",
-      items: [
-        { q: "How do I place an order?", a: null },
-        { q: "Do I need an account to order?", a: null },
-        { q: "Can I change or cancel my order after placing it?", a: null },
-      ],
-    },
-    {
-      id: "payment",
-      group: "Payment",
-      items: [
-        { q: "What payment methods do you accept?", a: null },
-        { q: "Is Cash on Delivery available?", a: null },
-        { q: "When do I pay for my order?", a: null },
-      ],
-    },
-    {
       id: "delivery",
       group: "Delivery",
       items: [
-        { q: "Which areas do you deliver to?", a: null },
-        { q: "How much does delivery cost?", a: null },
-        { q: "How long does delivery take?", a: null },
+        {
+          q: "What areas do you deliver to?",
+          a: "We currently deliver within our 6 defined zones inside the city. Enter your address at checkout to see if we cover your area. If you're outside our zones, contact us on WhatsApp — we may still be able to arrange delivery.",
+        },
+        {
+          q: "How long does delivery take?",
+          a: "Most orders are delivered within 2 hours during our operating hours. You can select a specific time slot at checkout, including next-day slots.",
+        },
+        {
+          q: "What is the delivery fee?",
+          a: "Delivery is Rs.120 for most zones, with a small surcharge for outer areas. Orders above Rs.1,500 get free delivery within our standard zones.",
+        },
+        {
+          q: "What if I'm not home when the rider arrives?",
+          a: "Our rider will call you before arrival. If you're unavailable, they wait briefly or reschedule. Missed deliveries can be redelivered the same day or the next available slot.",
+        },
       ],
     },
     {
-      id: "account",
-      group: "Account",
+      id: "ordering",
+      group: "Ordering & payment",
       items: [
-        { q: "How do I create an account?", a: null },
-        { q: "How do I track my order?", a: null },
-        { q: "How do I reset my password?", a: null },
+        {
+          q: "How do I place my order?",
+          a: "Browse products, add them to cart, choose your address and delivery slot at checkout, confirm your details, and place the order. You can order as a guest — no account required.",
+        },
+        {
+          q: "Can I order without creating an account?",
+          a: "Yes. Guest checkout is available — just enter your name, phone, and delivery address. You can create an account afterwards to save your details for next time.",
+        },
+        {
+          q: "What payment methods do you accept?",
+          a: "We currently accept Cash on Delivery (COD) only. Online payment options are coming soon.",
+        },
+        {
+          q: "What if an item is out of stock after I order?",
+          a: "We check stock at the time of order. If something becomes unavailable, we contact you on WhatsApp before dispatch to confirm a substitute or remove the item.",
+        },
+      ],
+    },
+    {
+      id: "support",
+      group: "Orders & support",
+      items: [
+        {
+          q: "How do I track my order?",
+          a: "After placing an order, you'll receive an order reference. Use it along with your phone number on our Track Order page to see the status.",
+        },
+        {
+          q: "What's your return policy?",
+          a: "If you receive damaged, expired, or wrong items, contact us within 24 hours of delivery on WhatsApp or through the \"Report a problem\" button on your order page. We'll arrange a replacement or refund.",
+        },
+        {
+          q: "How do I contact you?",
+          a: "WhatsApp us at 0342-4348110 — this is our fastest channel. You can also visit our store during opening hours.",
+        },
+        {
+          q: "Do you have a physical store?",
+          a: "Yes. See our About page for the address and hours. You can walk in during opening hours, though we don't currently offer in-store pickup for online orders.",
+        },
       ],
     },
   ],
