@@ -17,13 +17,13 @@ export function SiteHeader() {
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-1.5 text-xs">
           <LocationBar />
           <div className="hidden items-center gap-3 sm:flex">
-            <span>Free delivery over Rs. 1,500</span>
+            <span>Free delivery over Rs. 1,000</span>
             <span className="text-slate-600">·</span>
             <span>Cash on Delivery</span>
             <span className="text-slate-600">·</span>
             <span>Dispatch before 6pm</span>
           </div>
-          <span className="font-medium sm:hidden">Free over Rs. 1,500</span>
+          <span className="font-medium sm:hidden">Free over Rs. 1,000</span>
         </div>
       </div>
 

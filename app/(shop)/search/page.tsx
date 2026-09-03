@@ -29,7 +29,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
     return {
       title: "Search",
       description:
-        "Search groceries, snacks and household essentials at Mart Shop. Cash on delivery, free delivery over Rs. 1,500.",
+        "Search groceries, snacks and household essentials at Mart Shop. Cash on delivery, free delivery over Rs. 1,000.",
       robots: { index: false, follow: true },
     };
   }
@@ -38,7 +38,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
   // drops filter/sort/page noise.
   return {
     title: `Search "${q}"`,
-    description: `Search results for "${q}" at Mart Shop — PKR prices, cash on delivery, free delivery over Rs. 1,500.`,
+    description: `Search results for "${q}" at Mart Shop — PKR prices, cash on delivery, free delivery over Rs. 1,000.`,
     alternates: { canonical: `/search?q=${encodeURIComponent(q)}` },
   };
 }

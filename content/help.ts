@@ -35,7 +35,7 @@ const deliveryTopic: HelpTopic = {
   preview: "Zones we cover, fees, and 2-hour delivery slots.",
   metaTitle: "Delivery information",
   metaDescription:
-    "Mart Shop delivery zones, fees, and 2-hour time slots. Free delivery over Rs. 1,500, cash on delivery.",
+    "Mart Shop delivery zones, fees, and 2-hour time slots. Free delivery over Rs. 1,000, cash on delivery.",
   sections: [
     {
       id: "delivery-zones",
@@ -50,7 +50,7 @@ const deliveryTopic: HelpTopic = {
       heading: "Delivery fees",
       blocks: [
         {
-          p: `Delivery is free on orders of ${formatPKR(FREE_DELIVERY_THRESHOLD_MINOR)} or more. Below that, a flat ${formatPKR(FLAT_DELIVERY_FEE_MINOR)} fee applies to most areas — a few outer zones cost a little more.`,
+          p: `Delivery is free on orders of ${formatPKR(FREE_DELIVERY_THRESHOLD_MINOR)} or more. Below that, a flat ${formatPKR(FLAT_DELIVERY_FEE_MINOR)} fee applies across Sargodha City.`,
         },
         { list: DELIVERY_ZONES.map((z) => `${z.name} — ${formatPKR(z.feeMinor)}`) },
       ],
@@ -127,7 +127,7 @@ const faqTopic: HelpTopic = {
       items: [
         {
           q: "What areas do you deliver to?",
-          a: "We currently deliver within our 6 defined zones inside the city. Enter your address at checkout to see if we cover your area. If you're outside our zones, contact us on WhatsApp — we may still be able to arrange delivery.",
+          a: "We currently deliver across Sargodha City. Enter your address at checkout to confirm we cover your area. If you're just outside our coverage, contact us on WhatsApp — we may still be able to arrange delivery.",
         },
         {
           q: "How long does delivery take?",
@@ -135,7 +135,7 @@ const faqTopic: HelpTopic = {
         },
         {
           q: "What is the delivery fee?",
-          a: "Delivery is Rs.120 for most zones, with a small surcharge for outer areas. Orders above Rs.1,500 get free delivery within our standard zones.",
+          a: "Delivery is a flat Rs.100 within Sargodha City. Orders above Rs.1,000 get free delivery.",
         },
         {
           q: "What if I'm not home when the rider arrives?",

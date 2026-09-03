@@ -19,7 +19,7 @@ export const HERO = {
     "https://images.unsplash.com/photo-1606824722920-4c652a70f348?w=1200&h=600&fit=crop&auto=format",
   cards: [
     { icon: "💵", title: "Cash on Delivery", body: "No advance payment. Pay the rider at your door." },
-    { icon: "⚡", title: "2-hour delivery", body: "Across six residential zones, seven days a week." },
+    { icon: "⚡", title: "2-hour delivery", body: "Across Sargodha City, seven days a week." },
   ],
 } as const;
 
@@ -69,7 +69,7 @@ export const saleOriginalMinor = (slug: string): number | null =>
 
 /** Compact trust points shown under the product sections. */
 export const TRUST_POINTS = [
-  { icon: "🚚", title: "Free delivery over Rs. 1,500", body: "Rs. 120 flat below that. Same-day to most areas." },
+  { icon: "🚚", title: "Free delivery over Rs. 1,000", body: "Rs. 100 flat below that. Same-day delivery." },
   { icon: "💵", title: "Pay on delivery", body: "Cash at your door. Nothing upfront." },
   { icon: "↩️", title: "Wrong item? Send it back", body: "Refused at the door or returned within 24 hours." },
 ] as const;

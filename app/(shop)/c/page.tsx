@@ -7,7 +7,7 @@ import { CategoryTile } from "@/components/shop/CategoryTile";
 export const metadata: Metadata = {
   title: "Shop by category",
   description:
-    "Browse every aisle at Mart Shop — groceries, beverages, snacks, household, personal care, and baby & kids. Cash on delivery, free delivery over Rs. 1,500.",
+    "Browse every aisle at Mart Shop — groceries, beverages, snacks, household, personal care, and baby & kids. Cash on delivery, free delivery over Rs. 1,000.",
 };
 
 export default async function CategoriesIndexPage() {

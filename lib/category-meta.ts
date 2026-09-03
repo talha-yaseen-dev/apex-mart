@@ -30,7 +30,7 @@ export const CATEGORY_META: Record<string, CategoryMeta> = {
   household: {
     title: "Household",
     description:
-      "Detergents, cleaners, dishwash, tissues and home essentials at everyday prices. Free delivery over Rs. 1,500.",
+      "Detergents, cleaners, dishwash, tissues and home essentials at everyday prices. Free delivery over Rs. 1,000.",
     tagline: "Cleaning & home essentials",
   },
   "personal-care": {
@@ -51,7 +51,7 @@ export function categoryMeta(slug: string, name: string): CategoryMeta {
   return (
     CATEGORY_META[slug] ?? {
       title: name,
-      description: `Shop ${name} online at Mart Shop — PKR prices, cash on delivery, free delivery over Rs. 1,500.`,
+      description: `Shop ${name} online at Mart Shop — PKR prices, cash on delivery, free delivery over Rs. 1,000.`,
       tagline: name,
     }
   );

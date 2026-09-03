@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     template: `%s · ${STORE.name}`,
   },
   description:
-    "Groceries, snacks and household essentials delivered to your door. Cash on delivery, free delivery over Rs. 1,500.",
+    "Groceries, snacks and household essentials delivered to your door. Cash on delivery, free delivery over Rs. 1,000.",
 };
 
 /**
