@@ -98,27 +98,28 @@ export function AddressManager({ addresses }: { addresses: Address[] }) {
         </div>
       )}
 
-      <Sheet open={sheetOpen} onOpenChange={(o) => !o && closeSheet()}>
-        <SheetContent side="right" className="w-full overflow-y-auto p-5 sm:max-w-md">
-          <SheetHeader className="px-0">
-            <SheetTitle>{target ? "Edit address" : "Add a new address"}</SheetTitle>
-            <SheetDescription>
-              {target
-                ? "Update the delivery details for this address."
-                : "Save a delivery address to reuse at checkout."}
-            </SheetDescription>
-          </SheetHeader>
-          {sheetOpen && (
+      {/* Mount the whole Sheet only while open — a fresh instance per open, so
+          the form always renders (no stale Radix exit-presence subtree) and
+          resets between add/edit without relying on a key. */}
+      {sheetOpen && (
+        <Sheet open onOpenChange={(o) => !o && closeSheet()}>
+          <SheetContent side="right" className="w-full overflow-y-auto p-5 sm:max-w-md">
+            <SheetHeader className="px-0">
+              <SheetTitle>{target ? "Edit address" : "Add a new address"}</SheetTitle>
+              <SheetDescription>
+                {target
+                  ? "Update the delivery details for this address."
+                  : "Save a delivery address to reuse at checkout."}
+              </SheetDescription>
+            </SheetHeader>
             <AddressForm
-              // Re-mount per target so the form resets between add/edit.
-              key={target?.id ?? "new"}
               initial={target ?? undefined}
               defaultIsDefault={optimistic.length === 0}
               onSuccess={closeSheet}
             />
-          )}
-        </SheetContent>
-      </Sheet>
+          </SheetContent>
+        </Sheet>
+      )}
     </div>
   );
 }
