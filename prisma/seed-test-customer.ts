@@ -21,7 +21,7 @@ const prisma = new PrismaClient();
 // Kept in sync with lib/password.ts + prisma/seed.ts.
 const ARGON2 = { memoryCost: 19456, timeCost: 2, parallelism: 1 } as const;
 
-const EMAIL = "e2etest@martshop.local";
+const EMAIL = "e2etest@apexmart.local";
 const PASSWORD = "TestE2E1234!";
 const NAME = "E2E Tester";
 const PHONE = "+923001112233";
