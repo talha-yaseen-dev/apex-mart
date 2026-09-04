@@ -125,26 +125,11 @@ export default async function AboutPage() {
           <h2 className="text-2xl font-extrabold tracking-tight text-foreground">Our story</h2>
           <div className="mt-4 max-w-2xl space-y-4 text-[15px] leading-relaxed text-muted-foreground">
             <p>
-              {STORE.name} is a neighbourhood mini-mart built around one simple idea: the
-              everyday things your home runs on should reach your door the same day — without
-              a trip to the market.
-            </p>
-            <p>
-              We stock groceries, snacks, household and personal-care essentials at everyday
-              prices, and we keep it simple. Browse, order, and pay cash when the rider hands
-              over your bag.
-            </p>
-            <p>
-              No app to install, no card required. Just your local shop, a little closer.
+              {STORE.name} is a Sargodha-based grocery and household essentials store,
+              offering fast, honest delivery across the city. Order online, pay on delivery,
+              and get your daily items to your door within a couple of hours.
             </p>
           </div>
-          <p className="mt-4 max-w-2xl text-sm">
-            <Todo>rewrite our story</Todo>{" "}
-            <span className="text-muted-foreground">
-              Replace the placeholder copy above with your real story — when the shop opened,
-              who runs it, what makes it yours. Don&apos;t invent dates, names or figures.
-            </span>
-          </p>
         </section>
 
         {/* What we deliver */}
@@ -192,15 +177,6 @@ export default async function AboutPage() {
           </h2>
 
           <div className="mt-5 overflow-hidden rounded-2xl border border-border bg-card">
-            <div className="flex items-start gap-2 border-b border-amber-200 bg-amber-50 px-5 py-3 text-[13px] text-amber-800">
-              <span aria-hidden className="mt-0.5">⚠</span>
-              <p>
-                <span className="font-bold">TODO (owner):</span> the details below are
-                placeholders. Confirm or replace each one — they also power the Google
-                business listing (structured data) for this page.
-              </p>
-            </div>
-
             <dl className="divide-y divide-border">
               <InfoRow icon="🏪" label="Store">
                 {STORE.name}
@@ -209,13 +185,13 @@ export default async function AboutPage() {
                 {STORE.address}
               </InfoRow>
               <InfoRow icon="🏙️" label="City">
-                {STORE.city || <Todo>add city</Todo>}
+                {STORE.city}
               </InfoRow>
               <InfoRow icon="🗺️" label="Region">
-                {STORE.region || <Todo>add region</Todo>}
+                {STORE.region}
               </InfoRow>
               <InfoRow icon="🏷️" label="Postal code">
-                {STORE.postalCode || <Todo>add postal code</Todo>}
+                {STORE.postalCode}
               </InfoRow>
               <InfoRow icon="🕒" label="Hours">
                 {STORE.hours}
