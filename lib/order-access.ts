@@ -106,7 +106,10 @@ export async function fetchOrder(
       : null,
     items: order.items.map((i) => ({
       name: i.productName,
-      pack: ((i.variant?.attributes as Record<string, string> | undefined) ?? {}).pack ?? null,
+      pack: (() => {
+        const a = (i.variant?.attributes as Record<string, string> | undefined) ?? {};
+        return a.packSize ?? a.pack ?? null;
+      })(),
       qty: i.quantity,
       unitPriceMinor: i.unitPriceMinor,
       lineTotalMinor: i.unitPriceMinor * i.quantity,

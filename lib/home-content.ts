@@ -35,14 +35,14 @@ export const CATEGORY_ICONS: Record<string, string> = {
 
 /** Curated "Popular this week" picks (product slugs), one merchandising choice. */
 export const POPULAR_SLUGS: string[] = [
-  "basmati-rice",
-  "sufi-cooking-oil",
+  "sufi-basmati-rice",
   "coca-cola",
   "lays-masala",
-  "surf-excel-washing-powder",
+  "tapal-danedar",
+  "dalda-ghee",
   "head-shoulders-shampoo",
-  "nido-milk-powder",
-  "pampers-diapers-small",
+  "pampers-baby-dry-size-3",
+  "nestle-milk-pak",
 ];
 
 /**
@@ -51,14 +51,14 @@ export const POPULAR_SLUGS: string[] = [
  * strike-through original + a computed discount badge.
  */
 export const SALE: Record<string, number> = {
-  "basmati-rice": 280,
-  "sufi-cooking-oil": 680,
-  "rooh-afza": 450,
-  "daal-mash": 230,
-  "nido-milk-powder": 950,
-  "tang-orange": 190,
-  "surf-excel-washing-powder": 300,
-  "colgate-triple-action": 200,
+  "sufi-basmati-rice": 420,
+  "coca-cola": 240,
+  "lays-masala": 90,
+  "surf-excel-matic": 999,
+  "dalda-ghee": 899,
+  "colgate-total-toothpaste": 240,
+  "tapal-danedar": 899,
+  "head-shoulders-shampoo": 720,
 };
 
 export const JUST_ARRIVED_LIMIT = 8;

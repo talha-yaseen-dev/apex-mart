@@ -114,7 +114,7 @@ export function toCard(p: CardRow): StoreCard {
     categoryName: p.category.name,
     categorySlug: p.category.slug,
     variantId: cheapest?.id ?? null,
-    pack: cheapestAttrs.pack ?? null,
+    pack: cheapestAttrs.packSize ?? cheapestAttrs.pack ?? null,
     unitPrice: cheapestAttrs.unitPrice ?? null,
     // Keep the raw url here (data URL or remote) so the cached card + the
     // native REST client stay self-contained; the web render swaps data URLs

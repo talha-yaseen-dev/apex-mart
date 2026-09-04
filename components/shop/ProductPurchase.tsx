@@ -171,7 +171,7 @@ export function ProductPurchase({
                     soldOut && "opacity-50",
                   )}
                 >
-                  {v.attrs.pack ?? v.sku}
+                  {v.attrs.packSize ?? v.attrs.pack ?? v.sku}
                   {soldOut && <span className="ml-1 text-[10px] font-semibold">· sold out</span>}
                 </button>
               );
@@ -217,7 +217,7 @@ export function ProductPurchase({
               {formatPKR(selected.priceMinor)}
             </div>
             <div className="truncate text-[11px] font-medium text-muted-foreground">
-              {selected.attrs.pack}
+              {selected.attrs.packSize ?? selected.attrs.pack}
             </div>
           </div>
           <WishlistButton

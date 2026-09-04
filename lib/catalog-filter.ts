@@ -20,7 +20,7 @@ export type StoreCard = {
   minPriceMinor: number;
   /** Cheapest variant's id — the default add-to-cart target from a grid card. */
   variantId: string | null;
-  /** Cheapest variant's pack label (e.g. "5kg") from variant.attributes.pack. */
+  /** Cheapest variant's pack label (e.g. "5kg") from variant.attributes.packSize. */
   pack: string | null;
   /** Cheapest variant's per-unit price (e.g. "Rs. 224/kg") from attributes. */
   unitPrice: string | null;

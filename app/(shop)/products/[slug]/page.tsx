@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const p = await getProduct(slug);
   if (!p) return { title: "Product not found" };
 
-  const packs = p.variants.map((v) => v.attrs.pack).filter(Boolean).join(", ");
+  const packs = p.variants.map((v) => v.attrs.packSize ?? v.attrs.pack).filter(Boolean).join(", ");
   const description = `${p.brand ? `${p.brand} ` : ""}${p.name}${
     packs ? ` — available in ${packs}` : ""
   }. PKR prices, cash on delivery at Mart Shop.`;
@@ -142,7 +142,7 @@ export default async function ProductPage({ params }: PageProps) {
               <dd className="text-foreground">{p.categoryName}</dd>
               <dt className="font-semibold text-muted-foreground">Pack sizes</dt>
               <dd className="text-foreground">
-                {p.variants.map((v) => v.attrs.pack).filter(Boolean).join(", ")}
+                {p.variants.map((v) => v.attrs.packSize ?? v.attrs.pack).filter(Boolean).join(", ")}
               </dd>
             </dl>
           </div>
