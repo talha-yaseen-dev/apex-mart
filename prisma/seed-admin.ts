@@ -24,7 +24,7 @@ const prisma = new PrismaClient();
 /** Argon2id parameters — shared with the runtime hasher (lib/password.ts). */
 const ARGON2 = { memoryCost: 19456, timeCost: 2, parallelism: 1 } as const;
 
-const ADMIN_EMAIL = "admin@mart.local";
+const ADMIN_EMAIL = "admin@apexmart.local";
 const ADMIN_PASSWORD = "MartAdmin1234!";
 const ADMIN_NAME = "Store Admin";
 
