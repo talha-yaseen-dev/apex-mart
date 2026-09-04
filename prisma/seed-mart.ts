@@ -31,6 +31,9 @@ type Prod = {
   brand: string | null;
   img: string;
   variants: Variant[];
+  /** Optional explicit slug when slugify(name) wouldn't produce the desired
+   *  form (e.g. keeping "&" as "and": "Glow & Lovely" → "glow-and-lovely"). */
+  slug?: string;
 };
 type Aisle = { slug: string; name: string; products: Prod[] };
 
@@ -92,7 +95,7 @@ const CATALOGUE: Aisle[] = [
         variants: [ { pack: "250g", price: 400, perN: 0.25, perU: "kg", stock: 40 }, { pack: "500g", price: 750, perN: 0.5, perU: "kg", stock: 25 } ] },
       { name: "Rafhan Custard Vanilla", brand: "Rafhan", img: IMG.powderDrink,
         variants: [ { pack: "120g", price: 130, perN: 0.12, perU: "kg", stock: 45 }, { pack: "300g", price: 290, perN: 0.3, perU: "kg", stock: 30 } ] },
-      { name: "Sooper Cooking Oil", brand: "Sooper", img: IMG.oil,
+      { name: "Sufi Cooking Oil", brand: "Sufi", img: IMG.oil,
         variants: [ { pack: "1L", price: 620, perN: 1, perU: "L", stock: 40 }, { pack: "5L", price: 3000, perN: 5, perU: "L", stock: 20 } ] },
       { name: "Dalda Ghee", brand: "Dalda", img: IMG.oil,
         variants: [ { pack: "1kg", price: 780, perN: 1, perU: "kg", stock: 35 }, { pack: "2.5kg", price: 1900, perN: 2.5, perU: "kg", stock: 20 } ] },
@@ -182,7 +185,7 @@ const CATALOGUE: Aisle[] = [
         variants: [ { pack: "30ml", price: 250, perN: 0.03, perU: "L", stock: 45 }, { pack: "60ml", price: 420, perN: 0.06, perU: "L", stock: 30 } ] },
       { name: "Gillette Blue-II Razor", brand: "Gillette", img: IMG.razor,
         variants: [ { pack: "Pack of 5", price: 420, perN: 5, perU: "pc", stock: 45 }, { pack: "Pack of 10", price: 780, perN: 10, perU: "pc", stock: 30 } ] },
-      { name: "Fair & Lovely", brand: "Fair & Lovely", img: IMG.babyCare,
+      { name: "Glow & Lovely", brand: "Glow & Lovely", slug: "glow-and-lovely", img: IMG.babyCare,
         variants: [ { pack: "25g", price: 200, perN: 0.025, perU: "kg", stock: 50 }, { pack: "50g", price: 360, perN: 0.05, perU: "kg", stock: 35 } ] },
       { name: "Palmolive Soap", brand: "Palmolive", img: IMG.soap,
         variants: [ { pack: "145g", price: 150, perN: 1, perU: "bar", stock: 50 }, { pack: "Pack of 3", price: 430, perN: 3, perU: "bar", stock: 35 } ] },
@@ -247,7 +250,7 @@ async function main() {
     });
 
     for (const p of aisle.products) {
-      const slug = slugify(p.name);
+      const slug = p.slug ?? slugify(p.name);
       const skuBase = slug.toUpperCase();
       await prisma.product.create({
         data: {
