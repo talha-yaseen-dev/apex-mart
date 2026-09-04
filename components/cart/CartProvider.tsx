@@ -128,9 +128,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
 export function useCart(): CartContextValue {
   const ctx = useContext(CartContext);
-  if (ctx === NOOP_CART && process.env.NODE_ENV !== "production") {
-    // Not fatal — the card renders inertly — but a real "forgot the provider"
-    // mistake in new code should still be visible during development.
+  // Only a real *client* render without a provider is a mistake worth flagging.
+  // During SSR the client provider isn't in scope (cart state hydrates on the
+  // client anyway, so the inert fallback renders identically), so we skip the
+  // warning there — otherwise it would fire on every server render.
+  if (
+    ctx === NOOP_CART &&
+    typeof window !== "undefined" &&
+    process.env.NODE_ENV !== "production"
+  ) {
     console.warn(
       "useCart was called outside a CartProvider; falling back to an inert cart.",
     );
