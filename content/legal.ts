@@ -1,5 +1,5 @@
 /**
- * Legal document templates for Mart Shop.
+ * Legal document templates for Apex Mart.
  *
  * These are SCAFFOLDS, not policies. Every section body is a TODO marker — no
  * real policy text, effective dates, company legal name, jurisdiction, data
@@ -37,9 +37,9 @@ const s = (heading: string): LegalSection => ({ heading, body: TODO });
 export const LEGAL_DOCS: Record<string, LegalDoc> = {
   privacy: {
     slug: "privacy",
-    title: "Privacy Policy",
+    title: "Apex Mart Privacy Policy",
     description:
-      "How Mart Shop collects, uses, and protects your personal information.",
+      "How Apex Mart collects, uses, and protects your personal information.",
     updatedAt: null,
     sections: [
       s("What we collect"),
@@ -53,12 +53,12 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
   },
   terms: {
     slug: "terms",
-    title: "Terms of Service",
-    description: "The terms that govern your use of Mart Shop.",
+    title: "Apex Mart Terms of Service",
+    description: "The terms that govern your use of Apex Mart.",
     updatedAt: null,
     sections: [
       s("Acceptance of these terms"),
-      s("Using Mart Shop"),
+      s("Using Apex Mart"),
       s("Orders & pricing"),
       s("Payment"),
       s("Delivery"),
@@ -70,8 +70,8 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
   },
   returns: {
     slug: "returns",
-    title: "Returns & Refund Policy",
-    description: "How returns and refunds work at Mart Shop.",
+    title: "Apex Mart Returns & Refund Policy",
+    description: "How returns and refunds work at Apex Mart.",
     updatedAt: null,
     sections: [
       s("Return eligibility"),
@@ -84,8 +84,8 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
   },
   shipping: {
     slug: "shipping",
-    title: "Shipping Policy",
-    description: "Delivery areas, times, and fees for Mart Shop orders.",
+    title: "Apex Mart Shipping Policy",
+    description: "Delivery areas, times, and fees for Apex Mart orders.",
     updatedAt: null,
     sections: [
       s("Delivery areas"),
@@ -98,8 +98,8 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
   },
   cookies: {
     slug: "cookies",
-    title: "Cookie Policy",
-    description: "How Mart Shop uses cookies and similar technologies.",
+    title: "Apex Mart Cookie Policy",
+    description: "How Apex Mart uses cookies and similar technologies.",
     updatedAt: null,
     sections: [
       s("What cookies are"),

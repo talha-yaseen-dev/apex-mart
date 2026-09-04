@@ -76,7 +76,7 @@ export async function createOrderFor(
   userId: string,
   email: string,
   input: CheckoutInput,
-  // Mart Shop override (opt-in, backward compatible): the storefront prices
+  // Apex Mart override (opt-in, backward compatible): the storefront prices
   // delivery from lib/delivery-config (Rs.100 flat / free over Rs.1,000) and
   // does not itemise GST to end customers, so it passes an explicit delivery
   // fee and skips tax. Absent these, Nova's default shipping/tax apply.

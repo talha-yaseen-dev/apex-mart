@@ -3,7 +3,7 @@ import { RegisterForm } from "@/components/auth/RegisterForm";
 
 export const metadata: Metadata = {
   title: "Create account",
-  description: "Create a Mart Shop account to track orders and save your details.",
+  description: "Create a Apex Mart account to track orders and save your details.",
   robots: { index: false, follow: true },
 };
 

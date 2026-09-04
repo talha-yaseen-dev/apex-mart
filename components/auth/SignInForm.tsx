@@ -72,7 +72,7 @@ export function SignInForm({
   };
 
   return (
-    <AuthCard title="Sign in" subtitle="Welcome back to Mart Shop.">
+    <AuthCard title="Sign in" subtitle="Welcome back to Apex Mart.">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
         {formError && <FormError>{formError}</FormError>}
 
@@ -116,7 +116,7 @@ export function SignInForm({
       </form>
 
       <AuthFootLink>
-        New to Mart Shop?{" "}
+        New to Apex Mart?{" "}
         <Link href="/register" className="font-bold text-primary hover:underline">
           Create account
         </Link>

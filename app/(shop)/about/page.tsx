@@ -6,7 +6,7 @@ import { Breadcrumbs } from "@/components/shop/Breadcrumbs";
 export const metadata: Metadata = {
   title: "About",
   description:
-    "Mart Shop is your neighbourhood mini-mart — groceries, snacks, household and personal-care essentials delivered the same day, with cash on delivery.",
+    "Apex Mart is your neighbourhood mini-mart — groceries, snacks, household and personal-care essentials delivered the same day, with cash on delivery.",
   alternates: { canonical: "/about" },
 };
 

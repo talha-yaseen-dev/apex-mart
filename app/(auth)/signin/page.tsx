@@ -3,7 +3,7 @@ import { SignInForm } from "@/components/auth/SignInForm";
 
 export const metadata: Metadata = {
   title: "Sign in",
-  description: "Sign in to your Mart Shop account.",
+  description: "Sign in to your Apex Mart account.",
   robots: { index: false, follow: true },
 };
 

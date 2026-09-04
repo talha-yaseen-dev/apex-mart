@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const packs = p.variants.map((v) => v.attrs.packSize ?? v.attrs.pack).filter(Boolean).join(", ");
   const description = `${p.brand ? `${p.brand} ` : ""}${p.name}${
     packs ? ` — available in ${packs}` : ""
-  }. PKR prices, cash on delivery at Mart Shop.`;
+  }. PKR prices, cash on delivery at Apex Mart.`;
 
   return {
     title: p.name,

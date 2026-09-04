@@ -65,7 +65,7 @@ export async function requestReturnAction(
     items,
   ].join("\n");
 
-  // No email is sent — Mart Shop is contacted via WhatsApp. In dev, print the
+  // No email is sent — Apex Mart is contacted via WhatsApp. In dev, print the
   // full request so it's inspectable; always emit a structured log line.
   if (process.env.NODE_ENV !== "production") {
     console.log(`\n📨  [dev] return request for ${order.number}\n${body}\n`);

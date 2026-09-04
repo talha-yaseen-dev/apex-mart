@@ -1,5 +1,5 @@
 /**
- * Storefront money formatting for Mart Shop.
+ * Storefront money formatting for Apex Mart.
  *
  * All catalogue prices are stored as integer minor units (paisa) with currency
  * PKR. Pakistani retail prices are whole rupees, so we show "Rs. 1,234" with no

@@ -1,5 +1,5 @@
 /**
- * E2E test-customer seed for the Mart Shop account area.
+ * E2E test-customer seed for the Apex Mart account area.
  *
  * Creates ONE verified customer + ONE completed COD order so the account
  * mutations (addresses, profile, password, wishlist, return form) can be

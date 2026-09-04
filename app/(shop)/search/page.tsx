@@ -29,7 +29,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
     return {
       title: "Search",
       description:
-        "Search groceries, snacks and household essentials at Mart Shop. Cash on delivery, free delivery over Rs. 1,000.",
+        "Search groceries, snacks and household essentials at Apex Mart. Cash on delivery, free delivery over Rs. 1,000.",
       robots: { index: false, follow: true },
     };
   }
@@ -38,7 +38,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
   // drops filter/sort/page noise.
   return {
     title: `Search "${q}"`,
-    description: `Search results for "${q}" at Mart Shop — PKR prices, cash on delivery, free delivery over Rs. 1,000.`,
+    description: `Search results for "${q}" at Apex Mart — PKR prices, cash on delivery, free delivery over Rs. 1,000.`,
     alternates: { canonical: `/search?q=${encodeURIComponent(q)}` },
   };
 }
@@ -56,7 +56,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
             🔍
           </div>
           <h1 className="text-2xl font-extrabold tracking-tight text-foreground">
-            Search Mart Shop
+            Search Apex Mart
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Find groceries, snacks and household essentials — start typing in the search bar above.

@@ -72,7 +72,7 @@ export function RegisterForm() {
   }
 
   return (
-    <AuthCard title="Create your account" subtitle="Join Mart Shop — it only takes a minute.">
+    <AuthCard title="Create your account" subtitle="Join Apex Mart — it only takes a minute.">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
         {formError && <FormError>{formError}</FormError>}
 

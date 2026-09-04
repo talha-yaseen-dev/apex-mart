@@ -1,5 +1,5 @@
 /**
- * Static home-page merchandising for Mart Shop.
+ * Static home-page merchandising for Apex Mart.
  *
  * There is no merchandising CMS (that's Phase 5), so the hero, the curated
  * "Popular" picks, and the promotional "was" prices for the sale rail live here
@@ -12,7 +12,7 @@ export const HERO = {
   eyebrow: "Groceries · Snacks · Household",
   title: "The whole shop, at your door today.",
   subtitle:
-    "Over 500 everyday essentials in stock. Order before 6pm and pay cash when it arrives.",
+    "Everyday groceries and essentials, delivered to your door. Order before 6pm and pay cash when it arrives.",
   ctaLabel: "Start shopping",
   ctaHref: "#shop",
   image:

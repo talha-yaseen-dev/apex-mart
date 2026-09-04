@@ -35,7 +35,7 @@ const deliveryTopic: HelpTopic = {
   preview: "Zones we cover, fees, and 2-hour delivery slots.",
   metaTitle: "Delivery information",
   metaDescription:
-    "Mart Shop delivery zones, fees, and 2-hour time slots. Free delivery over Rs. 1,000, cash on delivery.",
+    "Apex Mart delivery zones, fees, and 2-hour time slots. Free delivery over Rs. 1,000, cash on delivery.",
   sections: [
     {
       id: "delivery-zones",
@@ -94,7 +94,7 @@ const returnsTopic: HelpTopic = {
   title: "Returns and refunds",
   preview: "Our return policy and how to request one.",
   metaTitle: "Returns and refunds",
-  metaDescription: "Mart Shop returns and refunds policy.",
+  metaDescription: "Apex Mart returns and refunds policy.",
   sections: [
     { id: "our-return-policy", heading: "Our return policy", blocks: [{ todo: "State the overall return policy and the return window." }] },
     {
@@ -119,7 +119,7 @@ const faqTopic: HelpTopic = {
   preview: "Quick answers to common questions.",
   metaTitle: "Frequently asked questions",
   metaDescription:
-    "Answers to common questions about ordering, payment, delivery, and accounts at Mart Shop.",
+    "Answers to common questions about ordering, payment, delivery, and accounts at Apex Mart.",
   faqGroups: [
     {
       id: "delivery",

@@ -5,7 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Mart Shop design tokens — Blinkit/Zepto-style grocery aesthetic.
+ * Apex Mart design tokens — Blinkit/Zepto-style grocery aesthetic.
  *   Primary : fresh grocery green (~#0c831f)
  *   Deal    : warm yellow for deal/badge accents (~#ffc400), with dark text
  *   Base    : neutral grays (shadcn "neutral"), generous whitespace in layout

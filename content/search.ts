@@ -1,5 +1,5 @@
 /**
- * Static search merchandising for Mart Shop.
+ * Static search merchandising for Apex Mart.
  *
  * There is no search-analytics pipeline yet (real "trending"/"popular searches"
  * needs event capture — Phase 3), so the terms shown on the empty /search page

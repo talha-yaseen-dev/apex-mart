@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const title = meta?.title ?? sub;
   return {
     title,
-    description: meta?.description ?? `Shop ${title} at Mart Shop.`,
+    description: meta?.description ?? `Shop ${title} at Apex Mart.`,
     alternates: { canonical: `/c/${category}/${sub}` },
   };
 }

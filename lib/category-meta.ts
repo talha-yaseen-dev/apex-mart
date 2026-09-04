@@ -18,7 +18,7 @@ export const CATEGORY_META: Record<string, CategoryMeta> = {
   beverages: {
     title: "Beverages",
     description:
-      "Soft drinks, juices, squashes, water, tea and coffee at Mart Shop. Same-day delivery, cash on delivery.",
+      "Soft drinks, juices, squashes, water, tea and coffee at Apex Mart. Same-day delivery, cash on delivery.",
     tagline: "Drinks, juices, tea & coffee",
   },
   snacks: {
@@ -42,7 +42,7 @@ export const CATEGORY_META: Record<string, CategoryMeta> = {
   "baby-kids": {
     title: "Baby & Kids",
     description:
-      "Diapers, wipes, baby food, baby care and kids' essentials at Mart Shop. Same-day delivery.",
+      "Diapers, wipes, baby food, baby care and kids' essentials at Apex Mart. Same-day delivery.",
     tagline: "Diapers, baby food & care",
   },
 };
@@ -51,7 +51,7 @@ export function categoryMeta(slug: string, name: string): CategoryMeta {
   return (
     CATEGORY_META[slug] ?? {
       title: name,
-      description: `Shop ${name} online at Mart Shop — PKR prices, cash on delivery, free delivery over Rs. 1,000.`,
+      description: `Shop ${name} online at Apex Mart — PKR prices, cash on delivery, free delivery over Rs. 1,000.`,
       tagline: name,
     }
   );

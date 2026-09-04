@@ -32,7 +32,7 @@ export function SiteHeader() {
         <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-2.5">
           <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label={`${STORE.name} home`}>
             <span className="flex size-9 items-center justify-center rounded-xl bg-primary text-base font-extrabold text-primary-foreground">
-              M
+              A
             </span>
             <span className="hidden leading-tight xs:block">
               <span className="block text-base font-extrabold tracking-tight text-foreground">
