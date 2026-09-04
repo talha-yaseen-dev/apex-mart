@@ -89,7 +89,7 @@ export function TrackClient({
           <input
             value={ref}
             onChange={(e) => setRef(e.target.value.toUpperCase())}
-            placeholder="NOVA-XXXX-XXXX"
+            placeholder="APEX-XXXX-XXXX"
             className={inputCls}
             autoCapitalize="characters"
           />

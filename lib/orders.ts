@@ -4,7 +4,7 @@ import { InvReason, OrderStatus, PaymentStatus, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 
 /**
- * Human order number, e.g. NOVA-2607-8F3AC91D. 32 bits of crypto-random entropy
+ * Human order number, e.g. APEX-2607-8F3AC91D. 32 bits of crypto-random entropy
  * (per year-month prefix) makes collisions astronomically unlikely; the DB's
  * UNIQUE constraint plus `createOrderWithNumber`'s retry make duplicates
  * impossible.
@@ -14,7 +14,7 @@ export function generateOrderNumber(): string {
   const yy = String(now.getFullYear()).slice(2);
   const mm = String(now.getMonth() + 1).padStart(2, "0");
   const rand = randomBytes(4).toString("hex").toUpperCase();
-  return `NOVA-${yy}${mm}-${rand}`;
+  return `APEX-${yy}${mm}-${rand}`;
 }
 
 /**

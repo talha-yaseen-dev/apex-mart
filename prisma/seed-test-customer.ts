@@ -34,7 +34,7 @@ function orderNumber(): string {
   const now = new Date();
   const yy = String(now.getFullYear()).slice(2);
   const mm = String(now.getMonth() + 1).padStart(2, "0");
-  return `NOVA-${yy}${mm}-${randomBytes(4).toString("hex").toUpperCase()}`;
+  return `APEX-${yy}${mm}-${randomBytes(4).toString("hex").toUpperCase()}`;
 }
 
 async function main() {
