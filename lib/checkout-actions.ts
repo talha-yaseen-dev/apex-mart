@@ -7,6 +7,7 @@ import {
   type PlaceOrderError,
 } from "@/lib/checkout-schema";
 import { resolveGuestUser, GuestCheckoutError } from "@/lib/guest-user";
+import { getCurrentUser } from "@/lib/session";
 import { getCartViewFor } from "@/lib/api/cart";
 import { createOrderFor, confirmOrderFor } from "@/lib/api/checkout";
 import { clearCartCookie } from "@/lib/cart-cookie";
@@ -31,20 +32,30 @@ export async function placeOrder(raw: CheckoutFormInput): Promise<PlaceOrderErro
   }
   const d = parsed.data;
 
-  // Resolve guest identity + attach cart.
+  // A signed-in shopper orders under their own account — their cart is keyed by
+  // their user id (resolveCart), so we must use it (not a phone-keyed guest, or
+  // the cart reads as empty). Guests resolve a guest identity + attach the
+  // cookie cart.
   let userId: string;
-  try {
-    ({ userId } = await resolveGuestUser({
-      name: d.name,
-      phone: d.phone,
-      email: d.email || undefined,
-    }));
-  } catch (e) {
-    return {
-      ok: false,
-      error: e instanceof GuestCheckoutError ? e.message : "Could not process checkout.",
-      ...(e instanceof GuestCheckoutError ? { fieldErrors: { phone: e.message } } : {}),
-    };
+  // Guests can't sign in (password-less accounts), so any signed-in user here is
+  // a real account — order under it so their account cart is used.
+  const currentUser = await getCurrentUser();
+  if (currentUser) {
+    userId = currentUser.id;
+  } else {
+    try {
+      ({ userId } = await resolveGuestUser({
+        name: d.name,
+        phone: d.phone,
+        email: d.email || undefined,
+      }));
+    } catch (e) {
+      return {
+        ok: false,
+        error: e instanceof GuestCheckoutError ? e.message : "Could not process checkout.",
+        ...(e instanceof GuestCheckoutError ? { fieldErrors: { phone: e.message } } : {}),
+      };
+    }
   }
 
   // Authoritative cart subtotal (the same view createOrderFor uses).

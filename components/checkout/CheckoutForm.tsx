@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Check } from "lucide-react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -54,7 +55,7 @@ export function CheckoutForm({
       email: defaultContact?.email ?? "",
       street: "",
       area: "",
-      city: "",
+      city: STORE.city,
       zoneId: DEFAULT_ZONE_ID,
       riderNote: "",
       saveAddress: true,
@@ -64,14 +65,23 @@ export function CheckoutForm({
     },
   });
 
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
   // Fill the delivery fields from a saved address (from Account → Addresses).
+  // City stays locked to the store city; area/zone aren't collected any more.
   function applyAddress(a: SavedAddress) {
-    setValue("name", a.name);
-    setValue("street", a.line1);
-    setValue("area", a.line2 || "");
-    setValue("city", a.city || STORE.city);
-    if (defaultContact?.phone) setValue("phone", defaultContact.phone);
+    const opts = { shouldValidate: true, shouldDirty: true } as const;
+    setValue("name", a.name, opts);
+    setValue("street", a.line1, opts);
+    if (defaultContact?.phone) setValue("phone", defaultContact.phone, opts);
+    setSelectedId(a.id);
   }
+
+  // Pre-select the default saved address so it's filled in on arrival.
+  useEffect(() => {
+    if (savedAddresses.length > 0) applyAddress(savedAddresses[0]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Default the zone to the one chosen in the header, if any.
   useEffect(() => {
@@ -130,20 +140,33 @@ export function CheckoutForm({
               <div>
                 <p className="mb-2 text-xs font-bold text-foreground">Use a saved address</p>
                 <div className="grid gap-2 sm:grid-cols-2">
-                  {savedAddresses.map((a) => (
-                    <button
-                      key={a.id}
-                      type="button"
-                      onClick={() => applyAddress(a)}
-                      className="rounded-xl border border-input bg-background p-3 text-left transition-colors hover:border-primary"
-                    >
-                      <div className="text-[13px] font-bold text-foreground">{a.label}</div>
-                      <div className="mt-0.5 text-[12px] leading-snug text-muted-foreground">
-                        {a.name} · {a.line1}
-                        {a.line2 ? `, ${a.line2}` : ""}, {a.city}
-                      </div>
-                    </button>
-                  ))}
+                  {savedAddresses.map((a) => {
+                    const active = selectedId === a.id;
+                    return (
+                      <button
+                        key={a.id}
+                        type="button"
+                        onClick={() => applyAddress(a)}
+                        aria-pressed={active}
+                        className={cn(
+                          "relative rounded-xl border p-3 pr-8 text-left transition-colors",
+                          active
+                            ? "border-primary bg-primary/5 ring-1 ring-primary"
+                            : "border-input bg-background hover:border-primary",
+                        )}
+                      >
+                        {active && (
+                          <span className="absolute right-2 top-2 grid size-5 place-items-center rounded-full bg-primary text-white">
+                            <Check className="size-3" strokeWidth={3} aria-hidden />
+                          </span>
+                        )}
+                        <div className="text-[13px] font-bold text-foreground">{a.label}</div>
+                        <div className="mt-0.5 text-[12px] leading-snug text-muted-foreground">
+                          {a.name} · {a.line1}, {a.city}
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
                 <p className="mt-2 text-[11.5px] text-muted-foreground">Or enter a new address below.</p>
               </div>
@@ -176,39 +199,21 @@ export function CheckoutForm({
                 {...register("street")}
               />
             </Field>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Area / locality" error={errors.area?.message}>
-                <input className={inputCls} placeholder="Gulberg" {...register("area")} />
-              </Field>
-              <Field label="City" error={errors.city?.message}>
-                <input className={inputCls} placeholder="Lahore" {...register("city")} />
-              </Field>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Delivery zone" error={errors.zoneId?.message}>
-                <select className={inputCls} {...register("zoneId")}>
-                  {DELIVERY_ZONES.map((z) => (
-                    <option key={z.id} value={z.id}>
-                      {z.name}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-              <Field label="Note for rider (optional)" error={errors.riderNote?.message}>
-                <input
-                  className={inputCls}
-                  placeholder="Ring the bell, 2nd floor"
-                  {...register("riderNote")}
-                />
-              </Field>
-            </div>
+            <Field label="City">
+              <input
+                className={cn(inputCls, "cursor-not-allowed bg-muted/50 opacity-70")}
+                readOnly
+                title="Apex Mart delivers within Sargodha only"
+                {...register("city")}
+              />
+            </Field>
             <label className="flex items-center gap-2 text-sm font-semibold text-foreground">
               <input type="checkbox" className="size-4 accent-primary" {...register("saveAddress")} />
               Save this address for next time
             </label>
             <p className="text-[11.5px] text-muted-foreground">
               Delivery {deliveryFree ? "is free" : `is ${formatPKR(deliveryMinor)}`} to{" "}
-              {zoneById(zoneId).name} · 2-hour windows, 7 days a week.
+              {STORE.city} · 2-hour windows, 7 days a week.
             </p>
           </Section>
 

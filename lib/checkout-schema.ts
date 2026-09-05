@@ -18,7 +18,8 @@ export const checkoutFormSchema = z.object({
     .optional(),
   // Address
   street: z.string().trim().min(3, "Please enter your street / house address."),
-  area: z.string().trim().min(1, "Please enter your area or locality."),
+  // Area removed from the UI — optional for backward compatibility.
+  area: z.string().trim().optional().default(""),
   city: z.string().trim().min(1, "Please enter your city."),
   zoneId: z.string().trim().min(1, "Please select your delivery zone."),
   riderNote: z.string().trim().max(200).optional().default(""),
