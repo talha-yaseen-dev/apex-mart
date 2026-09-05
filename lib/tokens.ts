@@ -3,8 +3,10 @@ import { createHash, randomBytes } from "node:crypto";
 import { TokenType } from "@prisma/client";
 import { prisma } from "@/lib/db";
 
-const TTL_MS: Record<TokenType, number> = {
-  EMAIL_VERIFY: 24 * 60 * 60 * 1000, // 24h
+// TTLs for the single-use LINK tokens only. EMAIL_VERIFY + EMAIL_CHANGE are now
+// 6-digit codes with their own 10-minute TTL (see lib/otp.ts) and are never
+// issued through here — issuing one throws below.
+const TTL_MS: Partial<Record<TokenType, number>> = {
   PASSWORD_RESET: 60 * 60 * 1000, // 60 min
   INVITE: 7 * 24 * 60 * 60 * 1000, // 7 days — new teammates need time to accept
 };
@@ -20,6 +22,10 @@ export async function issueToken(
   identifier: string,
   type: TokenType,
 ): Promise<string> {
+  const ttl = TTL_MS[type];
+  if (ttl === undefined) {
+    throw new Error(`tokens.ts does not issue ${type} tokens — use lib/otp.ts for codes.`);
+  }
   const raw = randomBytes(32).toString("base64url");
   await prisma.verificationToken.deleteMany({ where: { identifier, type } });
   await prisma.verificationToken.create({
@@ -27,7 +33,7 @@ export async function issueToken(
       identifier,
       type,
       tokenHash: sha256(raw),
-      expiresAt: new Date(Date.now() + TTL_MS[type]),
+      expiresAt: new Date(Date.now() + ttl),
     },
   });
   return raw;

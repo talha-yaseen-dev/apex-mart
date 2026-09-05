@@ -5,15 +5,17 @@ import { prisma } from "@/lib/db";
 import { env } from "@/lib/env";
 import { hashPassword } from "@/lib/password";
 import { issueToken, consumeToken } from "@/lib/tokens";
-import { rateLimit } from "@/lib/rate-limit";
+import { issueCode, consumeCode, isSixDigitCode } from "@/lib/otp";
+import { rateLimit, clearRateLimit } from "@/lib/rate-limit";
 import { clientIp } from "@/lib/request-ip";
 import { isPasswordPwned, PWNED_PASSWORD_MESSAGE } from "@/lib/pwned";
 import { sendEmail } from "@/lib/email";
-import { verifyEmail, resetEmail } from "@/emails/auth-emails";
+import { verifyCodeEmail, resetEmail } from "@/emails/auth-emails";
 import {
   registerSchema,
   forgotSchema,
   resetSchema,
+  emailSchema,
 } from "@/lib/validations/auth";
 import { DEMO_ACCOUNT_LOCK_MESSAGE, isDemoAccount } from "@/lib/auth-constants";
 
@@ -22,15 +24,16 @@ type ActionResult =
   | { ok: false; error: string; field?: string };
 
 /**
- * Issue a fresh EMAIL_VERIFY token and email the verification link. Best-effort
- * delivery: the account is inactive until verified (sign-in is refused), and
- * the user can trigger a resend — so a transient email failure never blocks the
- * flow or leaks provider errors / the address's existence. Never logs the token.
+ * Issue a fresh EMAIL_VERIFY 6-digit code and email it. Best-effort delivery:
+ * the account is inactive until verified (sign-in is refused), and the user can
+ * trigger a resend — so a transient email failure never blocks the flow or leaks
+ * provider errors / the address's existence. Issuing a new code invalidates the
+ * previous one AND resets its wrong-attempt lockout. Never logs the code.
  */
 async function sendVerification(email: string, name: string): Promise<void> {
-  const token = await issueToken(email, TokenType.EMAIL_VERIFY);
-  const url = `${env.APP_URL}/verify-email?token=${token}`;
-  const { subject, html } = verifyEmail(name, url);
+  const code = await issueCode(email, TokenType.EMAIL_VERIFY);
+  await clearRateLimit(`verify-attempt:${email}`);
+  const { subject, html } = verifyCodeEmail(name, code);
   try {
     await sendEmail({ to: email, subject, html });
   } catch {
@@ -122,6 +125,51 @@ export async function resendVerificationAction(input: {
     }
   }
   // Neutral regardless: don't reveal existence/verification state or throttling.
+  return { ok: true, email };
+}
+
+/**
+ * Verify a newly-registered email with its 6-digit code. Unauthenticated by
+ * design — possession of the code emailed to the address is the proof of
+ * ownership. Brute-force protected: 5 attempts / 10 min per address plus a
+ * per-IP ceiling; on success emailVerified is set. Server time is authoritative
+ * for expiry; the raw code is never logged or echoed back.
+ */
+export async function verifyEmailCodeAction(input: {
+  email: string;
+  code: string;
+}): Promise<ActionResult> {
+  const emailParsed = emailSchema.safeParse(input?.email);
+  if (!emailParsed.success || !isSixDigitCode(input?.code)) {
+    return { ok: false, error: "Enter the 6-digit code from your email." };
+  }
+  const email = emailParsed.data;
+
+  const ip = await clientIp();
+  const [attempts, byIp] = await Promise.all([
+    rateLimit(`verify-attempt:${email}`, 5, 600),
+    ip === "unknown" ? Promise.resolve({ allowed: true }) : rateLimit(`verify-ip:${ip}`, 30, 600),
+  ]);
+  if (!attempts.allowed || !byIp.allowed) {
+    return { ok: false, error: "Too many attempts. Request a new code." };
+  }
+
+  const res = await consumeCode(email, TokenType.EMAIL_VERIFY, input.code);
+  if (!res.ok) {
+    return {
+      ok: false,
+      error:
+        res.reason === "expired"
+          ? "This code has expired. Request a new code."
+          : "That code isn’t right. Check the 6 digits and try again.",
+    };
+  }
+
+  // Idempotent; an account deleted between issue and verify is treated as a
+  // no-op (the code was single-use and is now gone either way).
+  await prisma.user
+    .update({ where: { email }, data: { emailVerified: new Date() } })
+    .catch(() => {});
   return { ok: true, email };
 }
 

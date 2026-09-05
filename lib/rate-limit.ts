@@ -56,6 +56,24 @@ async function redisWindow(
   };
 }
 
+/**
+ * Reset a rate-limit window (both backends). Used when issuing a NEW
+ * verification code so the wrong-attempt counter for the previous code no
+ * longer blocks the fresh one — the resend itself is separately rate-limited,
+ * so this can't be abused to grant unlimited guesses.
+ */
+export async function clearRateLimit(key: string): Promise<void> {
+  memory.delete(key);
+  const redis = getRedis();
+  if (redis) {
+    try {
+      await redis.del(`rl:${key}`);
+    } catch {
+      /* best-effort */
+    }
+  }
+}
+
 // ── In-memory fallback ────────────────────────────────────────
 const memory = new Map<string, number[]>();
 

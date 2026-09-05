@@ -42,16 +42,58 @@ function body(opts: {
   `);
 }
 
-export function verifyEmail(name: string, url: string): Email {
+/** Big, centred, monospace 6-digit code block — the focal point of an OTP email. */
+function codeBody(opts: {
+  heading: string;
+  intro: string;
+  code: string;
+  footer: string;
+}): string {
+  return shell(`
+    <h2 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:22px;letter-spacing:-.02em;margin:0 0 14px;color:#1f2b2a;">${opts.heading}</h2>
+    <p style="margin:0 0 22px;font-size:15px;line-height:1.6;color:#4a5654;">${opts.intro}</p>
+    <div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:34px;font-weight:700;letter-spacing:.32em;color:#0c831f;background:#f2f8f2;border:1px solid #d8e8d8;border-radius:12px;padding:20px 12px;text-align:center;">${opts.code}</div>
+    <div style="margin-top:22px;padding:12px 14px;background:#fbf6ea;border:1px solid #efe0bd;border-radius:9px;font-size:13px;color:#7a6636;line-height:1.5;">This code expires in 10 minutes and can be used once.</div>
+    <p style="margin:22px 0 0;color:#8a9a99;font-size:13px;line-height:1.6;">${opts.footer}</p>
+  `);
+}
+
+/** Account-creation verification code (registration + resend). No link. */
+export function verifyCodeEmail(name: string, code: string): Email {
   return {
-    subject: "Verify your Apex Mart email",
-    html: body({
+    subject: "Your Apex Mart verification code",
+    html: codeBody({
       heading: "Confirm your email address",
-      intro: `Welcome to ${BRAND}${name ? `, ${name}` : ""}! Confirm this is your email address to activate your account and start shopping. If you didn't create an Apex Mart account, you can ignore this email.`,
-      cta: "Verify email",
-      url,
-      expiry: "This verification link expires in 24 hours and can be used once.",
+      intro: `Hi${name ? ` ${name}` : ""}, your ${BRAND} verification code is below. Enter it to activate your account.`,
+      code,
+      footer: "If you didn't create this account, you can ignore this email.",
     }),
+  };
+}
+
+/** Verification code sent to the NEW address during a Settings email change. */
+export function emailChangeCodeEmail(code: string): Email {
+  return {
+    subject: "Verify your new Apex Mart email",
+    html: codeBody({
+      heading: "Confirm your new email address",
+      intro: `Enter this code in ${BRAND} to confirm this address as your new account email.`,
+      code,
+      footer: "If you didn't request this change, do not share this code — and you can ignore this email.",
+    }),
+  };
+}
+
+/** Security alert sent to the OLD address after an email change commits. Carries
+ *  NO code and NO link — informational only. */
+export function emailChangedNoticeEmail(newEmailMasked: string): Email {
+  return {
+    subject: "Your Apex Mart account email was changed",
+    html: shell(`
+      <h2 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:22px;letter-spacing:-.02em;margin:0 0 14px;color:#1f2b2a;">Your account email was changed</h2>
+      <p style="margin:0 0 18px;font-size:15px;line-height:1.6;color:#4a5654;">The email address for your ${BRAND} account was just changed to <strong style="color:#1f2b2a;">${newEmailMasked}</strong>. You're receiving this notice at your previous address.</p>
+      <div style="padding:12px 14px;background:#fdecec;border:1px solid #f2c9c9;border-radius:9px;font-size:13px;color:#8a3a3a;line-height:1.5;">If you didn't make this change, contact us immediately — your account may be compromised.</div>
+    `),
   };
 }
 

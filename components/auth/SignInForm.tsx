@@ -10,7 +10,6 @@ import { signIn, getSession } from "next-auth/react";
 import { signInSchema, type SignInInput } from "@/lib/validations/auth";
 import { AUTH_ERRORS } from "@/lib/auth-constants";
 import { signInErrorMessage } from "@/lib/auth-error-copy";
-import { resendVerificationAction } from "@/lib/actions/auth";
 import {
   AuthCard,
   AuthField,
@@ -25,10 +24,12 @@ export function SignInForm({
   callbackUrl,
   initialError,
   googleEnabled = false,
+  justVerified = false,
 }: {
   callbackUrl?: string;
   initialError?: string;
   googleEnabled?: boolean;
+  justVerified?: boolean;
 }) {
   const router = useRouter();
   // Customers land on the homepage after signing in. Honour an explicit
@@ -42,13 +43,12 @@ export function SignInForm({
       ? callbackUrl
       : "/";
   const [errorCode, setErrorCode] = useState<string | null>(initialError ?? null);
-  const [resendState, setResendState] = useState<"idle" | "sending" | "sent">("idle");
+  const [attemptedEmail, setAttemptedEmail] = useState("");
   const [showPw, setShowPw] = useState(false);
 
   const {
     register,
     handleSubmit,
-    getValues,
     formState: { errors, isSubmitting },
   } = useForm<SignInInput>({
     resolver: zodResolver(signInSchema),
@@ -57,7 +57,6 @@ export function SignInForm({
 
   const onSubmit = async (data: SignInInput) => {
     setErrorCode(null);
-    setResendState("idle");
     const res = await signIn("credentials", {
       redirect: false,
       email: data.email,
@@ -65,6 +64,7 @@ export function SignInForm({
       callbackUrl: dest,
     });
     if (!res || res.error) {
+      setAttemptedEmail(data.email);
       setErrorCode(res?.error ?? "unknown");
       return;
     }
@@ -75,19 +75,17 @@ export function SignInForm({
 
   const unverified = errorCode === AUTH_ERRORS.EMAIL_NOT_VERIFIED;
 
-  async function resend() {
-    const email = getValues("email");
-    if (!email || resendState === "sending") return;
-    setResendState("sending");
-    try {
-      await resendVerificationAction({ email });
-    } finally {
-      setResendState("sent");
-    }
-  }
-
   return (
     <AuthCard title="Sign in" subtitle="Welcome back to Apex Mart.">
+      {justVerified && (
+        <div
+          role="status"
+          className="mb-5 rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-sm font-medium text-primary"
+        >
+          Email verified — sign in to start shopping.
+        </div>
+      )}
+
       {googleEnabled && (
         <div className="mb-5">
           <GoogleButton callbackUrl={dest} />
@@ -104,18 +102,12 @@ export function SignInForm({
           <FormError>
             <span>{signInErrorMessage(errorCode)}</span>
             {unverified && (
-              <button
-                type="button"
-                onClick={resend}
-                disabled={resendState !== "idle"}
-                className="mt-1 block font-bold underline underline-offset-2 disabled:no-underline disabled:opacity-70"
+              <Link
+                href={`/verify-email?email=${encodeURIComponent(attemptedEmail)}`}
+                className="mt-1 block font-bold underline underline-offset-2"
               >
-                {resendState === "idle"
-                  ? "Resend verification email"
-                  : resendState === "sending"
-                    ? "Sending…"
-                    : "Verification email sent — check your inbox."}
-              </button>
+                Enter your verification code →
+              </Link>
             )}
           </FormError>
         )}

@@ -77,10 +77,13 @@ enum InvReason {
 }
 
 // Auth infrastructure (Phase 2) — single-use email/reset tokens.
+// EMAIL_VERIFY + EMAIL_CHANGE now carry 6-digit OTP codes (see lib/otp.ts);
+// PASSWORD_RESET + INVITE remain single-use links (see lib/tokens.ts).
 enum TokenType {
   EMAIL_VERIFY
   PASSWORD_RESET
   INVITE
+  EMAIL_CHANGE
 }
 
 // ─────────────────────────────────────────────────────────────

@@ -44,7 +44,7 @@ beforeEach(() => {
 
 describe("verification tokens", () => {
   it("stores only the SHA-256 hash, never the raw token", async () => {
-    const raw = await issueToken("user@x.com", TokenType.EMAIL_VERIFY);
+    const raw = await issueToken("user@x.com", TokenType.PASSWORD_RESET);
     expect(rows).toHaveLength(1);
     expect(rows[0].tokenHash).not.toBe(raw);
     expect(rows[0].tokenHash).toBe(sha256(raw));
@@ -52,29 +52,29 @@ describe("verification tokens", () => {
   });
 
   it("consumes successfully exactly once (single-use / replay-safe)", async () => {
-    const raw = await issueToken("user@x.com", TokenType.EMAIL_VERIFY);
-    expect(await consumeToken(raw, TokenType.EMAIL_VERIFY)).toBe("user@x.com");
-    expect(await consumeToken(raw, TokenType.EMAIL_VERIFY)).toBeNull();
+    const raw = await issueToken("user@x.com", TokenType.PASSWORD_RESET);
+    expect(await consumeToken(raw, TokenType.PASSWORD_RESET)).toBe("user@x.com");
+    expect(await consumeToken(raw, TokenType.PASSWORD_RESET)).toBeNull();
     expect(rows).toHaveLength(0);
   });
 
   it("rejects an expired token", async () => {
-    const raw = await issueToken("user@x.com", TokenType.EMAIL_VERIFY);
+    const raw = await issueToken("user@x.com", TokenType.PASSWORD_RESET);
     rows[0].expiresAt = new Date(Date.now() - 1000);
-    expect(await consumeToken(raw, TokenType.EMAIL_VERIFY)).toBeNull();
+    expect(await consumeToken(raw, TokenType.PASSWORD_RESET)).toBeNull();
   });
 
   it("rejects a token consumed under the wrong type (and leaves it usable)", async () => {
-    const raw = await issueToken("user@x.com", TokenType.EMAIL_VERIFY);
-    expect(await consumeToken(raw, TokenType.PASSWORD_RESET)).toBeNull();
-    expect(await consumeToken(raw, TokenType.EMAIL_VERIFY)).toBe("user@x.com");
+    const raw = await issueToken("user@x.com", TokenType.PASSWORD_RESET);
+    expect(await consumeToken(raw, TokenType.INVITE)).toBeNull();
+    expect(await consumeToken(raw, TokenType.PASSWORD_RESET)).toBe("user@x.com");
   });
 
   it("rotates: issuing a fresh token invalidates the previous one (resend)", async () => {
-    const first = await issueToken("user@x.com", TokenType.EMAIL_VERIFY);
-    const second = await issueToken("user@x.com", TokenType.EMAIL_VERIFY);
+    const first = await issueToken("user@x.com", TokenType.PASSWORD_RESET);
+    const second = await issueToken("user@x.com", TokenType.PASSWORD_RESET);
     expect(rows).toHaveLength(1);
-    expect(await consumeToken(first, TokenType.EMAIL_VERIFY)).toBeNull();
-    expect(await consumeToken(second, TokenType.EMAIL_VERIFY)).toBe("user@x.com");
+    expect(await consumeToken(first, TokenType.PASSWORD_RESET)).toBeNull();
+    expect(await consumeToken(second, TokenType.PASSWORD_RESET)).toBe("user@x.com");
   });
 });

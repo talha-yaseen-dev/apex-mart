@@ -10,7 +10,7 @@ import { registerSchema, type RegisterInput } from "@/lib/validations/auth";
 import { registerAction } from "@/lib/actions/auth";
 import { AuthField, FormError, authInputCls } from "./AuthUI";
 import { PasswordField } from "./PasswordField";
-import { CheckEmail } from "./CheckEmail";
+import { VerifyEmailForm } from "./VerifyEmailForm";
 
 const BENEFITS = ["Faster checkout", "Track your orders", "Save delivery details"] as const;
 
@@ -49,7 +49,8 @@ export function RegisterForm() {
   };
 
   if (sentTo) {
-    return <CheckEmail email={sentTo} />;
+    // Account created (inactive until verified) — collect the 6-digit code.
+    return <VerifyEmailForm email={sentTo} justSent />;
   }
 
   return (

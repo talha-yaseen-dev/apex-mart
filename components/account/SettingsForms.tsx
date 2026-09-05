@@ -25,11 +25,9 @@ type ProfileOutput = z.output<typeof profileSchema>;
 export function ProfileForm({
   name,
   phone,
-  email,
 }: {
   name: string;
   phone: string;
-  email: string;
 }) {
   const router = useRouter();
   const {
@@ -66,11 +64,6 @@ export function ProfileForm({
             {...register("phone")}
           />
         </Field>
-        <div>
-          <label className="mb-1.5 block text-xs font-bold text-foreground">Email</label>
-          <input className={`${inputCls} cursor-not-allowed opacity-60`} value={email} readOnly disabled />
-          <p className="mt-1 text-xs text-muted-foreground">To change your email, contact support.</p>
-        </div>
         <SaveButton pending={isSubmitting}>Save changes</SaveButton>
       </form>
     </Section>

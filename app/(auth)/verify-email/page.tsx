@@ -1,15 +1,14 @@
 import type { Metadata } from "next";
-import { TokenType } from "@prisma/client";
-import { prisma } from "@/lib/db";
-import { consumeToken } from "@/lib/tokens";
-import { AuthSuccess, AuthNotice } from "@/components/auth/AuthUI";
+import { z } from "zod";
+import { VerifyEmailForm } from "@/components/auth/VerifyEmailForm";
+import { AuthNotice } from "@/components/auth/AuthUI";
 
 export const metadata: Metadata = {
   title: "Verify email",
   robots: { index: false, follow: false },
 };
 
-// The page consumes a single-use token, so it must never be cached.
+// Always dynamic — this screen drives a live verification flow, never cached.
 export const dynamic = "force-dynamic";
 
 type PageProps = {
@@ -17,47 +16,30 @@ type PageProps = {
 };
 
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
+const emailParam = z.string().trim().toLowerCase().email();
 
 /**
- * Email-verification landing page. Two entry shapes:
- *   ?token=…   the link from the verification email — consume it here.
- *   ?status=…  a redirect from the legacy /api/auth/verify route (display only).
+ * Email verification now happens with a 6-digit code (see lib/otp.ts) — there is
+ * no verification LINK and no token is consumed here (the legacy /api/auth/verify
+ * route has been removed, so an old link can never silently verify an account).
  *
- * All verification decisions are server-side. On failure we stay generic
- * (invalid / expired / already-used are indistinguishable after single-use
- * consumption) and never leak which case it was.
+ * Entry: ?email=<address> renders the OTP form (used when an unverified sign-in
+ * sends the user here). Without a valid email we can't target a code, so we show
+ * a neutral notice pointing back to sign-in.
  */
 export default async function VerifyEmailPage({ searchParams }: PageProps) {
   const sp = await searchParams;
-  const token = one(sp.token);
-  const status = one(sp.status);
+  const parsed = emailParam.safeParse(one(sp.email));
 
-  let verified = status === "success";
-  if (token) {
-    const email = await consumeToken(token, TokenType.EMAIL_VERIFY);
-    if (email) {
-      // Idempotent: marking an already-verified account verified again is a no-op.
-      await prisma.user
-        .update({ where: { email }, data: { emailVerified: new Date() } })
-        .catch(() => {
-          /* account removed between issuing and verifying — treat as invalid */
-        });
-      verified = true;
-    }
-  }
-
-  if (verified) {
+  if (!parsed.success) {
     return (
-      <AuthSuccess title="Email verified" ctaHref="/signin" ctaLabel="Continue to sign in">
-        Your Apex Mart account is ready. Sign in to start shopping.
-      </AuthSuccess>
+      <AuthNotice title="Verify your email" ctaHref="/signin" ctaLabel="Go to sign in">
+        Enter your email on the sign-in page and we’ll send a 6-digit verification code to your
+        inbox.
+      </AuthNotice>
     );
   }
 
-  return (
-    <AuthNotice title="This link didn’t work" ctaHref="/signin" ctaLabel="Go to sign in">
-      This verification link is invalid, has expired, or has already been used. Sign in to
-      request a fresh link, or create a new account if you don’t have one yet.
-    </AuthNotice>
-  );
+  // Arrived here (not straight from registration) → let the user request a code.
+  return <VerifyEmailForm email={parsed.data} />;
 }
