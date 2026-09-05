@@ -8,6 +8,7 @@ import {
   useState,
   useTransition,
 } from "react";
+import { usePathname } from "next/navigation";
 import { toast } from "sonner";
 import type { CartView } from "@/lib/cart";
 import {
@@ -64,6 +65,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<CartView | null>(null);
   const [ready, setReady] = useState(false);
   const [pending, startTransition] = useTransition();
+  const pathname = usePathname();
 
   useEffect(() => {
     let alive = true;
@@ -78,6 +80,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       alive = false;
     };
   }, []);
+
+  // Landing on the order-confirmation page means checkout cleared the cart
+  // server-side — re-sync so the header badge / drawer empty out (this provider
+  // lives in the persistent shop layout and wouldn't otherwise re-hydrate).
+  useEffect(() => {
+    if (pathname?.startsWith("/order/")) {
+      getCart()
+        .then((c) => setCart(c))
+        .catch(() => {});
+    }
+  }, [pathname]);
 
   const run = useCallback(
     (fn: () => Promise<CartView | null>, successToast?: string) => {

@@ -58,7 +58,7 @@ export function CheckoutForm({
       city: STORE.city,
       zoneId: DEFAULT_ZONE_ID,
       riderNote: "",
-      saveAddress: true,
+      saveAddress: false,
       slot: "",
       payment: "cod",
       orderNote: "",

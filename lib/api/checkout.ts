@@ -116,7 +116,10 @@ export async function createOrderFor(
 
   const orderUserId = await resolveOrderUserId(email, userId);
 
-  await prisma.address.create({
+  // The order's delivery address is read back as the user's latest address, so
+  // one must exist. Create it, then drop older identical copies so re-ordering
+  // to the same place doesn't pile up duplicates in the address book.
+  const createdAddress = await prisma.address.create({
     data: {
       userId: orderUserId,
       name: address.name,
@@ -126,6 +129,16 @@ export async function createOrderFor(
       region: address.region,
       postalCode: address.postalCode,
       country: address.country,
+    },
+  });
+  await prisma.address.deleteMany({
+    where: {
+      userId: orderUserId,
+      id: { not: createdAddress.id },
+      line1: address.line1,
+      line2: address.line2 || null,
+      city: address.city,
+      region: address.region,
     },
   });
 

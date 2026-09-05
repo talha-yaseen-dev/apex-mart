@@ -17,6 +17,11 @@ type PageProps = {
   searchParams: Promise<{ phone?: string }>;
 };
 
+/** Dashed full-width separator, matching a thermal receipt. */
+function Rule() {
+  return <div className="my-2 border-t border-dashed border-neutral-500" />;
+}
+
 export default async function InvoicePage({ params, searchParams }: PageProps) {
   const { ref } = await params;
   const { phone } = await searchParams;
@@ -34,108 +39,109 @@ export default async function InvoicePage({ params, searchParams }: PageProps) {
   const backHref = `/order/${order.orderNumber}${phone ? `?phone=${encodeURIComponent(phone)}` : ""}`;
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-6 print:max-w-none print:px-0 print:py-0">
-      <InvoiceActions backHref={backHref} />
+    <div className="mx-auto max-w-md px-4 py-6 print:max-w-none print:p-0">
+      <div className="mx-auto max-w-[420px]">
+        <InvoiceActions backHref={backHref} />
 
-      <div className="rounded-2xl border border-border bg-card p-6 text-foreground shadow-sm print:rounded-none print:border-0 print:p-0 print:shadow-none">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-4 border-b border-border pb-4">
-          <div>
-            <div className="text-lg font-extrabold">{STORE.name}</div>
-            <div className="text-xs text-muted-foreground">
+        {/* Receipt */}
+        <div className="mx-auto bg-white p-5 font-mono text-[13px] leading-relaxed text-neutral-900 shadow-sm print:p-0 print:shadow-none">
+          {/* Header */}
+          <div className="text-center">
+            <div className="text-2xl font-extrabold tracking-tight">{STORE.name}</div>
+            <div className="mt-0.5">
               {STORE.city}
               {STORE.region ? `, ${STORE.region}` : ""}
             </div>
-            {STORE.whatsapp && (
-              <div className="text-xs text-muted-foreground">WhatsApp: {STORE.whatsapp}</div>
-            )}
+            {STORE.whatsapp && <div>WhatsApp: {STORE.whatsapp}</div>}
           </div>
-          <div className="text-right">
-            <div className="text-xl font-extrabold tracking-tight">INVOICE</div>
-            <div className="mt-1 font-mono text-xs text-muted-foreground">{order.orderNumber}</div>
-            <div className="text-xs text-muted-foreground">{date}</div>
-          </div>
-        </div>
 
-        {/* Parties */}
-        <div className="grid gap-4 py-4 sm:grid-cols-2">
-          <div>
-            <div className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
-              Billed to
-            </div>
-            <div className="mt-1 text-sm font-semibold">{order.customerName}</div>
-            {order.customerPhone && (
-              <div className="text-xs text-muted-foreground">{order.customerPhone}</div>
-            )}
+          <div className="mt-4 text-center">
+            <div className="text-xl font-extrabold tracking-wide">INVOICE</div>
+            <div className="mt-1">{order.orderNumber}</div>
+            <div>{date}</div>
           </div>
+
+          <Rule />
+
+          {/* Billed to */}
+          <div>
+            <div className="font-bold">BILLED TO:</div>
+            <div>{order.customerName}</div>
+            {order.customerPhone && <div>{order.customerPhone}</div>}
+          </div>
+
           {order.address && (
-            <div className="sm:text-right">
-              <div className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
-                Deliver to
-              </div>
-              <div className="mt-1 text-sm">
+            <div className="mt-3">
+              <div className="font-bold">DELIVER TO:</div>
+              <div>
                 {order.address.line1}
                 {order.address.extras ? `, ${order.address.extras}` : ""}
-                <div className="text-xs text-muted-foreground">
-                  {order.address.city}
-                  {order.address.region ? `, ${order.address.region}` : ""}
-                </div>
+              </div>
+              <div>
+                {order.address.city}
+                {order.address.region ? `, ${order.address.region}` : ""}
               </div>
             </div>
           )}
-        </div>
 
-        {/* Items */}
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-sm">
+          <Rule />
+
+          {/* Items */}
+          <table className="w-full tabular-nums">
             <thead>
-              <tr className="border-y border-border text-left text-[11px] uppercase tracking-wide text-muted-foreground">
-                <th className="py-2 font-semibold">Item</th>
-                <th className="py-2 text-center font-semibold">Qty</th>
-                <th className="py-2 text-right font-semibold">Unit</th>
-                <th className="py-2 text-right font-semibold">Amount</th>
+              <tr className="font-bold">
+                <th className="pb-1 text-left">ITEM</th>
+                <th className="pb-1 text-center">QTY</th>
+                <th className="pb-1 text-right">UNIT</th>
+                <th className="pb-1 text-right">AMOUNT</th>
               </tr>
             </thead>
             <tbody>
+              <tr>
+                <td colSpan={4} className="border-t border-dashed border-neutral-500 pt-1" />
+              </tr>
               {order.items.map((it, i) => (
-                <tr key={i} className="border-b border-border">
-                  <td className="py-2.5 pr-2">
-                    <div className="font-medium">{it.name}</div>
-                    {it.pack && <div className="text-xs text-muted-foreground">{it.pack}</div>}
+                <tr key={i} className="align-top">
+                  <td className="py-1 pr-2">
+                    {it.name}
+                    {it.pack ? ` (${it.pack})` : ""}
                   </td>
-                  <td className="py-2.5 text-center tabular-nums">{it.qty}</td>
-                  <td className="py-2.5 text-right tabular-nums">{formatPKR(it.unitPriceMinor)}</td>
-                  <td className="py-2.5 text-right font-semibold tabular-nums">
-                    {formatPKR(it.lineTotalMinor)}
-                  </td>
+                  <td className="py-1 text-center">{it.qty}</td>
+                  <td className="py-1 text-right">{formatPKR(it.unitPriceMinor)}</td>
+                  <td className="py-1 text-right">{formatPKR(it.lineTotalMinor)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
 
-        {/* Totals */}
-        <div className="ml-auto mt-4 w-full max-w-xs space-y-1.5 text-sm">
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Subtotal</span>
-            <span className="tabular-nums">{formatPKR(order.subtotalMinor)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Delivery</span>
-            <span className="tabular-nums">
-              {order.shippingMinor === 0 ? "Free" : formatPKR(order.shippingMinor)}
-            </span>
-          </div>
-          <div className="flex justify-between border-t border-border pt-2 text-base font-extrabold">
-            <span>Total</span>
-            <span className="tabular-nums">{formatPKR(order.totalMinor)}</span>
-          </div>
-        </div>
+          <Rule />
 
-        {/* Footer */}
-        <div className="mt-6 border-t border-border pt-4 text-center text-xs text-muted-foreground">
-          <div className="font-semibold text-foreground">Payment method: Cash on Delivery</div>
-          <div className="mt-1">Thank you for shopping with {STORE.name}!</div>
+          {/* Totals */}
+          <div className="space-y-0.5">
+            <div className="flex justify-between">
+              <span>Subtotal:</span>
+              <span>{formatPKR(order.subtotalMinor)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Delivery:</span>
+              <span>{order.shippingMinor === 0 ? "Free" : formatPKR(order.shippingMinor)}</span>
+            </div>
+          </div>
+
+          <Rule />
+
+          <div className="flex items-center justify-between text-lg font-extrabold">
+            <span>Total:</span>
+            <span>{formatPKR(order.totalMinor)}</span>
+          </div>
+
+          <Rule />
+
+          <div>Payment method: Cash on Delivery</div>
+
+          <Rule />
+
+          <div className="text-center">Thank you for shopping with {STORE.name}!</div>
         </div>
       </div>
     </div>

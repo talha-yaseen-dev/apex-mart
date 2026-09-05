@@ -23,7 +23,7 @@ export const checkoutFormSchema = z.object({
   city: z.string().trim().min(1, "Please enter your city."),
   zoneId: z.string().trim().min(1, "Please select your delivery zone."),
   riderNote: z.string().trim().max(200).optional().default(""),
-  saveAddress: z.boolean().optional().default(true),
+  saveAddress: z.boolean().optional().default(false),
   // Fulfilment
   // Delivery slot removed from the UI — kept optional for backward compatibility.
   slot: z.string().trim().optional().default(""),

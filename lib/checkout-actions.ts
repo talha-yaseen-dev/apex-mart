@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidateTag } from "next/cache";
 import {
   checkoutFormSchema,
   type CheckoutFormInput,
@@ -125,6 +126,9 @@ export async function placeOrder(raw: CheckoutFormInput): Promise<PlaceOrderErro
   }
 
   await clearCartCookie();
+  // The order captured stock (captureOrder), so refresh the cached storefront
+  // catalog to reflect the new stock / in-stock badges.
+  revalidateTag("catalog");
   // Grant the buyer access to their confirmation without re-entering a phone,
   // and stash the contact email so the signup upsell can pre-fill it.
   await writeOrderRefCookie(orderNumber);
