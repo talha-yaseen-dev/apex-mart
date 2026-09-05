@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BrandMark } from "@/components/brand-mark";
+import { STORE } from "@/lib/delivery-config";
 import { requireEmployee } from "@/lib/authz";
 import {
   getEffectivePermissions,
@@ -47,7 +48,7 @@ export default async function AdminLayout({
           <BrandMark size={34} priority onDark />
           <div>
             <div className="font-display text-lg font-extrabold leading-none text-white">
-              Nova
+              {STORE.name}
             </div>
             <div className="mt-1 text-[10px] uppercase tracking-wider text-white/50">
               Admin

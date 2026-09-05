@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { STORE } from "@/lib/delivery-config";
+import { getCurrentUser } from "@/lib/session";
 import { LocationBar } from "./LocationBar";
 import { SearchBar } from "./SearchBar";
 import { CartButton } from "./CartButton";
@@ -8,8 +9,15 @@ import { CartButton } from "./CartButton";
  * Sticky storefront header: a dark utility bar (delivery location + promises)
  * over the main bar (logo, search, cart). Mobile-first — the logo and cart sit
  * on the top row and search drops to its own full-width row below <sm.
+ *
+ * Employees browsing the storefront get an "Admin" shortcut back to the
+ * dashboard — otherwise there's no way back into the admin surface from here.
+ * getCurrentUser() is cache()-wrapped, so this shares the read every shop page
+ * already makes (e.g. wishlist state on the home page) at no extra cost.
  */
-export function SiteHeader() {
+export async function SiteHeader() {
+  const user = await getCurrentUser();
+  const isStaff = Boolean(user?.isEmployee);
   return (
     <header className="sticky top-0 z-40">
       {/* Utility bar */}
@@ -47,6 +55,20 @@ export function SiteHeader() {
           <SearchBar className="hidden sm:block" />
 
           <div className="ml-auto flex items-center gap-2">
+            {isStaff && (
+              <Link
+                href="/admin/inventory"
+                className="tap-target inline-flex items-center gap-1.5 rounded-xl border border-primary/30 bg-primary-tint px-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary hover:text-primary-foreground sm:px-3"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <rect x="3" y="3" width="7" height="9" rx="1" />
+                  <rect x="14" y="3" width="7" height="5" rx="1" />
+                  <rect x="14" y="12" width="7" height="9" rx="1" />
+                  <rect x="3" y="16" width="7" height="5" rx="1" />
+                </svg>
+                <span className="hidden xs:inline">Admin</span>
+              </Link>
+            )}
             <Link
               href="/account"
               className="tap-target hidden items-center rounded-xl px-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted md:inline-flex"

@@ -50,6 +50,13 @@ export function InventoryTable({ rows }: { rows: Row[] }) {
     }
   }
 
+  // Live preview of where the adjustment lands. Empty/"-"/0 → no change shown.
+  const parsedDelta = parseInt(delta, 10);
+  const dirty = !Number.isNaN(parsedDelta) && parsedDelta !== 0;
+  const nextStock = active ? active.stock + (Number.isNaN(parsedDelta) ? 0 : parsedDelta) : 0;
+  const nextAvailable = active ? nextStock - active.reserved : 0;
+  const wouldBeNegative = nextStock < 0;
+
   return (
     <>
       {/* Mobile: stacked cards so every field fits on a phone screen. */}
@@ -143,48 +150,132 @@ export function InventoryTable({ rows }: { rows: Row[] }) {
       </div>
 
       {active && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-[oklch(0.2_0.02_265_/_0.4)] p-4">
-          <div className="w-full max-w-md rounded-2xl border bg-card p-5 shadow-float">
-            <div className="mb-1 text-[15px] font-bold">Adjust stock</div>
-            <div className="mb-4 text-[13px] text-muted-foreground">
-              {active.name} · <span className="font-mono">{active.sku}</span> · on hand{" "}
-              <strong className="text-foreground">{active.stock}</strong>
-            </div>
-            <label className="mb-1.5 block text-[13px] font-semibold">Adjustment (+/−)</label>
-            <input
-              value={delta}
-              onChange={(e) => setDelta(e.target.value.replace(/[^0-9-]/g, ""))}
-              inputMode="numeric"
-              placeholder="e.g. 20 or -3"
-              className="mb-3 h-11 w-full rounded-lg border bg-card px-3.5 text-sm focus:border-primary focus:outline-none focus:ring-[3px] focus:ring-primary-tint"
-            />
-            <label className="mb-1.5 block text-[13px] font-semibold">Reason</label>
-            <select
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              className="mb-1 h-11 w-full cursor-pointer rounded-lg border bg-card px-3.5 text-sm focus:border-primary focus:outline-none"
-            >
-              {REASONS.map(([v, l]) => (
-                <option key={v} value={v}>
-                  {l}
-                </option>
-              ))}
-            </select>
-            <div className="mb-2 min-h-4 text-xs text-destructive">{err}</div>
-            <div className="flex gap-2.5">
-              <button
-                onClick={apply}
-                disabled={pending}
-                className="h-11 rounded-lg bg-primary px-5 text-[13.5px] font-bold text-white hover:bg-primary-hover disabled:opacity-60"
-              >
-                {pending ? "Applying…" : "Apply"}
-              </button>
+        <div
+          onClick={() => setActive(null)}
+          className="fixed inset-0 z-50 grid place-items-center bg-[oklch(0.2_0.02_265_/_0.45)] p-4 backdrop-blur-[2px] animate-fade"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md overflow-hidden rounded-2xl border bg-card shadow-float"
+          >
+            {/* Header — title + product identity + close */}
+            <div className="flex items-start gap-3 border-b bg-muted/30 px-5 py-4">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary-tint text-primary">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                  <path d="m3.3 7 8.7 5 8.7-5M12 22V12" />
+                </svg>
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-[15px] font-bold leading-tight">Adjust stock</div>
+                <div className="truncate text-[13px] font-medium">{active.name}</div>
+                <div className="truncate text-[11.5px] text-muted-foreground">
+                  {active.label} · <span className="font-mono">{active.sku}</span>
+                </div>
+              </div>
               <button
                 onClick={() => setActive(null)}
-                className="h-11 rounded-lg border bg-card px-5 text-[13.5px] font-bold hover:border-primary"
+                aria-label="Close"
+                className="-mr-1 -mt-1 grid h-8 w-8 shrink-0 place-items-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
               >
-                Cancel
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden>
+                  <path d="M18 6 6 18M6 6l12 12" />
+                </svg>
               </button>
+            </div>
+
+            <div className="p-5">
+              {/* Current-stock context strip */}
+              <dl className="mb-4 grid grid-cols-3 divide-x rounded-xl border bg-muted/20 text-center">
+                {[
+                  ["Reserved", active.reserved],
+                  ["Available", active.stock - active.reserved],
+                  ["On hand", active.stock],
+                ].map(([k, val]) => (
+                  <div key={k} className="px-2 py-2.5">
+                    <dt className="text-[10px] uppercase tracking-wide text-muted-foreground">{k}</dt>
+                    <dd className="mt-0.5 text-[15px] font-bold tabular-nums">{val}</dd>
+                  </div>
+                ))}
+              </dl>
+
+              <label className="mb-1.5 block text-[13px] font-semibold">Adjustment (+/−)</label>
+              <input
+                autoFocus
+                value={delta}
+                onChange={(e) => setDelta(e.target.value.replace(/[^0-9-]/g, ""))}
+                inputMode="numeric"
+                placeholder="e.g. 20 or -3"
+                className="h-11 w-full rounded-lg border bg-card px-3.5 text-sm focus:border-primary focus:outline-none focus:ring-[3px] focus:ring-primary-tint"
+              />
+
+              {/* Before → after preview */}
+              <div
+                className={cn(
+                  "mt-3 flex items-center justify-between rounded-lg border px-3.5 py-2.5 text-[13px]",
+                  !dirty
+                    ? "border-dashed text-muted-foreground"
+                    : wouldBeNegative
+                      ? "border-destructive/40 bg-destructive/5"
+                      : "border-primary/40 bg-primary-tint",
+                )}
+              >
+                <span className="font-medium">On hand after</span>
+                <span className="flex items-center gap-2 font-bold tabular-nums">
+                  <span className="text-muted-foreground">{active.stock}</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <path d="M5 12h14M13 6l6 6-6 6" />
+                  </svg>
+                  <span
+                    className={cn(
+                      "text-[15px]",
+                      !dirty ? "" : wouldBeNegative ? "text-destructive" : "text-primary",
+                    )}
+                  >
+                    {nextStock}
+                  </span>
+                </span>
+              </div>
+              {dirty && !wouldBeNegative && (
+                <p className="mt-1.5 text-[11.5px] text-muted-foreground">
+                  Available becomes <strong className="text-foreground tabular-nums">{nextAvailable}</strong> after reserved stock.
+                </p>
+              )}
+              {wouldBeNegative && (
+                <p className="mt-1.5 text-[11.5px] font-medium text-destructive">
+                  Can’t remove more than the {active.stock} on hand.
+                </p>
+              )}
+
+              <label className="mb-1.5 mt-4 block text-[13px] font-semibold">Reason</label>
+              <select
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                className="h-11 w-full cursor-pointer rounded-lg border bg-card px-3.5 text-sm focus:border-primary focus:outline-none focus:ring-[3px] focus:ring-primary-tint"
+              >
+                {REASONS.map(([v, l]) => (
+                  <option key={v} value={v}>
+                    {l}
+                  </option>
+                ))}
+              </select>
+
+              <div className="mb-3 mt-2 min-h-4 text-xs text-destructive">{err}</div>
+              <div className="flex gap-2.5">
+                <button
+                  onClick={apply}
+                  disabled={pending || wouldBeNegative}
+                  className="h-11 flex-1 rounded-lg bg-primary px-5 text-[13.5px] font-bold text-white hover:bg-primary-hover disabled:opacity-60"
+                >
+                  {pending ? "Applying…" : "Apply adjustment"}
+                </button>
+                <button
+                  onClick={() => setActive(null)}
+                  className="h-11 rounded-lg border bg-card px-5 text-[13.5px] font-bold hover:border-primary"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
         </div>

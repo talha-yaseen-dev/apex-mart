@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { BrandMark } from "@/components/brand-mark";
+import { STORE } from "@/lib/delivery-config";
 import { AdminNav, type AdminNavItem } from "./admin-nav";
 
 /** Mobile-only hamburger that opens the admin sidebar in a slide-over drawer. */
@@ -49,7 +50,7 @@ export function AdminMobileNav({ role, items }: { role: string; items: AdminNavI
           <BrandMark size={34} priority onDark />
           <div>
             <div className="font-display text-lg font-extrabold leading-none text-white">
-              Nova
+              {STORE.name}
             </div>
             <div className="mt-1 text-[10px] uppercase tracking-wider text-white/50">
               Admin

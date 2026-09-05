@@ -1,10 +1,10 @@
 import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { STORE } from "@/lib/delivery-config";
 
 /**
- * Nova brand mark — ported from the mobile app's logo: a sparkle glyph in the
- * brand colour. In the app chrome the wordmark "Nova" sits beside it (headers,
- * footer, auth panel), exactly as in the mobile `Logo` component.
+ * Apex Mart brand mark — a sparkle glyph in the brand colour. In the app chrome
+ * the wordmark (STORE.name) sits beside it (headers, footer, auth panel).
  *
  * Flat and theme-aware: brand-coloured on normal surfaces, and white on
  * surfaces that are always dark regardless of theme (the auth panel, the admin
@@ -28,7 +28,7 @@ export function BrandMark({
       className={cn("grid shrink-0 place-items-center", className)}
       style={{ width: size, height: size }}
       role="img"
-      aria-label="Nova"
+      aria-label={STORE.name}
     >
       <Sparkles
         size={Math.round(size * 0.82)}
