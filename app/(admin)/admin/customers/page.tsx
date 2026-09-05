@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { requirePermission } from "@/lib/authz";
 import { PERMISSIONS } from "@/lib/permissions";
 import { AccountActiveToggle } from "@/components/admin/account-active-toggle";
+import { DeleteCustomerButton } from "@/components/admin/delete-customer-button";
 import { formatMoney } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -40,8 +41,9 @@ export default async function AdminCustomersPage() {
                 <div className="truncate text-[11.5px] text-muted-foreground">{c.email}</div>
               </div>
               {isPrimary && (
-                <div className="ml-auto shrink-0">
+                <div className="ml-auto flex shrink-0 items-start gap-3">
                   <AccountActiveToggle userId={c.id} deactivated={c.deactivated} />
+                  <DeleteCustomerButton userId={c.id} name={c.name} orders={c.orders} />
                 </div>
               )}
             </div>
@@ -102,8 +104,11 @@ export default async function AdminCustomersPage() {
                   {c.joined.toLocaleDateString("en-US", { month: "short", year: "numeric" })}
                 </td>
                 {isPrimary && (
-                  <td className="px-4 py-3 text-right">
-                    <AccountActiveToggle userId={c.id} deactivated={c.deactivated} />
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-end gap-4">
+                      <AccountActiveToggle userId={c.id} deactivated={c.deactivated} />
+                      <DeleteCustomerButton userId={c.id} name={c.name} orders={c.orders} />
+                    </div>
                   </td>
                 )}
               </tr>
