@@ -10,12 +10,11 @@ import { registerSchema, type RegisterInput } from "@/lib/validations/auth";
 import { registerAction } from "@/lib/actions/auth";
 import { AuthField, FormError, authInputCls } from "./AuthUI";
 import { PasswordField } from "./PasswordField";
-import { GoogleButton } from "./GoogleButton";
 import { CheckEmail } from "./CheckEmail";
 
 const BENEFITS = ["Faster checkout", "Track your orders", "Save delivery details"] as const;
 
-export function RegisterForm({ googleEnabled = false }: { googleEnabled?: boolean }) {
+export function RegisterForm() {
   const [sentTo, setSentTo] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -86,22 +85,7 @@ export function RegisterForm({ googleEnabled = false }: { googleEnabled?: boolea
         <h1 className="text-xl font-extrabold tracking-tight text-foreground">Create your account</h1>
         <p className="mt-1 text-sm text-muted-foreground">Start shopping in seconds.</p>
 
-        {googleEnabled && (
-          <div className="mt-6">
-            <GoogleButton callbackUrl="/account" />
-            <div className="my-5 flex items-center gap-3">
-              <span className="h-px flex-1 bg-border" />
-              <span className="text-xs font-medium text-muted-foreground">or continue with email</span>
-              <span className="h-px flex-1 bg-border" />
-            </div>
-          </div>
-        )}
-
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className={googleEnabled ? "space-y-4" : "mt-6 space-y-4"}
-          noValidate
-        >
+        <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4" noValidate>
           {formError && <FormError>{formError}</FormError>}
 
           <AuthField label="Full name" htmlFor="name" error={errors.name?.message}>
