@@ -112,7 +112,12 @@ export async function startEmailChangeAction(input: {
   try {
     await sendEmail({ to: newEmail, subject, html });
   } catch {
-    console.error("[email-change] code delivery failed");
+    // Delivery failed → don't strand the user on a code they never received.
+    // Invalidate the just-issued OTP and release the 60s cooldown so they can
+    // retry immediately. Never surface the provider error.
+    await clearPendingEmailChanges(user.id);
+    await clearRateLimit(`emailchange-cd:${user.id}`);
+    return { ok: false, error: "We couldn’t send the verification code. Please try again." };
   }
   return { ok: true };
 }

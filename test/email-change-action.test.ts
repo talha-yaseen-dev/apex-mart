@@ -8,10 +8,12 @@ vi.mock("next/cache", () => ({ revalidatePath: () => {} }));
 let currentSession: { id: string } | null = null;
 vi.mock("@/lib/session", () => ({ getCurrentUser: async () => currentSession }));
 
-// Capture email; deterministic limiter.
+// Capture email; deterministic limiter. `failSend` simulates a Resend outage.
 const sent: Array<{ to: string; subject: string; html: string }> = [];
+let failSend = false;
 vi.mock("@/lib/email", () => ({
   sendEmail: async (o: { to: string; subject: string; html: string }) => {
+    if (failSend) throw new Error("resend outage");
     sent.push(o);
   },
 }));
@@ -38,6 +40,7 @@ let pwHash = "";
 beforeEach(async () => {
   reset();
   sent.length = 0;
+  failSend = false;
   limiter.clear();
   currentSession = null;
   if (!pwHash) pwHash = await hashPassword(PW);
@@ -81,6 +84,22 @@ describe("starting an email change", () => {
     // Account email unchanged, still verified as the old address.
     expect(findUserByEmail("old@example.com")).toBeTruthy();
     expect(u.email).toBe("old@example.com");
+  });
+
+  it("returns ok:false and invalidates the code + cooldown when delivery fails", async () => {
+    signInPasswordUser();
+    failSend = true;
+    const res = await startEmailChangeAction({ newEmail: "new@example.com", currentPassword: PW });
+    expect(res.ok).toBe(false);
+    // Friendly, non-internal message; no Resend/provider detail leaked.
+    expect((res as { error: string }).error).toMatch(/couldn.t send the verification code/i);
+    // No dangling OTP the user can't receive.
+    expect(allTokens()).toHaveLength(0);
+    // Cooldown was released → an immediate retry (delivery restored) succeeds.
+    failSend = false;
+    const retry = await startEmailChangeAction({ newEmail: "new@example.com", currentPassword: PW });
+    expect(retry).toEqual({ ok: true });
+    expect(codeFrom("new@example.com")).toMatch(/^\d{6}$/);
   });
 
   it("blocks a Google-only (password-less) account with guidance (items 30, 32)", async () => {
@@ -159,7 +178,7 @@ describe("verifying an email change", () => {
   });
 
   it("an unexpected update failure rolls back — code preserved, email unchanged (atomicity)", async () => {
-    const u = signInPasswordUser();
+    signInPasswordUser();
     await startEmailChangeAction({ newEmail: "new@example.com", currentPassword: PW });
     const code = codeFrom("new@example.com")!;
     failNextUpdate(); // tx.user.update throws inside the transaction
