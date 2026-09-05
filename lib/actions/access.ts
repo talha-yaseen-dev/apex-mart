@@ -64,87 +64,56 @@ export async function setAccountActiveAction(userId: string, active: boolean) {
 }
 
 /**
- * Primary admin only: permanently delete a customer account. Always cascades
- * the customer's addresses, wishlist and reviews, and nulls their cart / audit
- * references (per the schema's onDelete rules).
- *
- * `purgeData` decides what happens to a customer who HAS orders:
- *   - false → refused (Order/Payment are onDelete:Restrict; keep sales history).
- *   - true  → also erase their orders, order items, shipments, payments and
- *             refunds, then the account. This removes them from sales history
- *             and reports — irreversible.
- *
- * Admins, the primary admin, and your own account can never be deleted here.
+ * Primary admin only: permanently delete EVERY customer account and all of
+ * their data — orders, order items, shipments, payments, refunds, addresses,
+ * wishlist and reviews. Admin accounts (including the primary admin) are never
+ * touched. Irreversible: this wipes customer sales history, so revenue/orders
+ * reports drop to zero. Runs as a single all-or-nothing transaction.
  */
-export async function deleteCustomerAction(userId: string, purgeData = false) {
+export async function deleteAllCustomersAction() {
   const user = await getCurrentUser();
   if (!user) return { ok: false as const, error: "Sign in required." };
   if (isDemoAccount(user.email)) return DEMO_BLOCKED;
   if (!(await isPrimaryAdmin(user.id))) {
     return { ok: false as const, error: "Only the primary admin can delete accounts." };
   }
-  if (userId === user.id) {
-    return { ok: false as const, error: "You can't delete your own account." };
-  }
 
-  const target = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      id: true,
-      email: true,
-      role: true,
-      isPrimaryAdmin: true,
-      _count: { select: { orders: true } },
-    },
-  });
-  if (!target) return { ok: false as const, error: "User not found." };
-  if (target.role === Role.ADMIN || target.isPrimaryAdmin) {
-    return { ok: false as const, error: "Admin accounts can't be deleted here." };
-  }
+  const customerIds = (
+    await prisma.user.findMany({ where: { role: Role.CUSTOMER }, select: { id: true } })
+  ).map((c) => c.id);
+  if (customerIds.length === 0) return { ok: true as const, deleted: 0 };
 
-  const orderCount = target._count.orders;
-  if (orderCount > 0 && !purgeData) {
-    return {
-      ok: false as const,
-      error: `This customer has ${orderCount} order${orderCount === 1 ? "" : "s"}. Enable “also delete their data” to remove them, or deactivate instead.`,
-    };
-  }
+  const orderIds = (
+    await prisma.order.findMany({ where: { userId: { in: customerIds } }, select: { id: true } })
+  ).map((o) => o.id);
+  const paymentIds = orderIds.length
+    ? (
+        await prisma.payment.findMany({ where: { orderId: { in: orderIds } }, select: { id: true } })
+      ).map((p) => p.id)
+    : [];
 
   try {
-    if (orderCount > 0) {
-      // Erase order data first (Payment→Order and Refund→Payment are Restrict),
-      // then the user (cascades addresses/wishlist/reviews; orders cascade their
-      // items + shipments). All in one transaction so it's all-or-nothing.
-      const orderIds = (
-        await prisma.order.findMany({ where: { userId }, select: { id: true } })
-      ).map((o) => o.id);
-      const paymentIds = (
-        await prisma.payment.findMany({
-          where: { orderId: { in: orderIds } },
-          select: { id: true },
-        })
-      ).map((p) => p.id);
-      await prisma.$transaction([
-        prisma.refund.deleteMany({ where: { paymentId: { in: paymentIds } } }),
-        prisma.payment.deleteMany({ where: { orderId: { in: orderIds } } }),
-        prisma.order.deleteMany({ where: { userId } }),
-        prisma.user.delete({ where: { id: userId } }),
-      ]);
-    } else {
-      await prisma.user.delete({ where: { id: userId } });
-    }
+    // Delete order data first (Payment→Order and Refund→Payment are Restrict),
+    // then the customer rows (cascades addresses/wishlist/reviews; orders cascade
+    // their items + shipments). The role guard ensures no admin is ever removed.
+    await prisma.$transaction([
+      prisma.refund.deleteMany({ where: { paymentId: { in: paymentIds } } }),
+      prisma.payment.deleteMany({ where: { orderId: { in: orderIds } } }),
+      prisma.order.deleteMany({ where: { userId: { in: customerIds } } }),
+      prisma.user.deleteMany({ where: { id: { in: customerIds }, role: Role.CUSTOMER } }),
+    ]);
   } catch {
-    return { ok: false as const, error: "Couldn't delete this account. Try again, or deactivate it instead." };
+    return { ok: false as const, error: "Couldn't delete all accounts. Please try again." };
   }
 
   await logAudit({
     actorId: user.id,
-    action: "account.delete",
+    action: "account.delete_all",
     targetType: "User",
-    targetId: userId,
-    diff: { email: target.email, ordersDeleted: orderCount, dataPurged: purgeData },
+    targetId: "*",
+    diff: { deletedCustomers: customerIds.length, deletedOrders: orderIds.length },
   });
 
   revalidatePath("/admin/customers");
-  return { ok: true as const };
+  return { ok: true as const, deleted: customerIds.length };
 }

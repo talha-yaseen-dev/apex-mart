@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 import { requirePermission } from "@/lib/authz";
 import { PERMISSIONS } from "@/lib/permissions";
 import { AccountActiveToggle } from "@/components/admin/account-active-toggle";
-import { DeleteCustomerButton } from "@/components/admin/delete-customer-button";
+import { DeleteAllCustomersButton } from "@/components/admin/delete-all-customers-button";
 import { formatMoney } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -23,7 +23,12 @@ export default async function AdminCustomersPage() {
 
   return (
     <div className="animate-fade">
-      <h1 className="mb-5 font-display text-2xl font-bold tracking-tight">Customers</h1>
+      <div className="mb-5 flex items-center justify-between gap-3">
+        <h1 className="font-display text-2xl font-bold tracking-tight">Customers</h1>
+        {isPrimary && customers.length > 0 && (
+          <DeleteAllCustomersButton count={customers.length} />
+        )}
+      </div>
       {/* Mobile: stacked cards so every field fits on a phone screen. */}
       <div className="space-y-2.5 sm:hidden">
         {customers.map((c) => (
@@ -41,9 +46,8 @@ export default async function AdminCustomersPage() {
                 <div className="truncate text-[11.5px] text-muted-foreground">{c.email}</div>
               </div>
               {isPrimary && (
-                <div className="ml-auto flex shrink-0 items-start gap-3">
+                <div className="ml-auto shrink-0">
                   <AccountActiveToggle userId={c.id} deactivated={c.deactivated} />
-                  <DeleteCustomerButton userId={c.id} name={c.name} orders={c.orders} />
                 </div>
               )}
             </div>
@@ -104,11 +108,8 @@ export default async function AdminCustomersPage() {
                   {c.joined.toLocaleDateString("en-US", { month: "short", year: "numeric" })}
                 </td>
                 {isPrimary && (
-                  <td className="px-4 py-3">
-                    <div className="flex items-center justify-end gap-4">
-                      <AccountActiveToggle userId={c.id} deactivated={c.deactivated} />
-                      <DeleteCustomerButton userId={c.id} name={c.name} orders={c.orders} />
-                    </div>
+                  <td className="px-4 py-3 text-right">
+                    <AccountActiveToggle userId={c.id} deactivated={c.deactivated} />
                   </td>
                 )}
               </tr>
