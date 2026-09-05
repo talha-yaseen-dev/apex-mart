@@ -64,16 +64,19 @@ export async function setAccountActiveAction(userId: string, active: boolean) {
 }
 
 /**
- * Primary admin only: permanently delete a customer account. Deletion cascades
+ * Primary admin only: permanently delete a customer account. Always cascades
  * the customer's addresses, wishlist and reviews, and nulls their cart / audit
  * references (per the schema's onDelete rules).
  *
- * A customer WITH orders is refused: Order (and its Payment) rows are
- * onDelete:Restrict to preserve sales/financial history, so those accounts must
- * be deactivated instead. Admins, the primary admin, and your own account can
- * never be deleted here.
+ * `purgeData` decides what happens to a customer who HAS orders:
+ *   - false → refused (Order/Payment are onDelete:Restrict; keep sales history).
+ *   - true  → also erase their orders, order items, shipments, payments and
+ *             refunds, then the account. This removes them from sales history
+ *             and reports — irreversible.
+ *
+ * Admins, the primary admin, and your own account can never be deleted here.
  */
-export async function deleteCustomerAction(userId: string) {
+export async function deleteCustomerAction(userId: string, purgeData = false) {
   const user = await getCurrentUser();
   if (!user) return { ok: false as const, error: "Sign in required." };
   if (isDemoAccount(user.email)) return DEMO_BLOCKED;
@@ -98,24 +101,48 @@ export async function deleteCustomerAction(userId: string) {
   if (target.role === Role.ADMIN || target.isPrimaryAdmin) {
     return { ok: false as const, error: "Admin accounts can't be deleted here." };
   }
-  if (target._count.orders > 0) {
+
+  const orderCount = target._count.orders;
+  if (orderCount > 0 && !purgeData) {
     return {
       ok: false as const,
-      error: `This customer has ${target._count.orders} order${target._count.orders === 1 ? "" : "s"} — deactivate instead to keep order history.`,
+      error: `This customer has ${orderCount} order${orderCount === 1 ? "" : "s"}. Enable “also delete their data” to remove them, or deactivate instead.`,
     };
   }
 
   try {
-    await prisma.user.delete({ where: { id: userId } });
+    if (orderCount > 0) {
+      // Erase order data first (Payment→Order and Refund→Payment are Restrict),
+      // then the user (cascades addresses/wishlist/reviews; orders cascade their
+      // items + shipments). All in one transaction so it's all-or-nothing.
+      const orderIds = (
+        await prisma.order.findMany({ where: { userId }, select: { id: true } })
+      ).map((o) => o.id);
+      const paymentIds = (
+        await prisma.payment.findMany({
+          where: { orderId: { in: orderIds } },
+          select: { id: true },
+        })
+      ).map((p) => p.id);
+      await prisma.$transaction([
+        prisma.refund.deleteMany({ where: { paymentId: { in: paymentIds } } }),
+        prisma.payment.deleteMany({ where: { orderId: { in: orderIds } } }),
+        prisma.order.deleteMany({ where: { userId } }),
+        prisma.user.delete({ where: { id: userId } }),
+      ]);
+    } else {
+      await prisma.user.delete({ where: { id: userId } });
+    }
   } catch {
-    return { ok: false as const, error: "Couldn't delete this account. Try deactivating it instead." };
+    return { ok: false as const, error: "Couldn't delete this account. Try again, or deactivate it instead." };
   }
+
   await logAudit({
     actorId: user.id,
     action: "account.delete",
     targetType: "User",
     targetId: userId,
-    diff: { email: target.email },
+    diff: { email: target.email, ordersDeleted: orderCount, dataPurged: purgeData },
   });
 
   revalidatePath("/admin/customers");
