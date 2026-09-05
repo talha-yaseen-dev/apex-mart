@@ -1,8 +1,12 @@
 import "server-only";
 import { createHmac, randomInt } from "node:crypto";
-import { TokenType } from "@prisma/client";
+import { Prisma, TokenType } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { env } from "@/lib/env";
+
+/** The subset of Prisma we need — satisfied by both the client and a
+ *  `$transaction` client, so a consume can run inside a caller's transaction. */
+type CodeClient = Pick<Prisma.TransactionClient, "verificationToken">;
 
 /**
  * Six-digit one-time verification codes (OTP) for email verification and email
@@ -74,18 +78,24 @@ export type CodeResult =
 /**
  * Validate + atomically consume a code. Single-use: the matching row is deleted
  * regardless of expiry outcome, and the delete is race-safe (deleteMany affects
- * at most one row, so two concurrent submissions of the same valid code — only
+ * at most one row → of two concurrent submissions of the same valid code, only
  * one wins). Server time is authoritative for expiry.
+ *
+ * Pass a `$transaction` client as `db` to consume as part of a larger atomic
+ * operation (e.g. consume-code + create-user): if the surrounding transaction
+ * rolls back, the consume is undone and the still-valid code is preserved. The
+ * row-level lock on the delete keeps single-use semantics across transactions.
  */
 export async function consumeCode(
   identifier: string,
   type: TokenType,
   code: string,
+  db: CodeClient = prisma,
 ): Promise<CodeResult> {
   const id = identifier.toLowerCase();
   if (!isSixDigitCode(code)) return { ok: false, reason: "invalid" };
 
-  const row = await prisma.verificationToken.findUnique({
+  const row = await db.verificationToken.findUnique({
     where: { tokenHash: hashCode(type, id, code) },
   });
   // Defence in depth: the HMAC already binds type+identifier, but re-check the
@@ -94,7 +104,7 @@ export async function consumeCode(
     return { ok: false, reason: "invalid" };
   }
 
-  const { count } = await prisma.verificationToken.deleteMany({ where: { id: row.id } });
+  const { count } = await db.verificationToken.deleteMany({ where: { id: row.id } });
   if (count === 0) return { ok: false, reason: "invalid" }; // lost the race → already consumed
   if (row.expiresAt < new Date()) return { ok: false, reason: "expired" };
   return { ok: true, identifier: id };

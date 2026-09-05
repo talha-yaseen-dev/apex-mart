@@ -22,6 +22,7 @@ export default async function SignInPage({ searchParams }: PageProps) {
       initialError={one(sp.error)}
       googleEnabled={googleEnabled}
       justVerified={one(sp.verified) === "1"}
+      justCreated={one(sp.created) === "1"}
     />
   );
 }

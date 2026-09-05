@@ -22,6 +22,8 @@ type Token = {
 let users: User[] = [];
 let tokens: Token[] = [];
 let seq = 0;
+let failCreate = false; // one-shot fault injection for user.create
+let failUpdate = false; // one-shot fault injection for user.update
 const nextId = (p: string) => `${p}_${++seq}`;
 
 function p2002(target: string): never {
@@ -48,6 +50,10 @@ export const prisma = {
       (where ? users.find((u) => userMatches(u, where)) : users[0]) ?? null,
 
     create: async ({ data }: { data: Record<string, unknown> }) => {
+      if (failCreate) {
+        failCreate = false;
+        throw new Error("simulated DB failure during user.create");
+      }
       if (data.email && users.some((u) => u.email === data.email)) p2002("email");
       if (data.phone && users.some((u) => u.phone === data.phone)) p2002("phone");
       const u: User = {
@@ -67,6 +73,10 @@ export const prisma = {
     },
 
     update: async ({ where, data }: { where: Record<string, unknown>; data: Record<string, unknown> }) => {
+      if (failUpdate) {
+        failUpdate = false;
+        throw new Error("simulated DB failure during user.update");
+      }
       const u = users.find((x) => userMatches(x, where));
       if (!u) p2002("id"); // Prisma would throw P2025; not needed for our tests
       if (data.email && data.email !== u!.email && users.some((x) => x.email === data.email)) {
@@ -91,25 +101,38 @@ export const prisma = {
     findUnique: async ({ where }: { where: { tokenHash: string } }) =>
       tokens.find((t) => t.tokenHash === where.tokenHash) ?? null,
 
-    deleteMany: async ({ where }: { where: Record<string, any> }) => {
+    deleteMany: async ({
+      where,
+    }: {
+      where: { id?: string; type?: string; identifier?: string | { startsWith: string } };
+    }) => {
       const before = tokens.length;
       tokens = tokens.filter((t) => {
-        if ("id" in where && t.id !== where.id) return true;
-        if ("type" in where && t.type !== where.type) return true;
-        if ("identifier" in where) {
-          const idf = where.identifier;
-          if (typeof idf === "string" && t.identifier !== idf) return true;
-          if (idf && typeof idf === "object" && "startsWith" in idf && !t.identifier.startsWith(idf.startsWith)) {
-            return true;
-          }
-        }
+        if (where.id !== undefined && t.id !== where.id) return true;
+        if (where.type !== undefined && t.type !== where.type) return true;
+        const idf = where.identifier;
+        if (typeof idf === "string" && t.identifier !== idf) return true;
+        if (idf && typeof idf === "object" && !t.identifier.startsWith(idf.startsWith)) return true;
         return false; // matched → drop
       });
       return { count: before - tokens.length };
     },
   },
 
-  $transaction: async (fn: (tx: unknown) => Promise<unknown>) => fn(prisma),
+  // Interactive-transaction shim with real rollback: snapshot both tables, run
+  // the callback, and restore them if it throws — so tests can assert that a
+  // failed create/update rolls back a consumed code (single-use preserved).
+  $transaction: async (fn: (tx: unknown) => Promise<unknown>) => {
+    const uSnap = users.map((u) => ({ ...u }));
+    const tSnap = tokens.map((t) => ({ ...t }));
+    try {
+      return await fn(prisma);
+    } catch (e) {
+      users = uSnap;
+      tokens = tSnap;
+      throw e;
+    }
+  },
 };
 
 // ── Test-only helpers (not part of the real @/lib/db surface) ──
@@ -117,6 +140,19 @@ export function reset() {
   users = [];
   tokens = [];
   seq = 0;
+  failCreate = false;
+  failUpdate = false;
+}
+/** Make the next `user.create` throw a generic (non-P2002) error, once. */
+export function failNextCreate() {
+  failCreate = true;
+}
+/** Make the next `user.update` throw a generic (non-P2002) error, once. */
+export function failNextUpdate() {
+  failUpdate = true;
+}
+export function allUsers() {
+  return users;
 }
 export function seedUser(u: Partial<User> & { email: string }): User {
   const user: User = {

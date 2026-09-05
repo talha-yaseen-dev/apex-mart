@@ -30,7 +30,7 @@ vi.mock("@/lib/rate-limit", () => ({
 import { startEmailChangeAction, verifyEmailChangeAction } from "@/lib/actions/email-change";
 import { issueCode, emailChangeIdentifier } from "@/lib/otp";
 import { hashPassword } from "@/lib/password";
-import { reset, seedUser, findUserByEmail, allTokens } from "./helpers/db-mock";
+import { reset, seedUser, findUserByEmail, allTokens, failNextUpdate } from "./helpers/db-mock";
 
 const PW = "Secret123!pw";
 let pwHash = "";
@@ -156,6 +156,23 @@ describe("verifying an email change", () => {
     expect(second).not.toBe(first);
     expect((await verifyEmailChangeAction({ newEmail: "new@example.com", code: first })).ok).toBe(false);
     expect((await verifyEmailChangeAction({ newEmail: "new@example.com", code: second })).ok).toBe(true);
+  });
+
+  it("an unexpected update failure rolls back — code preserved, email unchanged (atomicity)", async () => {
+    const u = signInPasswordUser();
+    await startEmailChangeAction({ newEmail: "new@example.com", currentPassword: PW });
+    const code = codeFrom("new@example.com")!;
+    failNextUpdate(); // tx.user.update throws inside the transaction
+    await expect(verifyEmailChangeAction({ newEmail: "new@example.com", code })).rejects.toThrow();
+    // Rolled back: email unchanged AND the code survives for a retry.
+    expect(findUserByEmail("old@example.com")).toBeTruthy();
+    expect(findUserByEmail("new@example.com")).toBeNull();
+    expect(allTokens()).toHaveLength(1);
+    // The preserved code still works on retry.
+    const retry = await verifyEmailChangeAction({ newEmail: "new@example.com", code });
+    expect(retry).toEqual({ ok: true });
+    expect(findUserByEmail("new@example.com")).toBeTruthy();
+    expect(findUserByEmail("old@example.com")).toBeNull();
   });
 
   it("an EMAIL_VERIFY code cannot complete an email change (items 15/27/28)", async () => {

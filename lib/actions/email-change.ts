@@ -39,6 +39,13 @@ type Result = { ok: true } | { ok: false; error: string };
 const COLLISION_MSG = "That email address is already associated with an account.";
 
 class EmailTakenError extends Error {}
+/** Aborts the change transaction on a failed code check, carrying the reason
+ *  out so the right message can be returned after rollback. */
+class CodeError extends Error {
+  constructor(readonly reason: "invalid" | "expired") {
+    super(reason);
+  }
+}
 
 /** Acting user resolved from the session, with the fields we must trust from the DB. */
 async function actingUser() {
@@ -131,27 +138,24 @@ export async function verifyEmailChangeAction(input: {
   ]);
   if (!attempts.allowed || !byIp.allowed) return { ok: false, error: "Too many attempts. Request a new code." };
 
-  const res = await consumeCode(emailChangeIdentifier(user.id, newEmail), TokenType.EMAIL_CHANGE, input.code);
-  if (!res.ok) {
-    return {
-      ok: false,
-      error:
-        res.reason === "expired"
-          ? "This code has expired. Request a new code."
-          : "That code isn’t right. Check the 6 digits and try again.",
-    };
-  }
-
   // Capture the outgoing address BEFORE the update — the security alert must go
   // to the previous email, not the new one.
   const oldEmail = user.email;
 
-  // Commit atomically with a final uniqueness guard against a race where the
-  // target email was claimed between the pre-check and now. ONLY email +
-  // emailVerified change — role/isEmployee/isPrimaryAdmin are never written, so
-  // an ADMIN stays ADMIN and no path can elevate privilege here.
+  // ONE transaction: consume the code + flip the email together, with a final
+  // uniqueness guard against a race where the target was claimed since the
+  // pre-check. If the update fails, the consume rolls back and the still-valid
+  // code is preserved. ONLY email + emailVerified change — role/isEmployee/
+  // isPrimaryAdmin are never written, so an ADMIN stays ADMIN.
   try {
     await prisma.$transaction(async (tx) => {
+      const res = await consumeCode(
+        emailChangeIdentifier(user.id, newEmail),
+        TokenType.EMAIL_CHANGE,
+        input.code,
+        tx,
+      );
+      if (!res.ok) throw new CodeError(res.reason);
       const clash = await tx.user.findUnique({ where: { email: newEmail }, select: { id: true } });
       if (clash && clash.id !== user.id) throw new EmailTakenError();
       await tx.user.update({
@@ -160,6 +164,15 @@ export async function verifyEmailChangeAction(input: {
       });
     });
   } catch (e) {
+    if (e instanceof CodeError) {
+      return {
+        ok: false,
+        error:
+          e.reason === "expired"
+            ? "This code has expired. Request a new code."
+            : "That code isn’t right. Check the 6 digits and try again.",
+      };
+    }
     if (
       e instanceof EmailTakenError ||
       (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002")

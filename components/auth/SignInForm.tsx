@@ -25,11 +25,13 @@ export function SignInForm({
   initialError,
   googleEnabled = false,
   justVerified = false,
+  justCreated = false,
 }: {
   callbackUrl?: string;
   initialError?: string;
   googleEnabled?: boolean;
   justVerified?: boolean;
+  justCreated?: boolean;
 }) {
   const router = useRouter();
   // Customers land on the homepage after signing in. Honour an explicit
@@ -77,12 +79,14 @@ export function SignInForm({
 
   return (
     <AuthCard title="Sign in" subtitle="Welcome back to Apex Mart.">
-      {justVerified && (
+      {(justCreated || justVerified) && (
         <div
           role="status"
           className="mb-5 rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-sm font-medium text-primary"
         >
-          Email verified — sign in to start shopping.
+          {justCreated
+            ? "Account created successfully. Sign in to continue."
+            : "Email verified — sign in to start shopping."}
         </div>
       )}
 

@@ -107,6 +107,16 @@ describe("issue + consume", () => {
     expect((await consumeCode(email, TokenType.EMAIL_VERIFY, first)).ok).toBe(false);
     expect((await consumeCode(email, TokenType.EMAIL_VERIFY, second)).ok).toBe(true);
   });
+
+  it("two concurrent consumes of one code — exactly one wins (single-use race)", async () => {
+    const code = await issueCode(email, TokenType.EMAIL_VERIFY);
+    const [a, b] = await Promise.all([
+      consumeCode(email, TokenType.EMAIL_VERIFY, code),
+      consumeCode(email, TokenType.EMAIL_VERIFY, code),
+    ]);
+    expect([a.ok, b.ok].filter(Boolean)).toHaveLength(1); // one true, one false
+    expect(allTokens()).toHaveLength(0);
+  });
 });
 
 describe("purpose + identity isolation (items 27, 28, 15)", () => {
