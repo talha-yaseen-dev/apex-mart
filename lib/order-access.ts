@@ -25,6 +25,7 @@ export type OrderView = {
   userId: string;
   orderNumber: string;
   status: string;
+  shipmentStatus: string | null;
   placedAt: string;
   currency: string;
   subtotalMinor: number;
@@ -61,6 +62,7 @@ export async function fetchOrder(
       },
       user: { select: { id: true, name: true, phone: true, isGuest: true } },
       payments: { select: { provider: true }, take: 1 },
+      shipments: { select: { status: true }, orderBy: { id: "desc" }, take: 1 },
     },
   });
   if (!order) return null;
@@ -91,6 +93,7 @@ export async function fetchOrder(
     userId: order.user.id,
     orderNumber: order.orderNumber,
     status: order.status,
+    shipmentStatus: order.shipments[0]?.status ?? null,
     placedAt: order.createdAt.toISOString(),
     currency: order.currency,
     subtotalMinor: order.subtotalMinor,

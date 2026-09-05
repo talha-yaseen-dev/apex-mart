@@ -76,7 +76,7 @@ export async function getOrderForUser(orderId: string, userId: string) {
   const steps = [
     { key: "PAID", label: "Order placed", when: o.createdAt },
     { key: "FULFILLED", label: "Packed", when: null },
-    { key: "SHIPPED", label: "Shipped", when: shipment?.shippedAt ?? null },
+    { key: "SHIPPED", label: "Out for delivery", when: shipment?.shippedAt ?? null },
     { key: "DELIVERED", label: "Delivered", when: shipment?.deliveredAt ?? null },
   ].map((s, i) => ({ ...s, done: i + 1 <= rank }));
 

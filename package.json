@@ -12,6 +12,7 @@
     "db:seed:mart": "rm -rf .next/cache && tsx --env-file=.env prisma/seed-mart.ts",
     "db:seed:e2e": "tsx --env-file=.env prisma/seed-test-customer.ts",
     "db:seed:admin": "tsx --env-file=.env prisma/seed-admin.ts",
+    "db:set:admin": "tsx --env-file=.env prisma/set-admin.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },

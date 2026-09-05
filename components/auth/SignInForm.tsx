@@ -43,7 +43,16 @@ export function SignInForm({
   googleEnabled?: boolean;
 }) {
   const router = useRouter();
-  const dest = callbackUrl && callbackUrl.startsWith("/") ? callbackUrl : "/account";
+  // Customers land on the homepage after signing in. Honour an explicit
+  // callbackUrl only when it points somewhere they meant to return to — never a
+  // transactional page (an order/track/checkout link they hit while logged out
+  // shouldn't strand them on that order after login).
+  const dest =
+    callbackUrl &&
+    callbackUrl.startsWith("/") &&
+    !/^\/(order|track|checkout)\b/.test(callbackUrl)
+      ? callbackUrl
+      : "/";
   const [errorCode, setErrorCode] = useState<string | null>(initialError ?? null);
   const [resendState, setResendState] = useState<"idle" | "sending" | "sent">("idle");
   const [showPw, setShowPw] = useState(false);

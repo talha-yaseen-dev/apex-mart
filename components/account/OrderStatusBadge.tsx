@@ -1,29 +1,28 @@
 import { cn } from "@/lib/utils";
+import { orderStage, STAGE_LABEL, STAGE_TONE } from "@/lib/order-status";
 
-/** OrderStatus → friendly label + tone. Shared by the overview, orders list,
- *  and order detail so a status always reads the same across the account area. */
-const STATUS: Record<string, { label: string; className: string }> = {
-  PENDING: { label: "Pending", className: "border-amber-200 bg-amber-50 text-amber-700" },
-  PAID: { label: "Confirmed", className: "border-blue-200 bg-blue-50 text-blue-700" },
-  FULFILLED: { label: "Dispatched", className: "border-indigo-200 bg-indigo-50 text-indigo-700" },
-  DELIVERED: { label: "Delivered", className: "border-primary/20 bg-primary/10 text-primary" },
-  CANCELLED: { label: "Cancelled", className: "border-red-200 bg-red-50 text-red-700" },
-  REFUNDED: { label: "Refunded", className: "border-border bg-muted text-muted-foreground" },
-};
-
-export function OrderStatusBadge({ status }: { status: string }) {
-  const s = STATUS[status] ?? {
-    label: status,
-    className: "border-border bg-muted text-muted-foreground",
-  };
+/**
+ * OrderStatus → friendly label + tone, drawn from the shared order-status
+ * vocabulary so the customer's badge reads exactly like the admin's (Order
+ * placed / Packed / Out for delivery / Delivered) — no more "Confirmed" here
+ * vs "PAID" in admin.
+ */
+export function OrderStatusBadge({
+  status,
+  shipment,
+}: {
+  status: string;
+  shipment?: string | null;
+}) {
+  const stage = orderStage(status, shipment);
   return (
     <span
       className={cn(
         "inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-bold",
-        s.className,
+        STAGE_TONE[stage],
       )}
     >
-      {s.label}
+      {STAGE_LABEL[stage]}
     </span>
   );
 }

@@ -87,12 +87,16 @@ export default async function AdminOrderPage({
         <div className="mb-4 rounded-xl border bg-card p-4 text-[13px]">
           <span className="font-bold">Shipment</span> · {o.shipments[0]!.carrier} ·{" "}
           <span className="font-mono">{o.shipments[0]!.trackingNumber}</span> ·{" "}
-          <StatusBadge status={o.shipments[0]!.status} />
+          <StatusBadge status={o.shipments[0]!.status} kind="shipment" />
         </div>
       )}
 
       <div className="rounded-xl border bg-card p-4">
-        <div className="mb-3 text-sm font-bold">Fulfilment</div>
+        <div className="mb-0.5 text-sm font-bold">Order tracking</div>
+        <p className="mb-3 text-[12.5px] text-muted-foreground">
+          Advancing a stage updates the customer&apos;s tracking instantly — this is how you
+          keep them posted.
+        </p>
         <OrderFulfillment
           orderId={o.id}
           status={o.status}

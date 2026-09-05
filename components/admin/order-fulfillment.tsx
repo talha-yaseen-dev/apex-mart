@@ -11,10 +11,10 @@ import {
 } from "@/lib/actions/admin";
 
 const STEPS = [
-  { label: "Order placed", desc: "Payment received" },
+  { label: "Order placed", desc: "Order received — cash due on delivery" },
   { label: "Packed", desc: "Items packed and ready" },
-  { label: "Shipped", desc: "Handed to the carrier" },
-  { label: "Delivered", desc: "Arrived with the customer" },
+  { label: "Out for delivery", desc: "On the way to the customer" },
+  { label: "Delivered", desc: "Arrived — cash collected" },
 ] as const;
 
 type Status = "PENDING" | "PAID" | "FULFILLED" | "DELIVERED" | "CANCELLED" | "REFUNDED";
@@ -65,11 +65,11 @@ export function OrderFulfillment({
   // The single "advance to the next stage" action for the current state.
   const nextAction: { label: string; fn: () => Promise<{ ok: boolean; error?: string }> } | null =
     status === "PENDING"
-      ? { label: "Mark as paid", fn: () => transitionOrderAction(orderId, "PAID") }
+      ? { label: "Confirm order", fn: () => transitionOrderAction(orderId, "PAID") }
       : status === "PAID"
         ? { label: "Mark as packed", fn: () => transitionOrderAction(orderId, "FULFILLED") }
         : status === "FULFILLED" && (!shipmentStatus || shipmentStatus === "PENDING")
-          ? { label: "Mark as shipped", fn: () => markOrderShippedAction(orderId) }
+          ? { label: "Mark out for delivery", fn: () => markOrderShippedAction(orderId) }
           : status === "FULFILLED"
             ? { label: "Mark as delivered", fn: () => transitionOrderAction(orderId, "DELIVERED") }
             : null;

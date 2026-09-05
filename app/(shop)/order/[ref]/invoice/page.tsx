@@ -39,12 +39,12 @@ export default async function InvoicePage({ params, searchParams }: PageProps) {
   const backHref = `/order/${order.orderNumber}${phone ? `?phone=${encodeURIComponent(phone)}` : ""}`;
 
   return (
-    <div className="mx-auto max-w-md px-4 py-6 print:max-w-none print:p-0">
-      <div className="mx-auto max-w-[420px]">
+    <div className="min-h-[70vh] bg-muted/40 px-4 py-8 print:min-h-0 print:bg-white print:p-0">
+      <div className="mx-auto w-[340px] max-w-full">
         <InvoiceActions backHref={backHref} />
 
-        {/* Receipt */}
-        <div className="mx-auto bg-white p-5 font-mono text-[13px] leading-relaxed text-neutral-900 shadow-sm print:p-0 print:shadow-none">
+        {/* Receipt — a narrow, vertical thermal-style strip, not a full page. */}
+        <div className="mx-auto w-full rounded-md bg-white px-5 py-6 font-mono text-[12.5px] leading-relaxed text-neutral-900 shadow-md ring-1 ring-black/5 print:rounded-none print:px-0 print:py-0 print:shadow-none print:ring-0">
           {/* Header */}
           <div className="text-center">
             <div className="text-2xl font-extrabold tracking-tight">{STORE.name}</div>

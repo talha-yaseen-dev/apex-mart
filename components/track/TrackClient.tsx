@@ -8,27 +8,28 @@ import type { TrackOrder } from "@/lib/order-access";
 import { formatPKR } from "@/lib/format";
 import { maskPhone } from "@/lib/phone";
 import { cn } from "@/lib/utils";
+import { orderStage, type OrderStage } from "@/lib/order-status";
 
+// Same four public stages as the account tracking + admin, so an order reads
+// identically wherever the customer looks it up.
 const STEPS = [
-  { label: "Placed" },
-  { label: "Preparing" },
+  { label: "Order placed" },
+  { label: "Packed" },
   { label: "Out for delivery" },
   { label: "Delivered" },
 ] as const;
 
-function stepIndex(status: string): number {
-  switch (status) {
-    case "PENDING":
-      return 0;
-    case "PAID":
-      return 1;
-    case "FULFILLED":
-      return 2;
-    case "DELIVERED":
-      return 3;
-    default:
-      return 0;
-  }
+const STAGE_INDEX: Record<OrderStage, number> = {
+  placed: 0,
+  packed: 1,
+  shipped: 2,
+  delivered: 3,
+  cancelled: 0,
+  refunded: 0,
+};
+
+function stepIndex(status: string, shipment?: string | null): number {
+  return STAGE_INDEX[orderStage(status, shipment)];
 }
 
 const maskAddressLine = (line: string) => line.replace(/\d/g, "•");
@@ -127,7 +128,7 @@ export function TrackClient({
 
 function OrderResult({ order }: { order: TrackOrder }) {
   const cancelled = order.status === "CANCELLED" || order.status === "REFUNDED";
-  const current = stepIndex(order.status);
+  const current = stepIndex(order.status, order.shipmentStatus);
   const bigLabel = cancelled
     ? order.status === "REFUNDED"
       ? "Refunded"

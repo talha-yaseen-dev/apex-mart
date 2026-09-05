@@ -9,7 +9,7 @@ import { signIn } from "next-auth/react";
  * Google provider; on success NextAuth redirects to `callbackUrl`.
  */
 export function GoogleButton({
-  callbackUrl = "/account",
+  callbackUrl = "/",
   label = "Continue with Google",
 }: {
   callbackUrl?: string;
