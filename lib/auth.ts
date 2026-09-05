@@ -4,7 +4,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import { Role } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { env } from "@/lib/env";
+import { env, googleEnabled } from "@/lib/env";
 import { verifyPassword } from "@/lib/password";
 import { rateLimit } from "@/lib/rate-limit";
 import { clientIp } from "@/lib/request-ip";
@@ -12,10 +12,6 @@ import { AUTH_ERRORS } from "@/lib/auth-constants";
 import { syncEmployeeDirectory, ensureBootstrapAdmin } from "@/lib/sso";
 
 export { AUTH_ERRORS };
-
-const googleEnabled = Boolean(
-  env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET,
-);
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },

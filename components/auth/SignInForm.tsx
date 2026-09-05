@@ -9,6 +9,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { signIn, getSession } from "next-auth/react";
 import { signInSchema, type SignInInput } from "@/lib/validations/auth";
 import { AUTH_ERRORS } from "@/lib/auth-constants";
+import { signInErrorMessage } from "@/lib/auth-error-copy";
 import { resendVerificationAction } from "@/lib/actions/auth";
 import {
   AuthCard,
@@ -19,19 +20,6 @@ import {
   authInputCls,
 } from "./AuthUI";
 import { GoogleButton } from "./GoogleButton";
-
-/** Maps NextAuth error codes (thrown in authorize / "CredentialsSignin") to
- *  human copy. Bad credentials stay deliberately vague (no user enumeration). */
-const ERROR_COPY: Record<string, string> = {
-  [AUTH_ERRORS.RATE_LIMITED]: "Too many attempts. Please wait a moment and try again.",
-  [AUTH_ERRORS.EMAIL_NOT_VERIFIED]:
-    "Please verify your email before signing in — check your inbox for the link.",
-  [AUTH_ERRORS.DEACTIVATED]:
-    "This account has been deactivated. Contact us if you think this is a mistake.",
-  CredentialsSignin: "Incorrect email or password.",
-};
-const messageFor = (code?: string | null) =>
-  (code && ERROR_COPY[code]) || "Something went wrong. Please try again.";
 
 export function SignInForm({
   callbackUrl,
@@ -114,7 +102,7 @@ export function SignInForm({
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
         {errorCode && (
           <FormError>
-            <span>{messageFor(errorCode)}</span>
+            <span>{signInErrorMessage(errorCode)}</span>
             {unverified && (
               <button
                 type="button"

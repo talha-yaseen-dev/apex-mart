@@ -93,6 +93,21 @@ if (parsed.NODE_ENV === "production" && !isBuildPhase) {
 
 export const env = parsed;
 
+/**
+ * Google OAuth is offered ONLY when BOTH credentials are configured. Single
+ * source of truth for gating the "Continue with Google" button (sign-in +
+ * register pages) and the NextAuth Google provider — so a deployment without
+ * the env vars never renders a button that would error. Pure predicate so it
+ * can be unit-tested without the parsed module-level env.
+ */
+export function isGoogleConfigured(e: {
+  GOOGLE_CLIENT_ID?: string;
+  GOOGLE_CLIENT_SECRET?: string;
+}): boolean {
+  return Boolean(e.GOOGLE_CLIENT_ID && e.GOOGLE_CLIENT_SECRET);
+}
+export const googleEnabled = isGoogleConfigured(env);
+
 /** Public (browser-safe) values. */
 export const publicEnv = {
   stripePublishableKey: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
