@@ -77,12 +77,6 @@ export function CheckoutForm({
     setSelectedId(a.id);
   }
 
-  // Pre-select the default saved address so it's filled in on arrival.
-  useEffect(() => {
-    if (savedAddresses.length > 0) applyAddress(savedAddresses[0]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   // Default the zone to the one chosen in the header, if any.
   useEffect(() => {
     const saved = typeof window !== "undefined" && localStorage.getItem(ZONE_STORAGE_KEY);

@@ -215,3 +215,16 @@
     @apply font-sans;
   }
 }
+
+/* Printing (invoice): drop the storefront chrome so only the page content
+   prints. Users print the invoice via its "Download PDF" button. */
+@media print {
+  header,
+  footer,
+  nav[aria-label="Primary"] {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+  }
+}

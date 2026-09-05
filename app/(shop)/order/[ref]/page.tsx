@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CheckCircle2, MapPin, Clock, Phone } from "lucide-react";
+import { CheckCircle2, MapPin, Clock, Phone, Download } from "lucide-react";
 import { fetchOrder } from "@/lib/order-access";
 import { readOrderEmailCookie } from "@/lib/order-cookie";
 import { formatPKR } from "@/lib/format";
 import { maskPhone } from "@/lib/phone";
-import { STORE } from "@/lib/delivery-config";
 import { CopyRef } from "@/components/order/CopyRef";
 import { SignupUpsell } from "@/components/order/SignupUpsell";
 
@@ -34,10 +33,9 @@ export default async function OrderConfirmationPage({ params, searchParams }: Pa
   const trackHref = `/track?ref=${encodeURIComponent(order.orderNumber)}${
     order.customerPhone ? `&phone=${encodeURIComponent(order.customerPhone)}` : ""
   }`;
-  const waText = `Order confirmed at ${STORE.name}! Ref: ${order.orderNumber}. Total: ${formatPKR(
-    order.totalMinor,
-  )}`;
-  const waHref = `https://wa.me/${STORE.whatsapp}?text=${encodeURIComponent(waText)}`;
+  const invoiceHref = `/order/${order.orderNumber}/invoice${
+    order.customerPhone ? `?phone=${encodeURIComponent(order.customerPhone)}` : ""
+  }`;
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-6 pb-28 md:pb-10">
@@ -160,7 +158,7 @@ export default async function OrderConfirmationPage({ params, searchParams }: Pa
         </div>
       )}
 
-      {/* 6 + 8 — Track + WhatsApp (desktop inline) */}
+      {/* 6 + 8 — Track + Download invoice (desktop inline) */}
       <div className="mt-6 hidden gap-3 md:flex">
         <Link
           href={trackHref}
@@ -168,25 +166,21 @@ export default async function OrderConfirmationPage({ params, searchParams }: Pa
         >
           Track order
         </Link>
-        <a
-          href={waHref}
-          target="_blank"
-          rel="noopener noreferrer"
+        <Link
+          href={invoiceHref}
           className="tap-target inline-flex items-center justify-center gap-2 rounded-xl border border-input px-5 text-sm font-bold text-foreground hover:bg-muted"
         >
-          📱 Share on WhatsApp
-        </a>
+          <Download className="size-4" aria-hidden /> Download invoice
+        </Link>
       </div>
 
-      {/* WhatsApp on mobile (Track is the sticky bar below) */}
-      <a
-        href={waHref}
-        target="_blank"
-        rel="noopener noreferrer"
+      {/* Download invoice on mobile (Track is the sticky bar below) */}
+      <Link
+        href={invoiceHref}
         className="tap-target mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-input text-sm font-bold text-foreground hover:bg-muted md:hidden"
       >
-        📱 Share on WhatsApp
-      </a>
+        <Download className="size-4" aria-hidden /> Download invoice
+      </Link>
 
       {/* Sticky mobile Track CTA */}
       <div className="fixed inset-x-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-40 border-t border-border bg-background/95 px-4 py-3 backdrop-blur md:hidden">

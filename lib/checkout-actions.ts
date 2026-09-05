@@ -8,6 +8,8 @@ import {
 } from "@/lib/checkout-schema";
 import { resolveGuestUser, GuestCheckoutError } from "@/lib/guest-user";
 import { getCurrentUser } from "@/lib/session";
+import { prisma } from "@/lib/db";
+import { normalizePhone } from "@/lib/phone";
 import { getCartViewFor } from "@/lib/api/cart";
 import { createOrderFor, confirmOrderFor } from "@/lib/api/checkout";
 import { clearCartCookie } from "@/lib/cart-cookie";
@@ -100,6 +102,26 @@ export async function placeOrder(raw: CheckoutFormInput): Promise<PlaceOrderErro
       ok: false,
       error: e instanceof Error ? e.message : "Could not place your order. Please try again.",
     };
+  }
+
+  // Empty the cart now the order is placed. For signed-in shoppers the cart is a
+  // DB row keyed by their user id, so clearing the cookie alone leaves items
+  // behind — delete the cart items explicitly.
+  await prisma.cartItem.deleteMany({ where: { cart: { userId } } }).catch(() => {});
+
+  // Persist the delivery phone on the account so it shows in tracking / admin
+  // (don't overwrite an existing number, and skip if another account holds it).
+  try {
+    const normalized = normalizePhone(d.phone);
+    if (normalized) {
+      const me = await prisma.user.findUnique({ where: { id: userId }, select: { phone: true } });
+      if (me && !me.phone) {
+        const taken = await prisma.user.findUnique({ where: { phone: normalized }, select: { id: true } });
+        if (!taken) await prisma.user.update({ where: { id: userId }, data: { phone: normalized } });
+      }
+    }
+  } catch {
+    /* non-fatal — phone display is best-effort */
   }
 
   await clearCartCookie();
