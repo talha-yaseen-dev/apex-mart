@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { STORE } from "@/lib/delivery-config";
 import { getCurrentUser } from "@/lib/session";
+import { BrandMark } from "@/components/brand-mark";
 import { LocationBar } from "./LocationBar";
 import { SearchBar } from "./SearchBar";
 import { CartButton } from "./CartButton";
@@ -38,10 +39,8 @@ export async function SiteHeader() {
       {/* Main bar */}
       <div className="border-b border-border bg-background/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-2.5">
-          <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label={`${STORE.name} home`}>
-            <span className="flex size-9 items-center justify-center rounded-xl bg-primary text-base font-extrabold text-primary-foreground">
-              A
-            </span>
+          <Link href="/" className="flex shrink-0 items-center gap-2" aria-label={`${STORE.name} home`}>
+            <BrandMark size={38} priority />
             <span className="hidden leading-tight xs:block">
               <span className="block text-base font-extrabold tracking-tight text-foreground">
                 {STORE.name}

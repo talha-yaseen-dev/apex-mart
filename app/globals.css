@@ -172,6 +172,38 @@
   --sidebar-ring: #22c55e;
 }
 
+/* ── Admin accent — Indigo ────────────────────────────────────────
+ * The storefront keeps the grocery-green brand; the admin surface swaps to an
+ * indigo accent (matching Nova). The admin layout wraps its subtree in
+ * [data-accent="indigo"], so overriding the raw tokens here recolours every
+ * primary button / link / focus ring and the sidebar ink beneath it. */
+[data-accent="indigo"] {
+  --primary: oklch(0.5 0.12 265);
+  --primary-hover: oklch(0.44 0.13 265);
+  --primary-tint: oklch(0.96 0.03 265);
+  --ink: oklch(0.22 0.02 265);
+  --accent: oklch(0.96 0.03 265);
+  --accent-foreground: oklch(0.44 0.13 265);
+  --ring: oklch(0.5 0.12 265);
+  --background: oklch(0.97 0.005 265);
+  --border: oklch(0.9 0.008 265);
+}
+
+/* Dark mode admin: the light indigo block above re-sets background/border/tint
+ * to light values that would otherwise win inside the (descendant) admin
+ * subtree — re-provide dark, indigo-tinted values. */
+.dark [data-accent="indigo"] {
+  --primary: oklch(0.64 0.13 265);
+  --primary-hover: oklch(0.7 0.13 265);
+  --primary-tint: oklch(0.3 0.05 270);
+  --ink: oklch(0.2 0.02 265);
+  --accent: oklch(0.3 0.05 270);
+  --accent-foreground: oklch(0.82 0.07 265);
+  --ring: oklch(0.64 0.13 265);
+  --background: oklch(0.19 0.012 265);
+  --border: oklch(0.32 0.016 265);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
