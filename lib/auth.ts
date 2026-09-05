@@ -83,11 +83,56 @@ export const authOptions: NextAuthOptions = {
       : []),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    // Google sign-in: create or link a real DB user, keyed on the Google-VERIFIED
+    // email (never an untrusted email claim). New Google users get a sentinel
+    // password ("!google") — unusable until they set one in Settings.
+    async signIn({ user, account, profile }) {
+      if (account?.provider !== "google") return true;
+      const p = profile as
+        | { email?: string; email_verified?: boolean; name?: string; picture?: string }
+        | undefined;
+      const email = (p?.email ?? user.email ?? "").trim().toLowerCase();
+      if (!email || p?.email_verified === false) return false; // require a verified email
+
+      const existing = await prisma.user.findUnique({ where: { email } });
+      if (existing) {
+        if (existing.deactivatedAt) return false;
+        if (!existing.emailVerified) {
+          // Google proved ownership → mark verified (also lets a pending
+          // password signup finish via Google).
+          await prisma.user.update({ where: { id: existing.id }, data: { emailVerified: new Date() } });
+        }
+      } else {
+        await prisma.user.create({
+          data: {
+            email,
+            name: p?.name?.trim() || email.split("@")[0],
+            emailVerified: new Date(),
+            passwordHash: "!google", // not a valid argon2 hash → no password login yet
+            image: p?.picture ?? null,
+          },
+        });
+      }
+      return true;
+    },
+    async jwt({ token, user, account }) {
       if (user) {
-        token.uid = user.id;
-        token.role = (user as { role?: Role }).role ?? Role.CUSTOMER;
-        token.isEmployee = (user as { isEmployee?: boolean }).isEmployee ?? false;
+        if (account?.provider === "google") {
+          // Google's `user.id` is its own subject id — resolve OUR db user by
+          // the (verified) email so uid/role/isEmployee come from our records.
+          const dbu = user.email
+            ? await prisma.user.findUnique({ where: { email: user.email.toLowerCase() } })
+            : null;
+          if (dbu) {
+            token.uid = dbu.id;
+            token.role = dbu.role;
+            token.isEmployee = dbu.isEmployee;
+          }
+        } else {
+          token.uid = user.id;
+          token.role = (user as { role?: Role }).role ?? Role.CUSTOMER;
+          token.isEmployee = (user as { isEmployee?: boolean }).isEmployee ?? false;
+        }
       }
       return token;
     },

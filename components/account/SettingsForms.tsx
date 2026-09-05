@@ -5,7 +5,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { updateProfileAction, changePasswordAction } from "@/lib/actions/profile";
+import {
+  updateProfileAction,
+  changePasswordAction,
+  setInitialPasswordAction,
+} from "@/lib/actions/profile";
 
 const inputCls =
   "h-11 w-full rounded-xl border border-input bg-background px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40";
@@ -135,6 +139,60 @@ export function PasswordForm() {
           />
         </Field>
         <SaveButton pending={isSubmitting}>Change password</SaveButton>
+      </form>
+    </Section>
+  );
+}
+
+// ── Set-a-password (Google accounts with no password yet) ─────
+const setPasswordSchema = z
+  .object({
+    next: z.string().min(8, "Use at least 8 characters."),
+    confirm: z.string().min(1, "Re-enter the password."),
+  })
+  .refine((v) => v.next === v.confirm, { message: "Passwords don’t match.", path: ["confirm"] });
+type SetPasswordFields = z.infer<typeof setPasswordSchema>;
+
+/**
+ * Shown when the account has no password (created via Google sign-in). Setting a
+ * password lets the user sign in with email + password instead of relying on
+ * Google.
+ */
+export function SetPasswordForm() {
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<SetPasswordFields>({
+    resolver: zodResolver(setPasswordSchema),
+    defaultValues: { next: "", confirm: "" },
+  });
+
+  const onSubmit = async (data: SetPasswordFields) => {
+    const res = await setInitialPasswordAction(data);
+    if (res.ok) {
+      toast.success("Password set — you can now sign in with your email");
+      reset();
+    } else {
+      toast.error(res.error);
+    }
+  };
+
+  return (
+    <Section title="Sign-in & password">
+      <p className="-mt-2 mb-4 text-sm text-muted-foreground">
+        You signed in with Google, so this account has no password yet. Set one to also sign in
+        with your email and password — no longer depending on Google.
+      </p>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <Field label="New password" error={errors.next?.message}>
+          <input type="password" autoComplete="new-password" className={inputCls} {...register("next")} />
+        </Field>
+        <Field label="Confirm new password" error={errors.confirm?.message}>
+          <input type="password" autoComplete="new-password" className={inputCls} {...register("confirm")} />
+        </Field>
+        <SaveButton pending={isSubmitting}>Set password</SaveButton>
       </form>
     </Section>
   );

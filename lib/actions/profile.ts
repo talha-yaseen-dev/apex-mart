@@ -118,3 +118,49 @@ export async function changePasswordAction(input: {
   });
   return { ok: true as const };
 }
+
+const setPasswordSchema = z
+  .object({
+    next: strongPasswordSchema,
+    confirm: z.string().min(1, "Re-enter the password."),
+  })
+  .refine((v) => v.next === v.confirm, { message: "Passwords don’t match.", path: ["confirm"] });
+
+/**
+ * Set an initial password for an account that has none — i.e. one created via
+ * Google sign-in (sentinel passwordHash "!google"). This lets the user sign in
+ * with email + password instead of depending on Google. Accounts that already
+ * have a real password must use changePasswordAction (which requires the current
+ * one), so this can't be abused to bypass that check.
+ */
+export async function setInitialPasswordAction(input: { next: string; confirm: string }) {
+  const sessionUser = await getCurrentUser();
+  if (!sessionUser) return { ok: false as const, error: "Please sign in." };
+  if (isDemoAccount(sessionUser.email)) {
+    return { ok: false as const, error: DEMO_ACCOUNT_LOCK_MESSAGE };
+  }
+
+  const parsed = setPasswordSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false as const, error: parsed.error.issues[0]?.message ?? "Check the fields." };
+  }
+
+  const dbUser = await prisma.user.findUnique({
+    where: { id: sessionUser.id },
+    select: { passwordHash: true },
+  });
+  if (!dbUser) return { ok: false as const, error: "Account not found." };
+  if (dbUser.passwordHash.startsWith("$argon2")) {
+    return { ok: false as const, error: "This account already has a password — use Change password instead." };
+  }
+  if (await isPasswordPwned(parsed.data.next)) {
+    return { ok: false as const, error: PWNED_PASSWORD_MESSAGE };
+  }
+
+  await prisma.user.update({
+    where: { id: sessionUser.id },
+    data: { passwordHash: await hashPassword(parsed.data.next) },
+  });
+  revalidatePath("/account/settings");
+  return { ok: true as const };
+}

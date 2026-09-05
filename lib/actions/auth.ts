@@ -77,13 +77,19 @@ export async function registerAction(input: {
       },
     });
     await sendVerification(email, name);
-  } else if (!existing.emailVerified && !existing.isGuest) {
-    // Same address, still unverified (10.B) → refresh the link. We deliberately
-    // do NOT reveal the account exists, nor overwrite its password from this
-    // unauthenticated path — the caller sees the same neutral screen.
+  } else if (existing.emailVerified) {
+    // Account already exists and is active — do NOT allow recreating it. (This
+    // deliberately trades enumeration-safety for the clearer UX the store wants.)
+    return {
+      ok: false,
+      error: "An account with this email already exists. Please sign in instead.",
+      field: "email",
+    };
+  } else {
+    // Exists but not yet verified → re-send the link (never a duplicate row),
+    // and never overwrite its password from this unauthenticated path.
     await sendVerification(email, existing.name || name);
   }
-  // Existing + already verified (10.C): do nothing, stay neutral.
 
   return { ok: true, email };
 }
