@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import type { Address } from "@prisma/client";
 import { saveAddressAction } from "@/lib/actions/addresses";
+import { STORE } from "@/lib/delivery-config";
 import { cn } from "@/lib/utils";
 
 // Mirrors Nova's server-side schema in lib/actions/addresses.ts exactly —
@@ -50,8 +51,9 @@ export function AddressForm({
       name: initial?.name ?? "",
       line1: initial?.line1 ?? "",
       line2: initial?.line2 ?? "",
-      city: initial?.city ?? "",
-      region: initial?.region ?? "",
+      // Apex Mart delivers within Sargodha only — city/region/country are fixed.
+      city: initial?.city ?? STORE.city,
+      region: initial?.region ?? STORE.region,
       postalCode: initial?.postalCode ?? "",
       country: initial?.country ?? "PK",
       isDefault: initial?.isDefault ?? defaultIsDefault,
@@ -83,21 +85,21 @@ export function AddressForm({
         <input className={inputCls} placeholder="Flat 2B" {...register("line2")} />
       </Field>
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="City" error={errors.city?.message}>
-          <input className={inputCls} placeholder="Lahore" {...register("city")} />
+        <Field label="City">
+          <input
+            className={cn(inputCls, "cursor-not-allowed bg-muted/50 opacity-70")}
+            readOnly
+            title="Apex Mart delivers within Sargodha only"
+            {...register("city")}
+          />
         </Field>
-        <Field label="Province / region" error={errors.region?.message}>
-          <input className={inputCls} placeholder="Punjab" {...register("region")} />
-        </Field>
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Postal code" error={errors.postalCode?.message}>
-          <input className={inputCls} inputMode="numeric" placeholder="54000" {...register("postalCode")} />
-        </Field>
-        <Field label="Country" error={errors.country?.message}>
-          <input className={inputCls} placeholder="PK" {...register("country")} />
+          <input className={inputCls} inputMode="numeric" placeholder="40100" {...register("postalCode")} />
         </Field>
       </div>
+      {/* Region + country are fixed for this single-city store. */}
+      <input type="hidden" {...register("region")} />
+      <input type="hidden" {...register("country")} />
 
       <label className="flex items-center gap-2 text-sm font-semibold text-foreground">
         <input type="checkbox" className="size-4 accent-primary" {...register("isDefault")} />

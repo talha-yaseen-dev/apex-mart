@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Eye, EyeOff } from "lucide-react";
 import { signIn, getSession } from "next-auth/react";
 import { signInSchema, type SignInInput } from "@/lib/validations/auth";
 import { AUTH_ERRORS } from "@/lib/auth-constants";
@@ -45,6 +46,7 @@ export function SignInForm({
   const dest = callbackUrl && callbackUrl.startsWith("/") ? callbackUrl : "/account";
   const [errorCode, setErrorCode] = useState<string | null>(initialError ?? null);
   const [resendState, setResendState] = useState<"idle" | "sending" | "sent">("idle");
+  const [showPw, setShowPw] = useState(false);
 
   const {
     register,
@@ -144,14 +146,25 @@ export function SignInForm({
             </Link>
           }
         >
-          <input
-            id="password"
-            type="password"
-            autoComplete="current-password"
-            placeholder="••••••••"
-            className={authInputCls}
-            {...register("password")}
-          />
+          <div className="relative">
+            <input
+              id="password"
+              type={showPw ? "text" : "password"}
+              autoComplete="current-password"
+              placeholder="••••••••"
+              className={`${authInputCls} pr-11`}
+              {...register("password")}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPw((s) => !s)}
+              aria-pressed={showPw}
+              aria-label={showPw ? "Hide password" : "Show password"}
+              className="tap-target absolute inset-y-0 right-0 flex w-11 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+            >
+              {showPw ? <EyeOff className="size-4" aria-hidden /> : <Eye className="size-4" aria-hidden />}
+            </button>
+          </div>
         </AuthField>
 
         <SubmitButton pending={isSubmitting}>Sign in</SubmitButton>

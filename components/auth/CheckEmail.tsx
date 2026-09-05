@@ -76,16 +76,18 @@ export function CheckEmail({ email }: { email: string }) {
         {status === "error" && "Couldn’t resend just now — please try again in a moment."}
       </p>
 
-      <p className="mt-4 text-sm text-muted-foreground">
+      <Link
+        href="/signin"
+        className="tap-target mt-4 inline-flex h-11 w-full items-center justify-center rounded-xl bg-primary text-sm font-extrabold text-primary-foreground transition-colors hover:bg-primary/90"
+      >
+        Go to sign in
+      </Link>
+
+      <p className="mt-3 text-sm text-muted-foreground">
         Wrong address?{" "}
         <Link href="/register" className="font-bold text-primary hover:underline">
           Start over
-        </Link>{" "}
-        or{" "}
-        <Link href="/signin" className="font-bold text-primary hover:underline">
-          sign in
         </Link>
-        .
       </p>
     </div>
   );

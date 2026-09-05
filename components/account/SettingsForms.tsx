@@ -140,6 +140,12 @@ export function PasswordForm() {
         </Field>
         <SaveButton pending={isSubmitting}>Change password</SaveButton>
       </form>
+      <p className="mt-3 text-sm text-muted-foreground">
+        Forgot your current password?{" "}
+        <a href="/forgot" className="font-bold text-primary hover:underline">
+          Reset it by email
+        </a>
+      </p>
     </Section>
   );
 }

@@ -41,7 +41,16 @@ export default async function AdminOrderPage({
         <StatusBadge status={o.status} />
       </div>
       <div className="mb-5 text-[13px] text-muted-foreground">
-        {o.user.name} · {o.user.email} ·{" "}
+        {o.user.name} · {o.user.email}
+        {o.user.phone && (
+          <>
+            {" · "}
+            <a href={`tel:${o.user.phone}`} className="font-medium text-foreground hover:underline">
+              {o.user.phone}
+            </a>
+          </>
+        )}{" "}
+        ·{" "}
         {o.createdAt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
       </div>
 

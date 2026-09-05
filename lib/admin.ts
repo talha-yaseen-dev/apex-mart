@@ -207,7 +207,7 @@ export async function getAdminOrder(id: string) {
   const o = await prisma.order.findUnique({
     where: { id },
     include: {
-      user: { select: { name: true, email: true } },
+      user: { select: { name: true, email: true, phone: true } },
       items: true,
       payments: true,
       shipments: true,
