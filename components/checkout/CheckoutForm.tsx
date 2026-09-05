@@ -13,16 +13,30 @@ import { formatPKR } from "@/lib/format";
 import {
   DELIVERY_ZONES,
   DEFAULT_ZONE_ID,
-  DELIVERY_SLOTS,
   FREE_DELIVERY_THRESHOLD_MINOR,
   zoneById,
+  STORE,
 } from "@/lib/delivery-config";
 import { cn } from "@/lib/utils";
 
-const DAYS = ["Today", "Tomorrow"] as const;
 const ZONE_STORAGE_KEY = "mart.zone";
 
-export function CheckoutForm() {
+type SavedAddress = {
+  id: string;
+  label: string;
+  name: string;
+  line1: string;
+  line2: string;
+  city: string;
+};
+
+export function CheckoutForm({
+  savedAddresses = [],
+  defaultContact,
+}: {
+  savedAddresses?: SavedAddress[];
+  defaultContact?: { name?: string; phone?: string; email?: string };
+}) {
   const { items, count, subtotalMinor, ready } = useCart();
 
   const {
@@ -35,9 +49,9 @@ export function CheckoutForm() {
   } = useForm<z.input<typeof checkoutFormSchema>, unknown, CheckoutFormInput>({
     resolver: zodResolver(checkoutFormSchema),
     defaultValues: {
-      name: "",
-      phone: "",
-      email: "",
+      name: defaultContact?.name ?? "",
+      phone: defaultContact?.phone ?? "",
+      email: defaultContact?.email ?? "",
       street: "",
       area: "",
       city: "",
@@ -50,6 +64,15 @@ export function CheckoutForm() {
     },
   });
 
+  // Fill the delivery fields from a saved address (from Account → Addresses).
+  function applyAddress(a: SavedAddress) {
+    setValue("name", a.name);
+    setValue("street", a.line1);
+    setValue("area", a.line2 || "");
+    setValue("city", a.city || STORE.city);
+    if (defaultContact?.phone) setValue("phone", defaultContact.phone);
+  }
+
   // Default the zone to the one chosen in the header, if any.
   useEffect(() => {
     const saved = typeof window !== "undefined" && localStorage.getItem(ZONE_STORAGE_KEY);
@@ -59,7 +82,6 @@ export function CheckoutForm() {
   }, [setValue]);
 
   const zoneId = watch("zoneId");
-  const selectedSlot = watch("slot");
   const deliveryFree = subtotalMinor >= FREE_DELIVERY_THRESHOLD_MINOR;
   const deliveryMinor = deliveryFree ? 0 : zoneById(zoneId).feeMinor;
   const totalMinor = subtotalMinor + deliveryMinor;
@@ -104,6 +126,28 @@ export function CheckoutForm() {
         <div className="flex-1 space-y-6">
           {/* Section 1 — Contact + Address */}
           <Section n={1} title="Contact & delivery address">
+            {savedAddresses.length > 0 && (
+              <div>
+                <p className="mb-2 text-xs font-bold text-foreground">Use a saved address</p>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {savedAddresses.map((a) => (
+                    <button
+                      key={a.id}
+                      type="button"
+                      onClick={() => applyAddress(a)}
+                      className="rounded-xl border border-input bg-background p-3 text-left transition-colors hover:border-primary"
+                    >
+                      <div className="text-[13px] font-bold text-foreground">{a.label}</div>
+                      <div className="mt-0.5 text-[12px] leading-snug text-muted-foreground">
+                        {a.name} · {a.line1}
+                        {a.line2 ? `, ${a.line2}` : ""}, {a.city}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-2 text-[11.5px] text-muted-foreground">Or enter a new address below.</p>
+              </div>
+            )}
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Full name" error={errors.name?.message}>
                 <input className={inputCls} placeholder="Ahmed Khan" {...register("name")} />
@@ -162,50 +206,14 @@ export function CheckoutForm() {
               <input type="checkbox" className="size-4 accent-primary" {...register("saveAddress")} />
               Save this address for next time
             </label>
+            <p className="text-[11.5px] text-muted-foreground">
+              Delivery {deliveryFree ? "is free" : `is ${formatPKR(deliveryMinor)}`} to{" "}
+              {zoneById(zoneId).name} · 2-hour windows, 7 days a week.
+            </p>
           </Section>
 
-          {/* Section 2 — Delivery slot */}
-          <Section n={2} title="Delivery slot">
-            <div className="space-y-4">
-              {DAYS.map((day) => (
-                <div key={day}>
-                  <p className="mb-2 text-xs font-extrabold uppercase tracking-wide text-muted-foreground">
-                    {day}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {DELIVERY_SLOTS.map((w) => {
-                      const value = `${day} · ${w}`;
-                      const active = selectedSlot === value;
-                      return (
-                        <label
-                          key={value}
-                          className={cn(
-                            "tap-target flex cursor-pointer items-center rounded-xl border px-3 text-sm font-semibold transition-colors",
-                            active
-                              ? "border-primary bg-primary/10 text-primary"
-                              : "border-input bg-background text-foreground hover:border-primary/40",
-                          )}
-                        >
-                          <input type="radio" value={value} className="sr-only" {...register("slot")} />
-                          {w}
-                        </label>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-              {errors.slot?.message && (
-                <p className="text-xs font-semibold text-destructive">{errors.slot.message}</p>
-              )}
-              <p className="text-xs text-muted-foreground">
-                Delivery {deliveryFree ? "is free" : `is ${formatPKR(deliveryMinor)}`} to{" "}
-                {zoneById(zoneId).name}. 2-hour windows, 7 days a week.
-              </p>
-            </div>
-          </Section>
-
-          {/* Section 3 — Payment */}
-          <Section n={3} title="Payment">
+          {/* Section 2 — Payment */}
+          <Section n={2} title="Payment">
             <label className="flex items-center gap-3 rounded-xl border border-primary bg-primary/5 p-4">
               <input type="radio" value="cod" defaultChecked className="size-4 accent-primary" {...register("payment")} />
               <span>

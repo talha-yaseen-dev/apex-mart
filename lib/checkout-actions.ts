@@ -59,7 +59,7 @@ export async function placeOrder(raw: CheckoutFormInput): Promise<PlaceOrderErro
 
   // Order/Address have no slot/rider-note fields, so fold them into the address
   // free-text (persisted where the store can read them).
-  const line2 = [d.area, d.riderNote && `Rider: ${d.riderNote}`, `Slot: ${d.slot}`]
+  const line2 = [d.area, d.riderNote && `Rider: ${d.riderNote}`, d.slot && `Slot: ${d.slot}`]
     .filter(Boolean)
     .join(" · ");
   const address = {

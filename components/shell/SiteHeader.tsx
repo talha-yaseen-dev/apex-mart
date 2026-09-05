@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { STORE } from "@/lib/delivery-config";
 import { getCurrentUser } from "@/lib/session";
+import { User } from "lucide-react";
 import { BrandMark } from "@/components/brand-mark";
 import { LocationBar } from "./LocationBar";
 import { SearchBar } from "./SearchBar";
@@ -68,6 +69,14 @@ export async function SiteHeader() {
                 <span className="hidden xs:inline">Admin</span>
               </Link>
             )}
+            {/* Mobile: account icon in the header (desktop keeps the text link). */}
+            <Link
+              href="/account"
+              aria-label="Account"
+              className="tap-target inline-flex items-center justify-center rounded-xl px-2 text-foreground transition-colors hover:bg-muted md:hidden"
+            >
+              <User className="size-[21px]" aria-hidden />
+            </Link>
             <Link
               href="/account"
               className="tap-target hidden items-center rounded-xl px-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted md:inline-flex"

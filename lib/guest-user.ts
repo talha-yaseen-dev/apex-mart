@@ -20,25 +20,28 @@ export async function resolveGuestUser(input: {
   if (!phone) throw new GuestCheckoutError("Please enter a valid Pakistani mobile number.");
   const name = input.name.trim();
 
+  const digits = phone.replace(/[^\d]/g, "");
   let userId: string;
-  const existing = await prisma.user.findUnique({ where: { phone } });
-  if (existing) {
-    if (!existing.isGuest) {
-      throw new GuestCheckoutError(
-        "This phone belongs to a registered account — please sign in.",
-      );
-    }
-    await prisma.user.update({ where: { id: existing.id }, data: { name } });
-    userId = existing.id;
+
+  // The checkout phone is delivery contact info only — it is NOT an identity
+  // link to a registered account. Reuse a prior GUEST identity for this phone,
+  // but never block on, reuse, or modify a registered account.
+  const existingGuest = await prisma.user.findFirst({ where: { phone, isGuest: true } });
+  if (existingGuest) {
+    await prisma.user.update({ where: { id: existingGuest.id }, data: { name } });
+    userId = existingGuest.id;
   } else {
-    const digits = phone.replace(/[^\d]/g, "");
-    // Synthetic unique email — the real contact email is passed to the order for
-    // the receipt, not stored here (avoids colliding with a real account email).
+    // If a registered account already holds this phone, keep it OFF the new
+    // guest so the unique constraint doesn't collide and the order isn't
+    // attributed to that account — the number is still captured on the order.
+    const taken = await prisma.user.findUnique({ where: { phone }, select: { id: true } });
     const created = await prisma.user.create({
       data: {
         name,
-        phone,
-        email: `guest.${digits}@mart.local`,
+        phone: taken ? null : phone,
+        // Unique synthetic email — the real contact email is passed to the order
+        // for the receipt, not stored here.
+        email: `guest.${digits}.${Date.now().toString(36)}@mart.local`,
         passwordHash: "!guest", // not a valid argon2 hash → cannot sign in
         isGuest: true,
       },
