@@ -11,7 +11,9 @@
     "db:seed": "tsx --env-file=.env prisma/seed.ts",
     "db:seed:mart": "rm -rf .next/cache && tsx --env-file=.env prisma/seed-mart.ts",
     "db:seed:e2e": "tsx --env-file=.env prisma/seed-test-customer.ts",
-    "db:seed:admin": "tsx --env-file=.env prisma/seed-admin.ts"
+    "db:seed:admin": "tsx --env-file=.env prisma/seed-admin.ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
@@ -48,7 +50,8 @@
     "prisma": "^5.22.0",
     "tailwindcss": "^4",
     "tsx": "^4.23.13",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^2.1.9"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

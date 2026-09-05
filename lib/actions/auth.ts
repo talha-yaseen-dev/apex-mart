@@ -21,6 +21,22 @@ type ActionResult =
   | { ok: true; email?: string }
   | { ok: false; error: string; field?: string };
 
+/**
+ * Issue a fresh EMAIL_VERIFY token and email the verification link. Best-effort
+ * delivery: the account is inactive until verified (sign-in is refused), and
+ * the user can trigger a resend — so a transient email failure never blocks the
+ * flow or leaks provider errors / the address's existence. Never logs the token.
+ */
+async function sendVerification(email: string, name: string): Promise<void> {
+  const token = await issueToken(email, TokenType.EMAIL_VERIFY);
+  const url = `${env.APP_URL}/verify-email?token=${token}`;
+  const { subject, html } = verifyEmail(name, url);
+  try {
+    await sendEmail({ to: email, subject, html });
+  } catch {
+    console.error("[auth] verification email delivery failed");
+  }
+}
 
 /**
  * Register — always resolves to the neutral "check your email" screen, whether
@@ -52,6 +68,7 @@ export async function registerAction(input: {
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (!existing) {
+    // New address → create an inactive account + send the verification link.
     await prisma.user.create({
       data: {
         email,
@@ -59,12 +76,46 @@ export async function registerAction(input: {
         passwordHash: await hashPassword(password),
       },
     });
-    const token = await issueToken(email, TokenType.EMAIL_VERIFY);
-    const url = `${env.APP_URL}/api/auth/verify?token=${token}`;
-    const { subject, html } = verifyEmail(name, url);
-    await sendEmail({ to: email, subject, html });
+    await sendVerification(email, name);
+  } else if (!existing.emailVerified && !existing.isGuest) {
+    // Same address, still unverified (10.B) → refresh the link. We deliberately
+    // do NOT reveal the account exists, nor overwrite its password from this
+    // unauthenticated path — the caller sees the same neutral screen.
+    await sendVerification(email, existing.name || name);
   }
+  // Existing + already verified (10.C): do nothing, stay neutral.
 
+  return { ok: true, email };
+}
+
+/**
+ * Resend the verification link for an unverified account. Enumeration-safe
+ * (always neutral) and rate-limited on three axes to prevent email bombing and
+ * unbounded token generation: a 60s per-address cooldown, an hourly per-address
+ * cap, and an hourly per-IP cap.
+ */
+export async function resendVerificationAction(input: {
+  email: string;
+}): Promise<ActionResult> {
+  const parsed = forgotSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Enter a valid email.", field: "email" };
+  }
+  const { email } = parsed.data;
+
+  const ip = await clientIp();
+  const [cooldown, hourly, byIp] = await Promise.all([
+    rateLimit(`resend-cd:${email}`, 1, 60), // one send per 60s per address
+    rateLimit(`resend:${email}`, 5, 3600), // at most 5/hour per address
+    ip === "unknown" ? Promise.resolve({ allowed: true }) : rateLimit(`resend-ip:${ip}`, 20, 3600),
+  ]);
+  if (cooldown.allowed && hourly.allowed && byIp.allowed) {
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (user && !user.emailVerified && !user.isGuest) {
+      await sendVerification(email, user.name);
+    }
+  }
+  // Neutral regardless: don't reveal existence/verification state or throttling.
   return { ok: true, email };
 }
 

@@ -49,8 +49,11 @@ const schema = z.object({
   S3_SECRET_ACCESS_KEY: z.string().optional(),
   CDN_BASE_URL: z.string().optional(),
 
+  // Transactional email (Resend). Both optional so the app boots without them;
+  // when RESEND_API_KEY is unset, sendEmail() logs instead of sending. In
+  // production EMAIL_FROM must be a Resend-verified sender for that domain.
   RESEND_API_KEY: z.string().optional(),
-  EMAIL_FROM: z.string().default("Nova <no-reply@nova.market>"),
+  EMAIL_FROM: z.string().default("Apex Mart <no-reply@apexmart.local>"),
 
   SENTRY_DSN: z.string().optional(),
   LOG_LEVEL: z

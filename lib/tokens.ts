@@ -45,7 +45,11 @@ export async function consumeToken(
     where: { tokenHash: sha256(raw) },
   });
   if (!row || row.type !== type) return null;
-  await prisma.verificationToken.delete({ where: { id: row.id } });
+  // deleteMany (not delete) is race-safe: two concurrent clicks on the same
+  // link both find the row, but only one delete affects a row. The loser sees
+  // count 0 and is treated as an already-consumed (invalid) token.
+  const { count } = await prisma.verificationToken.deleteMany({ where: { id: row.id } });
+  if (count === 0) return null;
   if (row.expiresAt < new Date()) return null;
   return row.identifier;
 }

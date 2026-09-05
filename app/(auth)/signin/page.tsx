@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { SignInForm } from "@/components/auth/SignInForm";
+import { env } from "@/lib/env";
 
 export const metadata: Metadata = {
   title: "Sign in",
@@ -15,5 +16,12 @@ const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 
 export default async function SignInPage({ searchParams }: PageProps) {
   const sp = await searchParams;
-  return <SignInForm callbackUrl={one(sp.callbackUrl)} initialError={one(sp.error)} />;
+  const googleEnabled = Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET);
+  return (
+    <SignInForm
+      callbackUrl={one(sp.callbackUrl)}
+      initialError={one(sp.error)}
+      googleEnabled={googleEnabled}
+    />
+  );
 }

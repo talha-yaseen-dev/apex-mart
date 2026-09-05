@@ -4,29 +4,24 @@ import { prisma } from "@/lib/db";
 import { consumeToken } from "@/lib/tokens";
 
 /**
- * Email verification link target. Consumes the single-use token, activates the
- * account, and redirects into the sign-in screen with a status flag.
+ * Legacy email-verification link target (older emails point here). Consumes the
+ * single-use token, activates the account, and redirects to the /verify-email
+ * page which renders the result. New emails link straight to /verify-email.
  */
 export async function GET(req: NextRequest) {
   const token = req.nextUrl.searchParams.get("token");
-  const signin = new URL("/signin", req.nextUrl.origin);
+  const dest = new URL("/verify-email", req.nextUrl.origin);
 
-  if (!token) {
-    signin.searchParams.set("error", "verify");
-    return NextResponse.redirect(signin);
-  }
-
-  const email = await consumeToken(token, TokenType.EMAIL_VERIFY);
+  const email = token ? await consumeToken(token, TokenType.EMAIL_VERIFY) : null;
   if (!email) {
-    signin.searchParams.set("error", "verify");
-    return NextResponse.redirect(signin);
+    dest.searchParams.set("status", "invalid");
+    return NextResponse.redirect(dest);
   }
 
-  await prisma.user.update({
-    where: { email },
-    data: { emailVerified: new Date() },
-  });
+  await prisma.user
+    .update({ where: { email }, data: { emailVerified: new Date() } })
+    .catch(() => {});
 
-  signin.searchParams.set("verified", "1");
-  return NextResponse.redirect(signin);
+  dest.searchParams.set("status", "success");
+  return NextResponse.redirect(dest);
 }

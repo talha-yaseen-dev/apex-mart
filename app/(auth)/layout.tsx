@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { STORE } from "@/lib/delivery-config";
+import { BrandMark } from "@/components/brand-mark";
 
 /**
  * Minimal auth shell: the store logo up top (links home), a centered card slot,
@@ -15,12 +16,10 @@ export default function AuthLayout({
       <header className="flex justify-center px-4 pb-2 pt-8 sm:pt-12">
         <Link
           href="/"
-          className="flex items-center gap-2.5"
+          className="flex items-center gap-2"
           aria-label={`${STORE.name} home`}
         >
-          <span className="flex size-9 items-center justify-center rounded-xl bg-primary text-base font-extrabold text-primary-foreground">
-            M
-          </span>
+          <BrandMark size={34} />
           <span className="text-lg font-extrabold tracking-tight text-foreground">
             {STORE.name}
           </span>

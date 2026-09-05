@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn, getSession } from "next-auth/react";
 import { signInSchema, type SignInInput } from "@/lib/validations/auth";
 import { AUTH_ERRORS } from "@/lib/auth-constants";
+import { resendVerificationAction } from "@/lib/actions/auth";
 import {
   AuthCard,
   AuthField,
@@ -16,13 +17,14 @@ import {
   SubmitButton,
   authInputCls,
 } from "./AuthUI";
+import { GoogleButton } from "./GoogleButton";
 
 /** Maps NextAuth error codes (thrown in authorize / "CredentialsSignin") to
  *  human copy. Bad credentials stay deliberately vague (no user enumeration). */
 const ERROR_COPY: Record<string, string> = {
   [AUTH_ERRORS.RATE_LIMITED]: "Too many attempts. Please wait a moment and try again.",
   [AUTH_ERRORS.EMAIL_NOT_VERIFIED]:
-    "Please verify your email first — check your inbox for the link.",
+    "Please verify your email before signing in — check your inbox for the link.",
   [AUTH_ERRORS.DEACTIVATED]:
     "This account has been deactivated. Contact us if you think this is a mistake.",
   CredentialsSignin: "Incorrect email or password.",
@@ -33,19 +35,21 @@ const messageFor = (code?: string | null) =>
 export function SignInForm({
   callbackUrl,
   initialError,
+  googleEnabled = false,
 }: {
   callbackUrl?: string;
   initialError?: string;
+  googleEnabled?: boolean;
 }) {
   const router = useRouter();
   const dest = callbackUrl && callbackUrl.startsWith("/") ? callbackUrl : "/account";
-  const [formError, setFormError] = useState<string | null>(
-    initialError ? messageFor(initialError) : null,
-  );
+  const [errorCode, setErrorCode] = useState<string | null>(initialError ?? null);
+  const [resendState, setResendState] = useState<"idle" | "sending" | "sent">("idle");
 
   const {
     register,
     handleSubmit,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm<SignInInput>({
     resolver: zodResolver(signInSchema),
@@ -53,7 +57,8 @@ export function SignInForm({
   });
 
   const onSubmit = async (data: SignInInput) => {
-    setFormError(null);
+    setErrorCode(null);
+    setResendState("idle");
     const res = await signIn("credentials", {
       redirect: false,
       email: data.email,
@@ -61,20 +66,60 @@ export function SignInForm({
       callbackUrl: dest,
     });
     if (!res || res.error) {
-      setFormError(messageFor(res?.error));
+      setErrorCode(res?.error ?? "unknown");
       return;
     }
-    // Employees land in the admin panel; everyone else keeps the normal
-    // destination (callbackUrl or /account). isEmployee comes from the session.
     const session = await getSession();
     router.push(session?.user?.isEmployee ? "/admin" : (res.url ?? dest));
     router.refresh();
   };
 
+  const unverified = errorCode === AUTH_ERRORS.EMAIL_NOT_VERIFIED;
+
+  async function resend() {
+    const email = getValues("email");
+    if (!email || resendState === "sending") return;
+    setResendState("sending");
+    try {
+      await resendVerificationAction({ email });
+    } finally {
+      setResendState("sent");
+    }
+  }
+
   return (
     <AuthCard title="Sign in" subtitle="Welcome back to Apex Mart.">
+      {googleEnabled && (
+        <div className="mb-5">
+          <GoogleButton callbackUrl={dest} />
+          <div className="mt-5 flex items-center gap-3">
+            <span className="h-px flex-1 bg-border" />
+            <span className="text-xs font-medium text-muted-foreground">or use email</span>
+            <span className="h-px flex-1 bg-border" />
+          </div>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
-        {formError && <FormError>{formError}</FormError>}
+        {errorCode && (
+          <FormError>
+            <span>{messageFor(errorCode)}</span>
+            {unverified && (
+              <button
+                type="button"
+                onClick={resend}
+                disabled={resendState !== "idle"}
+                className="mt-1 block font-bold underline underline-offset-2 disabled:no-underline disabled:opacity-70"
+              >
+                {resendState === "idle"
+                  ? "Resend verification email"
+                  : resendState === "sending"
+                    ? "Sending…"
+                    : "Verification email sent — check your inbox."}
+              </button>
+            )}
+          </FormError>
+        )}
 
         <AuthField label="Email" htmlFor="email" error={errors.email?.message}>
           <input
@@ -94,10 +139,7 @@ export function SignInForm({
           htmlFor="password"
           error={errors.password?.message}
           labelAside={
-            <Link
-              href="/forgot"
-              className="text-xs font-bold text-primary hover:underline"
-            >
+            <Link href="/forgot" className="text-xs font-bold text-primary hover:underline">
               Forgot password?
             </Link>
           }
