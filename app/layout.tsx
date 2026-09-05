@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { STORE } from "@/lib/delivery-config";
+import { env } from "@/lib/env";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -10,6 +11,10 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  // Env-driven base for absolute canonical + Open Graph URLs. Resolves to the
+  // production domain (APP_URL, e.g. https://buildora.fun) on Vercel and to
+  // localhost in dev — never hardcode the domain here.
+  metadataBase: new URL(env.APP_URL),
   title: {
     default: `${STORE.name} — ${STORE.tagline}`,
     template: `%s · ${STORE.name}`,

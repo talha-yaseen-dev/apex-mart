@@ -50,10 +50,13 @@ const schema = z.object({
   CDN_BASE_URL: z.string().optional(),
 
   // Transactional email (Resend). Both optional so the app boots without them;
-  // when RESEND_API_KEY is unset, sendEmail() logs instead of sending. In
-  // production EMAIL_FROM must be a Resend-verified sender for that domain.
+  // when RESEND_API_KEY is unset, sendEmail() logs instead of sending. There is
+  // deliberately NO default sender — EMAIL_FROM must be an explicitly configured,
+  // Resend-verified address (e.g. "Apex Mart <no-reply@buildora.fun>"). If
+  // RESEND_API_KEY is set but EMAIL_FROM is missing, sendEmail() fails safe (see
+  // lib/email.ts) rather than falling back to an unverified sender.
   RESEND_API_KEY: z.string().optional(),
-  EMAIL_FROM: z.string().default("Apex Mart <no-reply@apexmart.local>"),
+  EMAIL_FROM: z.string().optional(),
 
   SENTRY_DSN: z.string().optional(),
   LOG_LEVEL: z
