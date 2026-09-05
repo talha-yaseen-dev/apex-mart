@@ -9,8 +9,8 @@ import { env } from "@/lib/env";
  * In a large company the identity provider (Okta, Google Workspace, Entra ID)
  * is the source of truth for *who is an employee* and *what roles they hold*.
  * On sign-in you reconcile the local mirror against the IdP over SCIM: set
- * `isEmployee`, add/remove standing `RoleAssignment`s, and deprovision leavers.
- * Employee identity is intentionally separate from customer profile data.
+ * `isEmployee` / `role` and deprovision leavers. Employee identity is
+ * intentionally separate from customer profile data.
  *
  * This is a local no-op stub so the credentials flow keeps working — the DB
  * mirror is treated as already in sync. To wire a real provider, implement
@@ -51,22 +51,7 @@ export async function ensureBootstrapAdmin(
     });
   }
 
-  // Ensure a standing assignment to the admin role, if the catalog is seeded.
-  const adminRole = await prisma.appRole.findUnique({ where: { name: "admin" } });
-  if (adminRole) {
-    const has = await prisma.roleAssignment.findFirst({
-      where: { userId: user.id, roleId: adminRole.id, expiresAt: null },
-    });
-    if (!has) {
-      await prisma.roleAssignment.create({
-        data: {
-          userId: user.id,
-          roleId: adminRole.id,
-          reason: "Bootstrap admin (BOOTSTRAP_ADMIN_EMAIL)",
-        },
-      });
-    }
-  }
-
+  // ADMIN role carries the SUPER permission (lib/permissions.ts) — no role
+  // assignment needed.
   return { role: Role.ADMIN, isEmployee: true };
 }

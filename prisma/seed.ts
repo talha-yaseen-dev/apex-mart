@@ -1,6 +1,5 @@
 import { hash } from "@node-rs/argon2";
 import { PrismaClient, ProductStatus, Role } from "@prisma/client";
-import { PERMISSION_DESCRIPTIONS, ROLE_CATALOG } from "../lib/rbac-catalog";
 
 const prisma = new PrismaClient();
 
@@ -167,39 +166,6 @@ async function main() {
     },
   });
 
-  // A STAFF employee for demoing Just-In-Time elevation (baseline can't refund).
-  const staffHash = await hash("password", ARGON2);
-  const staff = await prisma.user.upsert({
-    where: { email: "staff@nova.market" },
-    update: { role: Role.STAFF, isEmployee: true, emailVerified: new Date(), passwordHash: staffHash },
-    create: {
-      email: "staff@nova.market",
-      name: "Sam Staff",
-      role: Role.STAFF,
-      isEmployee: true,
-      emailVerified: new Date(),
-      passwordHash: staffHash,
-    },
-  });
-
-  // A MANAGER: STAFF baseline plus the standing `manager` role — full operations
-  // access (publish, pricing, refunds, cancellations, categories, coupons,
-  // reports, customers) without the admin-only powers (permanent deletes, access
-  // management, payment/security settings). Assigned below.
-  const managerHash = await hash("password", ARGON2);
-  const manager = await prisma.user.upsert({
-    where: { email: "manager@nova.market" },
-    update: { role: Role.STAFF, isEmployee: true, emailVerified: new Date(), passwordHash: managerHash },
-    create: {
-      email: "manager@nova.market",
-      name: "Morgan Manager",
-      role: Role.STAFF,
-      isEmployee: true,
-      emailVerified: new Date(),
-      passwordHash: managerHash,
-    },
-  });
-
   const demoHash = await hash("password", ARGON2);
   await prisma.user.upsert({
     where: { email: "demo@nova.market" },
@@ -212,47 +178,6 @@ async function main() {
       passwordHash: demoHash,
     },
   });
-
-  // ── Access control: permission + role catalog, then assignments ──
-  const permIds = new Map<string, string>();
-  for (const [key, description] of Object.entries(PERMISSION_DESCRIPTIONS)) {
-    const p = await prisma.permission.upsert({
-      where: { key },
-      update: { description },
-      create: { key, description },
-    });
-    permIds.set(key, p.id);
-  }
-  const roleIds = new Map<string, string>();
-  for (const [name, def] of Object.entries(ROLE_CATALOG)) {
-    const role = await prisma.appRole.upsert({
-      where: { name },
-      update: { description: def.description, selfRequestable: def.selfRequestable },
-      create: { name, description: def.description, selfRequestable: def.selfRequestable },
-    });
-    roleIds.set(name, role.id);
-    for (const key of def.permissions) {
-      const permissionId = permIds.get(key)!;
-      await prisma.rolePermission.upsert({
-        where: { roleId_permissionId: { roleId: role.id, permissionId } },
-        update: {},
-        create: { roleId: role.id, permissionId },
-      });
-    }
-  }
-  // Standing assignments: admin → admin role, staff → fulfillment role.
-  const ensureAssignment = async (userId: string, roleName: string) => {
-    const roleId = roleIds.get(roleName)!;
-    const existing = await prisma.roleAssignment.findFirst({
-      where: { userId, roleId, expiresAt: null },
-    });
-    if (!existing) {
-      await prisma.roleAssignment.create({ data: { userId, roleId, reason: "Seeded" } });
-    }
-  };
-  await ensureAssignment(admin.id, "admin");
-  await ensureAssignment(staff.id, "fulfillment");
-  await ensureAssignment(manager.id, "manager");
 
   // ── Categories ──────────────────────────────────────────────
   // Only seeded with the sample catalog; a fresh setup starts with none, and
@@ -356,8 +281,6 @@ async function main() {
   console.log("\n──────────────────────────────────────────");
   console.log(`   Admin login:  ${admin.email}`);
   console.log(`   Admin passwd: ${adminPassword}`);
-  console.log(`   Manager login: manager@nova.market / password  (MANAGER — full operations)`);
-  console.log(`   Staff login:  staff@nova.market / password  (STAFF — try JIT elevation)`);
   console.log(`   Demo login:   demo@nova.market / password`);
   console.log("──────────────────────────────────────────\n");
 }

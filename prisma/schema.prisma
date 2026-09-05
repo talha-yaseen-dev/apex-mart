@@ -22,7 +22,6 @@ datasource db {
 
 enum Role {
   CUSTOMER
-  STAFF
   ADMIN
 }
 
@@ -96,11 +95,10 @@ model User {
   // marks accounts created at checkout with no password (cannot sign in).
   phone         String?   @unique
   isGuest       Boolean   @default(false)
-  // Legacy coarse account type; feeds baseline permissions. Fine-grained
-  // capability now comes from RoleAssignment (see Access control below).
+  // Account type — CUSTOMER or ADMIN. ADMIN grants all permissions (SUPER).
   role          Role      @default(CUSTOMER)
-  // Phase 8: is this identity part of the internal staff directory? In prod
-  // this (and role assignments) is provisioned by SSO/SCIM, not self-set.
+  // Whether this identity may reach the admin surface. Kept in sync with an
+  // ADMIN role (admins are employees; customers are not).
   isEmployee    Boolean   @default(false)
   // Optional profile picture — an uploaded (downscaled) data URL or a pasted
   // image URL. Shown in the header account menu and settings.
@@ -125,7 +123,6 @@ model User {
   orders          Order[]
   inventoryLogs   InventoryLog[]
   auditLogs       AuditLog[]
-  roleAssignments RoleAssignment[] @relation("UserRoleAssignments")
 
   @@index([createdAt])
 }
@@ -493,54 +490,7 @@ model SalesReport {
   createdAt    DateTime @default(now())
 }
 
-// ─────────────────────────────────────────────────────────────
-// Access control (Phase 8) — permission-based RBAC with roles-as-data and
-// Just-In-Time, time-boxed role assignments. Capability = union of the
-// permissions of a user's active (unexpired) role assignments.
-// ─────────────────────────────────────────────────────────────
-
-model Permission {
-  id          String           @id @default(cuid())
-  key         String           @unique // e.g. "orders:refund", or "*"
-  description String
-  roles       RolePermission[]
-}
-
-model AppRole {
-  id              String  @id @default(cuid())
-  name            String  @unique // e.g. "finance", "fulfillment", "admin"
-  description     String
-  // May a staff member self-grant this via break-glass JIT elevation, or does
-  // it require an admin to assign? (admin role is never self-requestable)
-  selfRequestable Boolean @default(false)
-
-  permissions RolePermission[]
-  assignments RoleAssignment[]
-}
-
-model RolePermission {
-  roleId       String
-  permissionId String
-
-  role       AppRole    @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
-
-  @@id([roleId, permissionId])
-}
-
-model RoleAssignment {
-  id        String    @id @default(cuid())
-  userId    String
-  roleId    String
-  grantedBy String? // actor user id (null = system/bootstrap)
-  reason    String?
-  // null = standing grant; a timestamp = JIT elevation that auto-expires.
-  expiresAt DateTime?
-  createdAt DateTime  @default(now())
-
-  user User    @relation("UserRoleAssignments", fields: [userId], references: [id], onDelete: Cascade)
-  role AppRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([expiresAt])
-}
+// Access control: two account types only — CUSTOMER and ADMIN (Role enum).
+// Admins hold the SUPER ("*") permission (see lib/permissions.ts); customers
+// hold none. The previous roles-as-data RBAC (Permission / AppRole /
+// RolePermission / RoleAssignment) has been removed.

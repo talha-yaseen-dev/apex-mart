@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -158,26 +157,18 @@ export function OrderFulfillment({
           </button>
         )}
 
-        {refundEligible &&
-          (canRefund ? (
-            <button
-              disabled={pending}
-              onClick={() =>
-                confirm("Issue a full refund and restock the items?") &&
-                run(() => refundOrderAction(orderId))
-              }
-              className="h-10 rounded-lg border border-[oklch(0.85_0.07_25)] bg-[oklch(0.97_0.02_25)] px-4 text-[13px] font-bold text-[oklch(0.5_0.14_25)] hover:bg-[oklch(0.95_0.03_25)] disabled:opacity-60"
-            >
-              Issue full refund
-            </button>
-          ) : (
-            <Link
-              href="/admin/access"
-              className="inline-flex h-10 items-center rounded-lg border bg-muted px-4 text-[12.5px] font-semibold text-muted-foreground hover:border-primary"
-            >
-              Request refund access →
-            </Link>
-          ))}
+        {refundEligible && canRefund && (
+          <button
+            disabled={pending}
+            onClick={() =>
+              confirm("Issue a full refund and restock the items?") &&
+              run(() => refundOrderAction(orderId))
+            }
+            className="h-10 rounded-lg border border-[oklch(0.85_0.07_25)] bg-[oklch(0.97_0.02_25)] px-4 text-[13px] font-bold text-[oklch(0.5_0.14_25)] hover:bg-[oklch(0.95_0.03_25)] disabled:opacity-60"
+          >
+            Issue full refund
+          </button>
+        )}
       </div>
       {err && <div className="mt-2 text-[12.5px] text-destructive">{err}</div>}
     </div>
