@@ -63,6 +63,9 @@
   /* Soft elevation for floating surfaces (modals, popovers, sticky bars).
      Distinct raw-var name so this mapping never self-references. */
   --shadow-float: var(--elevation-float);
+  /* Admin chrome — the always-dark sidebar/drawer surface (bg-ink). Constant
+     across light/dark since that chrome is dark in both themes. */
+  --color-ink: var(--ink);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
@@ -96,6 +99,7 @@
   --warning: #b45309; /* amber-700 — readable low-stock text on light */
   --elevation-float: 0 10px 30px -12px oklch(0.2 0.02 265 / 0.28),
     0 4px 12px -6px oklch(0.2 0.02 265 / 0.12);
+  --ink: oklch(0.19 0.02 265); /* near-black navy for admin sidebar/drawer */
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);

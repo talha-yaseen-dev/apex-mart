@@ -150,7 +150,22 @@ export async function getAdminProduct(id: string) {
 export async function getInventory() {
   const variants = await prisma.productVariant.findMany({
     orderBy: { stock: "asc" },
-    include: { product: { select: { name: true } } },
+    include: {
+      product: {
+        select: {
+          name: true,
+          // Category, plus its parent so we can roll a product up to its
+          // top-level aisle (matches the storefront's category rail).
+          category: {
+            select: {
+              slug: true,
+              name: true,
+              parent: { select: { slug: true, name: true } },
+            },
+          },
+        },
+      },
+    },
   });
   const now = new Date();
   const reservations = await prisma.stockReservation.groupBy({
@@ -159,14 +174,20 @@ export async function getInventory() {
     _sum: { qty: true },
   });
   const reserved = new Map(reservations.map((r) => [r.variantId, r._sum.qty ?? 0]));
-  return variants.map((v) => ({
-    id: v.id,
-    name: v.product.name,
-    label: Object.values((v.attributes as Record<string, string>) ?? {}).join(" · "),
-    sku: v.sku,
-    stock: v.stock,
-    reserved: reserved.get(v.id) ?? 0,
-  }));
+  return variants.map((v) => {
+    const cat = v.product.category;
+    const top = cat.parent ?? cat; // roll subcategories up to their aisle
+    return {
+      id: v.id,
+      name: v.product.name,
+      label: Object.values((v.attributes as Record<string, string>) ?? {}).join(" · "),
+      sku: v.sku,
+      stock: v.stock,
+      reserved: reserved.get(v.id) ?? 0,
+      categorySlug: top.slug,
+      categoryName: top.name,
+    };
+  });
 }
 
 // ── Orders ────────────────────────────────────────────────────
