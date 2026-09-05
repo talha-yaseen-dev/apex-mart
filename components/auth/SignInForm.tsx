@@ -93,7 +93,7 @@ export function SignInForm({
           <GoogleButton callbackUrl={dest} />
           <div className="mt-5 flex items-center gap-3">
             <span className="h-px flex-1 bg-border" />
-            <span className="text-xs font-medium text-muted-foreground">or use email</span>
+            <span className="text-xs font-medium text-muted-foreground">or continue with email</span>
             <span className="h-px flex-1 bg-border" />
           </div>
         </div>
