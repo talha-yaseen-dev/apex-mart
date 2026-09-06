@@ -5,6 +5,7 @@ import { ProductCard } from "./ProductCard";
 import { SortSelect } from "./SortSelect";
 import { MobileFilters } from "./MobileFilters";
 import { FilterControls } from "./FilterControls";
+import { CategoryNav } from "./CategoryNav";
 import { Pagination } from "./Pagination";
 
 type ResultsBrowserProps = {
@@ -16,6 +17,8 @@ type ResultsBrowserProps = {
   /** Route path for pagination links, e.g. /c/grocery or /search. */
   basePath: string;
   searchParams: Record<string, string | string[] | undefined>;
+  /** Current aisle slug (category pages), highlighted in the sidebar categories. */
+  activeSlug?: string;
   /** Rendered inside the grid column when `items` is empty (page-specific copy). */
   empty: React.ReactNode;
 };
@@ -34,6 +37,7 @@ export function ResultsBrowser({
   facets,
   basePath,
   searchParams,
+  activeSlug,
   empty,
 }: ResultsBrowserProps) {
   return (
@@ -52,6 +56,8 @@ export function ResultsBrowser({
       <div className="mt-4 flex gap-6">
         <aside className="hidden w-56 shrink-0 lg:block">
           <div className="sticky top-[100px]">
+            {/* Categories sit above the price/other filters. */}
+            <CategoryNav activeSlug={activeSlug} />
             <FilterControls colors={facets.colors} sizes={facets.sizes} />
           </div>
         </aside>

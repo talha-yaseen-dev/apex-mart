@@ -54,6 +54,7 @@ export async function CategoryListing({
         facets={facets}
         basePath={basePath}
         searchParams={searchParams}
+        activeSlug={slug}
         empty={
           <div className="rounded-2xl border border-dashed border-border py-20 text-center">
             <div className="mb-3 text-4xl">🔍</div>

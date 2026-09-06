@@ -1,66 +1,72 @@
-import { getAllCatalog } from "@/lib/storefront";
+import { getSearchResults, getCategories } from "@/lib/storefront";
 import { getCurrentUser } from "@/lib/session";
 import { withWishlistState } from "@/lib/account";
-import { HomeHero } from "@/components/shop/HomeHero";
 import { CategoryRail } from "@/components/shop/CategoryRail";
-import { ProductSection, type SectionItem } from "@/components/shop/ProductSection";
-import {
-  CATEGORY_ICONS,
-  POPULAR_SLUGS,
-  SALE,
-  JUST_ARRIVED_LIMIT,
-  TRUST_POINTS,
-} from "@/lib/home-content";
+import { ResultsBrowser } from "@/components/shop/ResultsBrowser";
+import { TRUST_POINTS, CATEGORY_ICONS } from "@/lib/home-content";
+import { STORE } from "@/lib/delivery-config";
 
-const saleMinor = (slug: string): number | null =>
-  SALE[slug] != null ? SALE[slug] * 100 : null;
+type PageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
 
-export default async function HomePage() {
-  const { items: rawItems, facets } = await getAllCatalog();
-  const user = await getCurrentUser();
+/**
+ * Home = the full storefront listing. A compact brand banner, then the faceted
+ * catalog (categories + price/availability filters in the left sidebar, product
+ * grid, sort, pagination) over every product — the same chrome as the category
+ * and search pages. Filters/sort/pagination drive `/?…` query params.
+ */
+export default async function HomePage({ searchParams }: PageProps) {
+  const sp = await searchParams;
+  const [{ items: rawItems, total, page, totalPages, facets }, categories, user] =
+    await Promise.all([getSearchResults(sp), getCategories(), getCurrentUser()]);
   const items = await withWishlistState(user?.id, rawItems);
-  const bySlug = new Map(items.map((i) => [i.slug, i]));
 
   const order = Object.keys(CATEGORY_ICONS);
-  const categories = [...facets.categories].sort(
+  const sortedCats = [...categories].sort(
     (a, b) => order.indexOf(a.slug) - order.indexOf(b.slug),
   );
 
-  const popular: SectionItem[] = POPULAR_SLUGS.map((s) => bySlug.get(s))
-    .filter((c): c is NonNullable<typeof c> => Boolean(c))
-    .map((card) => ({ card, originalMinor: saleMinor(card.slug) }));
-
-  const onSale: SectionItem[] = items
-    .filter((i) => SALE[i.slug] != null)
-    .map((card) => ({ card, originalMinor: saleMinor(card.slug) }));
-
-  const justArrived: SectionItem[] = [...items]
-    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-    .slice(0, JUST_ARRIVED_LIMIT)
-    .map((card) => ({ card, isNew: true, originalMinor: saleMinor(card.slug) }));
-
   return (
-    <div className="mx-auto max-w-7xl px-4">
-      <HomeHero />
-      <CategoryRail categories={categories} />
-
-      <div id="shop" className="scroll-mt-28">
-        <ProductSection
-          title="Popular this week"
-          note="What the neighbourhood keeps reordering"
-          items={popular}
-        />
-        <ProductSection
-          title="On sale now"
-          note={`${onSale.length} items marked down`}
-          items={onSale}
-        />
-        <ProductSection
-          title="Just arrived"
-          note="Fresh on the shelves"
-          items={justArrived}
-        />
+    <div className="mx-auto max-w-7xl px-4 py-4">
+      {/* Brand banner */}
+      <div className="flex items-center gap-4 overflow-hidden rounded-3xl border border-border bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-5">
+        <span className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-background text-3xl shadow-sm">
+          🛒
+        </span>
+        <div className="min-w-0">
+          <h1 className="text-2xl font-extrabold tracking-tight text-foreground">
+            Shop {STORE.name}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Groceries, snacks &amp; household essentials — delivered across {STORE.city}.
+          </p>
+        </div>
       </div>
+
+      {/* Categories on mobile (desktop uses the sidebar below). */}
+      <div className="lg:hidden">
+        <CategoryRail categories={sortedCats} />
+      </div>
+
+      {/* Across the whole catalog the size list is huge and meaningless — keep
+          categories/price/availability; sizes stay on the scoped category pages. */}
+      <ResultsBrowser
+        items={items}
+        total={total}
+        page={page}
+        totalPages={totalPages}
+        facets={{ ...facets, sizes: [] }}
+        basePath="/"
+        searchParams={sp}
+        empty={
+          <div className="rounded-2xl border border-dashed border-border py-20 text-center">
+            <div className="mb-3 text-4xl">🛒</div>
+            <p className="text-base font-extrabold text-foreground">No products match</p>
+            <p className="mt-1 text-sm text-muted-foreground">Try clearing the filters.</p>
+          </div>
+        }
+      />
 
       <section className="mt-8 grid grid-cols-1 gap-5 rounded-3xl border border-border bg-muted/40 p-6 sm:grid-cols-3">
         {TRUST_POINTS.map((t) => (
@@ -68,9 +74,7 @@ export default async function HomePage() {
             <span className="text-xl">{t.icon}</span>
             <div>
               <p className="text-sm font-extrabold text-foreground">{t.title}</p>
-              <p className="mt-0.5 text-[13px] leading-relaxed text-muted-foreground">
-                {t.body}
-              </p>
+              <p className="mt-0.5 text-[13px] leading-relaxed text-muted-foreground">{t.body}</p>
             </div>
           </div>
         ))}
