@@ -51,10 +51,11 @@ export type CatalogParams = {
   page: number;
 };
 
-// 12 fills complete rows at every grid width — the storefront grid is 2 cols
-// (mobile), 3 (sm/lg), and 4 (xl), and 12 is divisible by all three, so no page
-// ever ends in a ragged, half-empty row.
-export const PER_PAGE = 12;
+// 24 fills complete rows at every grid width — the storefront grid is 2 cols
+// (mobile), 3 (sm/lg), and 4 (xl), and 24 is divisible by all three, so no page
+// ever ends in a ragged, half-empty row. 24 = ~6 rows on desktop (a fuller first
+// screen than 12) and halves the pagination on the home listing.
+export const PER_PAGE = 24;
 
 export const EMPTY_PARAMS: CatalogParams = {
   q: "",
