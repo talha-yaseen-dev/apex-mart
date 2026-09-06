@@ -1,12 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Minus, Plus } from "lucide-react";
 import type { StoreCard } from "@/lib/catalog-filter";
 import { formatPKR } from "@/lib/format";
 import { useCart } from "@/components/cart/CartProvider";
 import { WishlistButton } from "./WishlistButton";
-import { cn } from "@/lib/utils";
 
 type ProductCardProps = {
   card: StoreCard;
@@ -23,7 +24,9 @@ type ProductCardProps = {
  * real cart and mirrors its quantity; reused on home, category, and search.
  */
 export function ProductCard({ card, originalMinor, isNew, hideWishlist }: ProductCardProps) {
-  const { itemForVariant, add, setQty, remove, pending } = useCart();
+  const { itemForVariant, add, addAsync, setQty, remove, pending } = useCart();
+  const router = useRouter();
+  const [buying, setBuying] = useState(false);
   const item = itemForVariant(card.variantId);
   const qty = item?.qty ?? 0;
 
@@ -39,6 +42,19 @@ export function ProductCard({ card, originalMinor, isNew, hideWishlist }: Produc
     else setQty(item.itemId, qty - 1);
   };
   const inc = () => item && setQty(item.itemId, qty + 1);
+
+  // Buy now: ensure the item is in the cart, then straight to checkout. Awaits
+  // the add so checkout never lands on a not-yet-updated (empty) cart.
+  const buyNow = async () => {
+    if (!card.inStock || !card.variantId || pending || buying) return;
+    setBuying(true);
+    try {
+      if (qty === 0) await addAsync(card.variantId);
+      router.push("/checkout");
+    } catch {
+      setBuying(false);
+    }
+  };
 
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-shadow hover:shadow-[0_8px_24px_-14px_rgba(15,23,42,0.25)]">
@@ -121,37 +137,49 @@ export function ProductCard({ card, originalMinor, isNew, hideWishlist }: Produc
           <div className="rounded-xl bg-muted py-2.5 text-center text-xs font-bold text-muted-foreground">
             Unavailable
           </div>
-        ) : qty === 0 ? (
-          <button
-            type="button"
-            onClick={() => add(card.variantId!)}
-            disabled={pending}
-            className="tap-target w-full rounded-xl bg-primary text-xs font-extrabold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
-          >
-            + Add to cart
-          </button>
         ) : (
-          <div className="flex items-center justify-between rounded-xl border border-primary/30 bg-primary/5">
+          <div className="flex items-center gap-2">
+            {qty === 0 ? (
+              <button
+                type="button"
+                onClick={() => add(card.variantId!)}
+                disabled={pending}
+                className="tap-target flex-1 rounded-xl bg-primary text-xs font-extrabold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
+              >
+                + Add
+              </button>
+            ) : (
+              <div className="flex flex-1 items-center justify-between rounded-xl border border-primary/30 bg-primary/5">
+                <button
+                  type="button"
+                  onClick={dec}
+                  disabled={pending}
+                  aria-label="Decrease quantity"
+                  className="tap-target flex items-center justify-center px-3 text-primary disabled:opacity-50"
+                >
+                  <Minus className="size-4" />
+                </button>
+                <span className="text-sm font-extrabold text-primary" aria-live="polite">
+                  {qty}
+                </span>
+                <button
+                  type="button"
+                  onClick={inc}
+                  disabled={pending || (item ? qty >= item.available : false)}
+                  aria-label="Increase quantity"
+                  className="tap-target flex items-center justify-center px-3 text-primary disabled:opacity-50"
+                >
+                  <Plus className="size-4" />
+                </button>
+              </div>
+            )}
             <button
               type="button"
-              onClick={dec}
-              disabled={pending}
-              aria-label="Decrease quantity"
-              className="tap-target flex items-center justify-center px-3 text-primary disabled:opacity-50"
+              onClick={() => void buyNow()}
+              disabled={pending || buying}
+              className="tap-target shrink-0 rounded-xl border-2 border-primary bg-background px-3 text-xs font-extrabold text-primary transition-colors hover:bg-primary hover:text-primary-foreground disabled:opacity-60"
             >
-              <Minus className="size-4" />
-            </button>
-            <span className="text-sm font-extrabold text-primary" aria-live="polite">
-              {qty}
-            </span>
-            <button
-              type="button"
-              onClick={inc}
-              disabled={pending || (item ? qty >= item.available : false)}
-              aria-label="Increase quantity"
-              className="tap-target flex items-center justify-center px-3 text-primary disabled:opacity-50"
-            >
-              <Plus className="size-4" />
+              Buy
             </button>
           </div>
         )}
