@@ -36,7 +36,7 @@ export default async function HomePage({ searchParams }: PageProps) {
   );
 
   return (
-    <div className="mx-auto max-w-7xl px-4 pb-4 pt-1">
+    <div className="mx-auto max-w-[1600px] px-4 pb-4 pt-1">
       {/* Keep an accessible/SEO heading without the visible banner. */}
       <h1 className="sr-only">Shop {STORE.name}</h1>
 

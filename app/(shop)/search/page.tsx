@@ -91,7 +91,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
   const items = await withWishlistState(user?.id, rawItems);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-4">
+    <div className="mx-auto max-w-[1600px] px-4 py-4">
       <Breadcrumbs
         items={[{ label: "Home", href: "/" }, { label: `Search: ${q}` }]}
       />

@@ -18,7 +18,7 @@ export default async function CategoriesIndexPage() {
   );
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-5">
+    <div className="mx-auto max-w-[1600px] px-4 py-5">
       <nav aria-label="Breadcrumb" className="mb-3 text-xs font-semibold text-muted-foreground">
         <Link href="/" className="hover:text-foreground">
           Home

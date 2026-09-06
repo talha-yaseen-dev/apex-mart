@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 /** Loading skeleton shown while a category listing streams in. */
 export default function CategoryLoading() {
   return (
-    <div className="mx-auto max-w-7xl px-4 py-4">
+    <div className="mx-auto max-w-[1600px] px-4 py-4">
       <Skeleton className="h-4 w-40" />
       <Skeleton className="mt-3 h-24 w-full rounded-3xl" />
       <div className="mt-4 flex items-center gap-3 border-b border-border py-2">

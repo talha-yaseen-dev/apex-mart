@@ -24,7 +24,7 @@ export async function SiteHeader() {
     <header className="sticky top-0 z-40">
       {/* Utility bar */}
       <div className="bg-slate-900 text-slate-300">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-1.5 text-xs">
+        <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-3 px-4 py-1.5 text-xs">
           <LocationBar />
           <div className="hidden items-center gap-3 sm:flex">
             <span>Free delivery over Rs. 1,000</span>
@@ -39,7 +39,7 @@ export async function SiteHeader() {
 
       {/* Main bar — more transparent on mobile, more solid on desktop. */}
       <div className="border-b border-border bg-background/70 backdrop-blur md:bg-background/90">
-        <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-2.5">
+        <div className="mx-auto flex max-w-[1600px] items-center gap-3 px-4 py-2.5">
           <Link href="/" className="flex shrink-0 items-center gap-2" aria-label={`${STORE.name} home`}>
             <BrandMark size={38} priority />
             <span className="leading-tight">

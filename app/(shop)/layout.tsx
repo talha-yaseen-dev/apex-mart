@@ -33,7 +33,7 @@ function SiteFooter() {
   return (
     <footer className="border-t border-border bg-muted/40">
       {/* Extra bottom padding clears the fixed mobile bottom nav (md:hidden). */}
-      <div className="mx-auto max-w-7xl px-4 py-8 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-8">
+      <div className="mx-auto max-w-[1600px] px-4 py-8 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-8">
         <nav aria-label="Legal" className="flex flex-wrap gap-x-6 gap-y-2">
           {LEGAL_SLUGS.map((slug) => (
             <Link

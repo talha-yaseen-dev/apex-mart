@@ -76,7 +76,7 @@ export default async function ProductPage({ params }: PageProps) {
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 pb-10 pt-4 md:pb-0">
+    <div className="mx-auto max-w-[1600px] px-4 pb-10 pt-4 md:pb-0">
       <Breadcrumbs
         items={[
           { label: "Home", href: "/" },
