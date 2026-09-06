@@ -9,7 +9,11 @@ import { hashPassword, verifyPassword } from "@/lib/password";
 import { normalizePhone } from "@/lib/phone";
 import { strongPasswordSchema } from "@/lib/validations/auth";
 import { isPasswordPwned, PWNED_PASSWORD_MESSAGE } from "@/lib/pwned";
-import { DEMO_ACCOUNT_LOCK_MESSAGE, isDemoAccount } from "@/lib/auth-constants";
+import {
+  DEMO_ACCOUNT_LOCK_MESSAGE,
+  DEMO_ACCOUNT_WRITE_BLOCK_MESSAGE,
+  isDemoAccount,
+} from "@/lib/auth-constants";
 
 /** Update the signed-in user's display name, phone, and optional picture. */
 const profileSchema = z.object({
@@ -162,5 +166,52 @@ export async function setInitialPasswordAction(input: { next: string; confirm: s
     data: { passwordHash: await hashPassword(parsed.data.next) },
   });
   revalidatePath("/account/settings");
+  return { ok: true as const };
+}
+
+/**
+ * Delete (close) the signed-in user's account. Deliberately a SOFT delete that
+ * preserves the store's records: the account is deactivated (sign-in refused via
+ * getCurrentUser) and the user's PRIVATE data — saved addresses, cart, wishlist —
+ * is removed, but orders, payments and reviews are KEPT so admin retains the full
+ * purchase/revenue history (and can even reactivate the account later).
+ *
+ * Reauthentication is enforced server-side: password accounts must supply their
+ * current password; every caller must type the literal confirmation "DELETE".
+ * The primary-admin (owner) account can't be deleted here.
+ */
+export async function deleteAccountAction(input: { password?: string; confirmText?: string }) {
+  const sessionUser = await getCurrentUser();
+  if (!sessionUser) return { ok: false as const, error: "Please sign in." };
+  if (isDemoAccount(sessionUser.email)) {
+    return { ok: false as const, error: DEMO_ACCOUNT_WRITE_BLOCK_MESSAGE };
+  }
+  if ((input?.confirmText ?? "").trim().toUpperCase() !== "DELETE") {
+    return { ok: false as const, error: "Type DELETE to confirm." };
+  }
+
+  const dbUser = await prisma.user.findUnique({
+    where: { id: sessionUser.id },
+    select: { passwordHash: true, isPrimaryAdmin: true },
+  });
+  if (!dbUser) return { ok: false as const, error: "Account not found." };
+  if (dbUser.isPrimaryAdmin) {
+    return { ok: false as const, error: "The primary admin account can't be deleted here." };
+  }
+
+  // Password accounts must reauthenticate; Google-only accounts are gated by the
+  // typed confirmation + their authenticated session (they have no password).
+  if (dbUser.passwordHash.startsWith("$argon2")) {
+    const ok = await verifyPassword(dbUser.passwordHash, input.password ?? "");
+    if (!ok) return { ok: false as const, error: "Your current password is incorrect." };
+  }
+
+  await prisma.$transaction([
+    prisma.address.deleteMany({ where: { userId: sessionUser.id } }),
+    prisma.wishlist.deleteMany({ where: { userId: sessionUser.id } }),
+    prisma.cart.deleteMany({ where: { userId: sessionUser.id } }),
+    prisma.user.update({ where: { id: sessionUser.id }, data: { deactivatedAt: new Date() } }),
+  ]);
+
   return { ok: true as const };
 }

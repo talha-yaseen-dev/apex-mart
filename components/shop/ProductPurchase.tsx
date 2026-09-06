@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Minus, Plus, Truck } from "lucide-react";
 import type { ProductVariantView } from "@/lib/storefront";
 import { formatPKR } from "@/lib/format";
@@ -36,9 +37,11 @@ export function ProductPurchase({
   productId,
   savedInitial,
 }: ProductPurchaseProps) {
-  const { itemForVariant, add, setQty, remove, pending } = useCart();
+  const { itemForVariant, add, addAsync, setQty, remove, pending } = useCart();
+  const router = useRouter();
   const cheapestId = variants[0]?.id;
   const [selectedId, setSelectedId] = useState(cheapestId);
+  const [buying, setBuying] = useState(false);
 
   const selected = variants.find((v) => v.id === selectedId) ?? variants[0];
   const stock = selected?.stock ?? 0;
@@ -60,6 +63,20 @@ export function ProductPurchase({
     else setQty(item.itemId, qty - 1);
   };
   const inc = () => item && setQty(item.itemId, qty + 1);
+
+  // Buy now: make sure the selected variant is in the cart, then go straight to
+  // checkout (and on to payment). Awaits the add so checkout never flashes an
+  // empty cart. If it's already in the cart, just proceed.
+  const buyNow = async () => {
+    if (stock <= 0 || pending || buying) return;
+    setBuying(true);
+    try {
+      if (qty === 0) await addAsync(selected.id);
+      router.push("/checkout");
+    } catch {
+      setBuying(false);
+    }
+  };
 
   const priceBlock = (
     <div className="flex items-baseline gap-2.5">
@@ -202,6 +219,16 @@ export function ProductPurchase({
 
       <div className="hidden gap-3 md:flex">
         {addControl("flex-1")}
+        {stock > 0 && (
+          <button
+            type="button"
+            onClick={() => void buyNow()}
+            disabled={pending || buying}
+            className="tap-target shrink-0 rounded-xl border-2 border-primary bg-background px-6 text-sm font-extrabold text-primary transition-colors hover:bg-primary hover:text-primary-foreground disabled:opacity-60"
+          >
+            Buy now
+          </button>
+        )}
         <WishlistButton
           variant="labeled"
           productId={productId}
@@ -211,8 +238,8 @@ export function ProductPurchase({
       </div>
 
       <div className="fixed inset-x-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-40 border-t border-border bg-background/95 px-4 py-3 backdrop-blur md:hidden">
-        <div className="mx-auto flex max-w-7xl items-center gap-3">
-          <div className="min-w-0">
+        <div className="mx-auto flex max-w-7xl items-center gap-2">
+          <div className="min-w-0 shrink">
             <div className="text-lg font-extrabold text-primary">
               {formatPKR(selected.priceMinor)}
             </div>
@@ -223,9 +250,19 @@ export function ProductPurchase({
           <WishlistButton
             productId={productId}
             initialSaved={savedInitial}
-            className="ml-auto border border-input"
+            className="shrink-0 border border-input"
           />
-          {addControl("min-w-[140px]")}
+          {addControl("flex-1 min-w-0")}
+          {stock > 0 && (
+            <button
+              type="button"
+              onClick={() => void buyNow()}
+              disabled={pending || buying}
+              className="tap-target shrink-0 rounded-xl border-2 border-primary bg-background px-4 text-sm font-extrabold text-primary transition-colors hover:bg-primary hover:text-primary-foreground disabled:opacity-60"
+            >
+              Buy
+            </button>
+          )}
         </div>
       </div>
     </div>

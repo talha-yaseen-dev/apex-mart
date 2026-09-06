@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -47,18 +47,42 @@ export function SignInForm({
   const [errorCode, setErrorCode] = useState<string | null>(initialError ?? null);
   const [attemptedEmail, setAttemptedEmail] = useState("");
   const [showPw, setShowPw] = useState(false);
+  const [remember, setRemember] = useState(false);
 
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<SignInInput>({
     resolver: zodResolver(signInSchema),
     defaultValues: { email: "", password: "" },
   });
 
+  // "Remember me" prefills the email on return visits. We deliberately never
+  // store the password — the browser's own password manager (via
+  // autoComplete="current-password") fills it securely.
+  const REMEMBER_KEY = "apexmart:remember-email";
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(REMEMBER_KEY);
+      if (saved) {
+        setValue("email", saved);
+        setRemember(true);
+      }
+    } catch {
+      /* localStorage unavailable — no-op */
+    }
+  }, [setValue]);
+
   const onSubmit = async (data: SignInInput) => {
     setErrorCode(null);
+    try {
+      if (remember) localStorage.setItem(REMEMBER_KEY, data.email);
+      else localStorage.removeItem(REMEMBER_KEY);
+    } catch {
+      /* ignore storage errors */
+    }
     const res = await signIn("credentials", {
       redirect: false,
       email: data.email,
@@ -159,6 +183,16 @@ export function SignInForm({
             </button>
           </div>
         </AuthField>
+
+        <label className="flex items-center gap-2 text-sm font-semibold text-foreground">
+          <input
+            type="checkbox"
+            checked={remember}
+            onChange={(e) => setRemember(e.target.checked)}
+            className="size-4 accent-primary"
+          />
+          Remember me
+        </label>
 
         <SubmitButton pending={isSubmitting}>Sign in</SubmitButton>
       </form>

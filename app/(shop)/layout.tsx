@@ -23,7 +23,7 @@ export default function ShopLayout({
         <SiteFooter />
         <BottomNav />
       </div>
-      <Toaster position="top-center" richColors />
+      <Toaster position="bottom-right" richColors />
     </CartProvider>
   );
 }

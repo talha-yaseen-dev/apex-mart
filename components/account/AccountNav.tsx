@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut } from "next-auth/react";
 import { Home, Package, MapPin, Heart, Settings, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SignOutButton } from "@/components/account/sign-out-button";
 
 type NavItem = {
   href: string;
@@ -64,14 +64,10 @@ export function AccountNav({
             </Link>
           );
         })}
-        <button
-          type="button"
-          onClick={() => signOut({ callbackUrl: "/" })}
-          className="tap-target inline-flex shrink-0 items-center gap-2 rounded-full border border-input px-4 text-sm font-semibold text-muted-foreground transition-colors hover:border-red-200 hover:text-red-600"
-        >
+        <SignOutButton className="tap-target inline-flex shrink-0 items-center gap-2 rounded-full border border-input px-4 text-sm font-semibold text-muted-foreground transition-colors hover:border-red-200 hover:text-red-600">
           <LogOut className="size-4" aria-hidden />
           Sign out
-        </button>
+        </SignOutButton>
       </nav>
     );
   }
@@ -98,14 +94,10 @@ export function AccountNav({
           </Link>
         );
       })}
-      <button
-        type="button"
-        onClick={() => signOut({ callbackUrl: "/" })}
-        className="tap-target mt-1 flex items-center gap-3 rounded-xl border-t border-transparent px-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-red-600"
-      >
+      <SignOutButton className="tap-target mt-1 flex items-center gap-3 rounded-xl border-t border-transparent px-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-red-600">
         <LogOut className="size-5 shrink-0" aria-hidden />
         Sign out
-      </button>
+      </SignOutButton>
     </nav>
   );
 }

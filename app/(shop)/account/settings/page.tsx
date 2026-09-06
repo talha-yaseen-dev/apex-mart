@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/lib/session";
 import { prisma } from "@/lib/db";
 import { ProfileForm, PasswordForm, SetPasswordForm } from "@/components/account/SettingsForms";
 import { ChangeEmailForm } from "@/components/account/ChangeEmailForm";
+import { DeleteAccountForm } from "@/components/account/DeleteAccountForm";
 
 export const metadata: Metadata = {
   title: "Settings",
@@ -28,6 +29,7 @@ export default async function SettingsPage() {
         <ProfileForm name={user.name ?? ""} phone={user.phone ?? ""} />
         <ChangeEmailForm currentEmail={user.email ?? ""} hasPassword={hasPassword} />
         {hasPassword ? <PasswordForm /> : <SetPasswordForm />}
+        <DeleteAccountForm hasPassword={hasPassword} />
       </div>
     </div>
   );

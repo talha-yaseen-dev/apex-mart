@@ -1,25 +1,18 @@
 "use client";
 
-import { useOptimistic, useState, useTransition } from "react";
+import { useOptimistic, useTransition } from "react";
+import Link from "next/link";
 import { Plus, MapPinPlus } from "lucide-react";
 import { toast } from "sonner";
 import type { Address } from "@prisma/client";
 import { deleteAddressAction, setDefaultAddressAction } from "@/lib/actions/addresses";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
 import { AddressCard } from "@/components/account/AddressCard";
-import { AddressForm } from "@/components/account/AddressForm";
 
 /**
- * Client orchestrator for the address book: one shared Sheet drives both "add"
- * and "edit", and set-default / delete update optimistically. The list itself
- * is refreshed by the server actions' revalidatePath, which re-supplies the
- * `addresses` prop and resets the optimistic state.
+ * Address book list. Adding/editing happens on its own page
+ * (/account/addresses/new and /[id]/edit) — this view just lists the saved
+ * addresses; set-default and delete update optimistically and are reconciled by
+ * the server actions' revalidatePath.
  */
 export function AddressManager({ addresses }: { addresses: Address[] }) {
   const [optimistic, setOptimistic] = useOptimistic(
@@ -27,12 +20,6 @@ export function AddressManager({ addresses }: { addresses: Address[] }) {
     (state: Address[], update: (a: Address[]) => Address[]) => update(state),
   );
   const [isPending, startTransition] = useTransition();
-
-  // undefined = sheet closed; null = adding; Address = editing that one.
-  const [target, setTarget] = useState<Address | null | undefined>(undefined);
-  const sheetOpen = target !== undefined;
-
-  const closeSheet = () => setTarget(undefined);
 
   const handleDelete = (id: string) => {
     if (!window.confirm("Delete this address? This can't be undone.")) return;
@@ -56,14 +43,13 @@ export function AddressManager({ addresses }: { addresses: Address[] }) {
       <div className="mb-5 flex items-center justify-between gap-3">
         <h1 className="text-2xl font-extrabold tracking-tight text-foreground">Addresses</h1>
         {optimistic.length > 0 && (
-          <button
-            type="button"
-            onClick={() => setTarget(null)}
+          <Link
+            href="/account/addresses/new"
             className="tap-target inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground hover:bg-primary/90"
           >
             <Plus className="size-4" aria-hidden />
             Add new
-          </button>
+          </Link>
         )}
       </div>
 
@@ -74,14 +60,13 @@ export function AddressManager({ addresses }: { addresses: Address[] }) {
           <p className="mt-1 text-sm text-muted-foreground">
             Add an address to speed up checkout next time.
           </p>
-          <button
-            type="button"
-            onClick={() => setTarget(null)}
+          <Link
+            href="/account/addresses/new"
             className="tap-target mt-4 inline-flex items-center gap-1.5 rounded-xl bg-primary px-5 text-sm font-bold text-primary-foreground hover:bg-primary/90"
           >
             <Plus className="size-4" aria-hidden />
             Add address
-          </button>
+          </Link>
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
@@ -90,35 +75,12 @@ export function AddressManager({ addresses }: { addresses: Address[] }) {
               key={a.id}
               address={a}
               pending={isPending}
-              onEdit={() => setTarget(a)}
+              editHref={`/account/addresses/${a.id}/edit`}
               onDelete={() => handleDelete(a.id)}
               onSetDefault={() => handleSetDefault(a.id)}
             />
           ))}
         </div>
-      )}
-
-      {/* Mount the whole Sheet only while open — a fresh instance per open, so
-          the form always renders (no stale Radix exit-presence subtree) and
-          resets between add/edit without relying on a key. */}
-      {sheetOpen && (
-        <Sheet open onOpenChange={(o) => !o && closeSheet()}>
-          <SheetContent side="right" className="w-full overflow-y-auto p-5 sm:max-w-md">
-            <SheetHeader className="px-0">
-              <SheetTitle>{target ? "Edit address" : "Add a new address"}</SheetTitle>
-              <SheetDescription>
-                {target
-                  ? "Update the delivery details for this address."
-                  : "Save a delivery address to reuse at checkout."}
-              </SheetDescription>
-            </SheetHeader>
-            <AddressForm
-              initial={target ?? undefined}
-              defaultIsDefault={optimistic.length === 0}
-              onSuccess={closeSheet}
-            />
-          </SheetContent>
-        </Sheet>
       )}
     </div>
   );

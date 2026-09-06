@@ -29,6 +29,9 @@ type CartContextValue = {
   ready: boolean;
   itemForVariant: (variantId: string | null | undefined) => CartItem | undefined;
   add: (variantId: string, qty?: number) => void;
+  /** Awaitable add — resolves once the item is persisted + context updated
+   *  (used by Buy now so checkout never flashes an empty cart). */
+  addAsync: (variantId: string, qty?: number) => Promise<void>;
   setQty: (itemId: string, qty: number) => void;
   remove: (itemId: string) => void;
 };
@@ -50,6 +53,7 @@ const NOOP_CART: CartContextValue = {
   ready: false,
   itemForVariant: () => undefined,
   add: () => {},
+  addAsync: async () => {},
   setQty: () => {},
   remove: () => {},
 };
@@ -111,6 +115,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     (variantId: string, qty = 1) => run(() => addItem(variantId, qty), "Added to cart"),
     [run],
   );
+  // Awaitable variant for "Buy now": callers await the persist before routing to
+  // checkout, so it never renders against a not-yet-updated (empty) cart. No
+  // "Added to cart" toast — the user is heading straight to checkout.
+  const addAsync = useCallback(async (variantId: string, qty = 1) => {
+    const next = await addItem(variantId, qty);
+    setCart(next);
+  }, []);
   const setQty = useCallback(
     (itemId: string, qty: number) => run(() => updateQtyAction(itemId, qty)),
     [run],
@@ -132,6 +143,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     itemForVariant: (variantId) =>
       variantId ? items.find((i) => i.variantId === variantId) : undefined,
     add,
+    addAsync,
     setQty,
     remove,
   };

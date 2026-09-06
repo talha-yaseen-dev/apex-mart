@@ -52,8 +52,8 @@ export function WishlistButton({
           toast.error("Couldn't update your wishlist. Try again.");
           return;
         }
-        setSaved(res.saved); // authoritative
-        toast.success(res.saved ? "Added to wishlist" : "Removed from wishlist");
+        setSaved(res.saved); // authoritative — the filled heart is the feedback,
+        // so no success toast (that top-of-screen popup read as noise).
       } catch {
         setSaved(!next); // revert
         toast.error("Couldn't update your wishlist. Try again.");

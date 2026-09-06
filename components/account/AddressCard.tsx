@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { MapPin, Pencil, Trash2, Check } from "lucide-react";
 import type { Address } from "@prisma/client";
 import { cn } from "@/lib/utils";
@@ -7,13 +8,13 @@ import { cn } from "@/lib/utils";
 export function AddressCard({
   address,
   pending,
-  onEdit,
+  editHref,
   onDelete,
   onSetDefault,
 }: {
   address: Address;
   pending?: boolean;
-  onEdit: () => void;
+  editHref: string;
   onDelete: () => void;
   onSetDefault: () => void;
 }) {
@@ -49,15 +50,17 @@ export function AddressCard({
       </address>
 
       <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border pt-3 text-sm">
-        <button
-          type="button"
-          onClick={onEdit}
-          disabled={pending}
-          className="tap-target inline-flex items-center gap-1.5 font-semibold text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+        <Link
+          href={editHref}
+          aria-disabled={pending}
+          className={cn(
+            "tap-target inline-flex items-center gap-1.5 font-semibold text-muted-foreground transition-colors hover:text-foreground",
+            pending && "pointer-events-none opacity-50",
+          )}
         >
           <Pencil className="size-4" aria-hidden />
           Edit
-        </button>
+        </Link>
         <button
           type="button"
           onClick={onDelete}

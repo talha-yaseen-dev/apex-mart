@@ -54,7 +54,8 @@ export function AddressForm({
       // Apex Mart delivers within Sargodha only — city/region/country are fixed.
       city: initial?.city ?? STORE.city,
       region: initial?.region ?? STORE.region,
-      postalCode: initial?.postalCode ?? "",
+      // Single-city store — postal code is fixed to Sargodha's 40100.
+      postalCode: STORE.postalCode,
       country: initial?.country ?? "PK",
       isDefault: initial?.isDefault ?? defaultIsDefault,
     },
@@ -93,8 +94,13 @@ export function AddressForm({
             {...register("city")}
           />
         </Field>
-        <Field label="Postal code" error={errors.postalCode?.message}>
-          <input className={inputCls} inputMode="numeric" placeholder="40100" {...register("postalCode")} />
+        <Field label="Postal code">
+          <input
+            className={cn(inputCls, "cursor-not-allowed bg-muted/50 opacity-70")}
+            readOnly
+            title="Apex Mart delivers within Sargodha (40100) only"
+            {...register("postalCode")}
+          />
         </Field>
       </div>
       {/* Region + country are fixed for this single-city store. */}
