@@ -32,10 +32,22 @@ export async function sendEmail(opts: {
     );
     return;
   }
-  await resend.emails.send({
+  // Resend can REJECT a message without throwing — it returns `{ data, error }`.
+  // Inspect the result so a provider rejection always surfaces as a thrown
+  // server-side error, otherwise callers would treat a failed send as success.
+  const { error } = await resend.emails.send({
     from,
     to: opts.to,
     subject: opts.subject,
     html: opts.html,
   });
+  if (error) {
+    // Log ONLY the safe provider error code/status — never the API key, the
+    // recipient's HTML body, or a verification code.
+    console.error("[email] Resend rejected message", {
+      name: error.name,
+      statusCode: (error as { statusCode?: number }).statusCode,
+    });
+    throw new Error("Email delivery failed");
+  }
 }

@@ -6,8 +6,10 @@ vi.mock("@/lib/pwned", () => ({
   PWNED_PASSWORD_MESSAGE: "pwned",
 }));
 const sent: Array<{ to: string; subject: string; html: string }> = [];
+let failSend = false; // simulate a provider rejection (sendEmail throws)
 vi.mock("@/lib/email", () => ({
   sendEmail: async (o: { to: string; subject: string; html: string }) => {
+    if (failSend) throw new Error("Email delivery failed");
     sent.push(o);
   },
 }));
@@ -40,6 +42,7 @@ const codeFrom = (to: string) => sent.find((m) => m.to === to)?.html.match(/>(\d
 beforeEach(() => {
   reset();
   sent.length = 0;
+  failSend = false;
   limiter.clear();
 });
 
@@ -76,6 +79,21 @@ describe("Step 1 — send code validates all fields, creates NO user", () => {
     await send("nostore@example.com");
     expect(JSON.stringify(allTokens())).not.toContain(PW);
     expect(JSON.stringify(allUsers())).not.toContain(PW); // (no users at all yet)
+  });
+
+  it("reports delivery failure without leaving a dangling code (provider rejection)", async () => {
+    const email = "fail@example.com";
+    failSend = true;
+    const res = await sendRegistrationCodeAction({ name: NAME, email, password: PW });
+    expect(res.ok).toBe(false);
+    expect((res as { error: string }).error).toMatch(/couldn.t send the verification code/i);
+    expect(findUserByEmail(email)).toBeNull(); // still no account
+    expect(allTokens()).toHaveLength(0); // code invalidated, nothing dangling
+    // Cooldown released → an immediate retry (delivery restored) succeeds.
+    failSend = false;
+    const retry = await sendRegistrationCodeAction({ name: NAME, email, password: PW });
+    expect(retry.ok).toBe(true);
+    expect(codeFrom(email)).toMatch(/^\d{6}$/);
   });
 
   it("refuses to start for an already-active account", async () => {

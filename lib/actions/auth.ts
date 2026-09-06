@@ -138,6 +138,10 @@ export async function sendRegistrationCodeAction(input: {
   try {
     await sendEmail({ to: email, subject, html });
   } catch {
+    // Delivery failed → don't leave a dangling code the user can't receive, and
+    // release the 60s cooldown so they can retry immediately.
+    await prisma.verificationToken.deleteMany({ where: { identifier: email, type: TokenType.EMAIL_VERIFY } });
+    await clearRateLimit(`regcode-cd:${email}`);
     return { ok: false, error: "We couldn’t send the verification code. Please try again." };
   }
   return { ok: true, email };
@@ -324,7 +328,14 @@ export async function forgotPasswordAction(input: {
       const token = await issueToken(email, TokenType.PASSWORD_RESET);
       const url = `${env.APP_URL}/reset?token=${token}`;
       const { subject, html } = resetEmail(url);
-      await sendEmail({ to: email, subject, html });
+      try {
+        await sendEmail({ to: email, subject, html });
+      } catch {
+        // Stay enumeration-safe and non-crashing: a delivery failure must not
+        // reveal whether the address exists, nor throw into the client. The
+        // user always sees the neutral "check your email" screen and can retry.
+        console.error("[auth] password-reset email delivery failed");
+      }
     }
   }
 
