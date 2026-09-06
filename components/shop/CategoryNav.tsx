@@ -25,6 +25,7 @@ export async function CategoryNav({
   const sorted = [...categories].sort(
     (a, b) => order.indexOf(a.slug) - order.indexOf(b.slug),
   );
+  const totalCount = sorted.reduce((sum, c) => sum + c.count, 0);
 
   const filter = mode === "filter";
   const hrefFor = (slug: string) => (filter ? `/?cat=${slug}` : `/c/${slug}`);
@@ -49,6 +50,7 @@ export async function CategoryNav({
           >
             <span className="text-base leading-none">🛒</span>
             <span className="min-w-0 flex-1 truncate">All products</span>
+            <span className="text-xs font-medium text-muted-foreground">{totalCount}</span>
           </Link>
         )}
         {sorted.map((c) => {

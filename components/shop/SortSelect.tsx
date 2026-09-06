@@ -9,8 +9,12 @@ const OPTIONS = [
   { value: "newest", label: "Newest" },
 ];
 
-/** Sort dropdown — maps to the catalog route's `sort` param and resets page. */
-export function SortSelect() {
+/**
+ * Sort dropdown — maps to the catalog route's `sort` param and resets page.
+ * `block` renders a full-width select (for the sidebar); otherwise the compact
+ * inline "Sort ▾" (for the mobile bar).
+ */
+export function SortSelect({ block = false }: { block?: boolean }) {
   const router = useRouter();
   const pathname = usePathname();
   const sp = useSearchParams();
@@ -23,6 +27,23 @@ export function SortSelect() {
     next.delete("page");
     router.push(`${pathname}?${next.toString()}`, { scroll: false });
   };
+
+  if (block) {
+    return (
+      <select
+        value={current}
+        onChange={(e) => onChange(e.target.value)}
+        aria-label="Sort products"
+        className="tap-target w-full rounded-lg border border-input bg-background px-2.5 text-sm font-semibold text-foreground outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40"
+      >
+        {OPTIONS.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+    );
+  }
 
   return (
     <label className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">

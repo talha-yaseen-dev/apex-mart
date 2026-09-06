@@ -48,9 +48,9 @@ export function ResultsBrowser({
 }: ResultsBrowserProps) {
   return (
     <>
-      {/* Sticky sort/filter sub-header (sits under the shell header) */}
+      {/* Mobile-only bar (the desktop controls live in the sidebar). */}
       <div
-        className={`sticky top-[136px] z-30 -mx-4 flex items-center gap-3 border-b border-border bg-background/95 px-4 py-2 backdrop-blur sm:top-[84px] ${flush ? "" : "mt-4"}`}
+        className={`sticky top-[136px] z-30 -mx-4 flex items-center gap-3 border-b border-border bg-background/95 px-4 py-2 backdrop-blur sm:top-[84px] lg:hidden ${flush ? "" : "mt-4"}`}
       >
         <span className="text-xs font-bold text-muted-foreground">
           {total} {total === 1 ? "product" : "products"}
@@ -64,8 +64,14 @@ export function ResultsBrowser({
       <div className="mt-4 flex gap-6">
         <aside className="hidden w-56 shrink-0 lg:block">
           <div className="sticky top-[100px]">
-            {/* Categories sit above the price/other filters. */}
+            {/* Categories, then Sort, then the price/other filters. */}
             <CategoryNav activeSlug={activeSlug} mode={categoryMode} />
+            <fieldset className="mb-6">
+              <legend className="mb-2 text-xs font-extrabold uppercase tracking-wide text-muted-foreground">
+                Sort by
+              </legend>
+              <SortSelect block />
+            </fieldset>
             <FilterControls colors={facets.colors} sizes={facets.sizes} />
           </div>
         </aside>
