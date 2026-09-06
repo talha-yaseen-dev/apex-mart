@@ -72,6 +72,11 @@
   --color-card: var(--card);
   /* Small-phone breakpoint (base design width is 360px; xs widens at 480px) */
   --breakpoint-xs: 30rem;
+  /* Product grid column tiers (only used by the listing grid): 5 cols from
+     1400px, 6 from 1760px — keeps cards compact instead of oversized on wide
+     screens. 2xl is otherwise unused in the app. */
+  --breakpoint-2xl: 87.5rem;
+  --breakpoint-3xl: 110rem;
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
