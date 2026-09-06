@@ -1,15 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
-
-const PRICE_BANDS = [
-  { label: "Any price", min: null, max: null },
-  { label: "Under Rs. 200", min: null, max: 200 },
-  { label: "Rs. 200 – 500", min: 200, max: 500 },
-  { label: "Rs. 500 – 1,000", min: 500, max: 1000 },
-  { label: "Over Rs. 1,000", min: 1000, max: null },
-];
 
 type FilterControlsProps = {
   /** Real facet values from /api/v1/catalog (empty arrays are hidden). */
@@ -42,11 +35,26 @@ export function FilterControls({ colors, sizes, onApplied }: FilterControlsProps
   const activeColors = (sp.get("color") ?? "").split(",").filter(Boolean);
   const activeSizes = (sp.get("size") ?? "").split(",").filter(Boolean);
 
-  const setBand = (min: number | null, max: number | null) =>
+  // Custom price range inputs — kept in sync with the URL params (e.g. after
+  // "Clear all"), applied on Enter or the Apply button. Empty = no bound.
+  const [minInput, setMinInput] = useState(curMin ?? "");
+  const [maxInput, setMaxInput] = useState(curMax ?? "");
+  useEffect(() => {
+    setMinInput(curMin ?? "");
+    setMaxInput(curMax ?? "");
+  }, [curMin, curMax]);
+
+  const applyPrice = () =>
     update((p) => {
-      min == null ? p.delete("min") : p.set("min", String(min));
-      max == null ? p.delete("max") : p.set("max", String(max));
+      const mn = minInput.trim();
+      const mx = maxInput.trim();
+      if (mn) p.set("min", mn);
+      else p.delete("min");
+      if (mx) p.set("max", mx);
+      else p.delete("max");
     });
+
+  const priceDirty = (minInput.trim() || "") !== (curMin ?? "") || (maxInput.trim() || "") !== (curMax ?? "");
 
   const toggleList = (key: "color" | "size", value: string, current: string[]) =>
     update((p) => {
@@ -67,39 +75,44 @@ export function FilterControls({ colors, sizes, onApplied }: FilterControlsProps
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Price */}
+      {/* Price — custom min/max range (Rs.) */}
       <fieldset>
         <legend className="mb-2 text-xs font-extrabold uppercase tracking-wide text-muted-foreground">
-          Price
+          Price (Rs.)
         </legend>
-        <div className="flex flex-col gap-1">
-          {PRICE_BANDS.map((b) => {
-            const active =
-              String(b.min ?? "") === (curMin ?? "") &&
-              String(b.max ?? "") === (curMax ?? "");
-            return (
-              <button
-                key={b.label}
-                type="button"
-                onClick={() => setBand(b.min, b.max)}
-                className={cn(
-                  "tap-target flex items-center gap-2 rounded-lg px-2 text-left text-sm font-semibold transition-colors",
-                  active ? "bg-primary/10 text-primary" : "text-foreground hover:bg-muted",
-                )}
-              >
-                <span
-                  className={cn(
-                    "flex size-4 items-center justify-center rounded-full border",
-                    active ? "border-primary" : "border-muted-foreground/40",
-                  )}
-                >
-                  {active && <span className="size-2 rounded-full bg-primary" />}
-                </span>
-                {b.label}
-              </button>
-            );
-          })}
+        <div className="flex items-center gap-2">
+          <input
+            type="number"
+            inputMode="numeric"
+            min={0}
+            placeholder="Min"
+            value={minInput}
+            onChange={(e) => setMinInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && applyPrice()}
+            aria-label="Minimum price in rupees"
+            className="h-9 w-full min-w-0 rounded-lg border border-input bg-background px-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40"
+          />
+          <span className="text-sm text-muted-foreground">–</span>
+          <input
+            type="number"
+            inputMode="numeric"
+            min={0}
+            placeholder="Max"
+            value={maxInput}
+            onChange={(e) => setMaxInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && applyPrice()}
+            aria-label="Maximum price in rupees"
+            className="h-9 w-full min-w-0 rounded-lg border border-input bg-background px-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40"
+          />
         </div>
+        <button
+          type="button"
+          onClick={applyPrice}
+          disabled={!priceDirty}
+          className="tap-target mt-2 w-full rounded-lg border border-primary/40 bg-primary/5 px-2 text-sm font-bold text-primary transition-colors hover:bg-primary hover:text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Apply
+        </button>
       </fieldset>
 
       {/* Availability */}

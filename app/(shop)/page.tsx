@@ -37,20 +37,8 @@ export default async function HomePage({ searchParams }: PageProps) {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-4">
-      {/* Brand banner */}
-      <div className="flex items-center gap-4 overflow-hidden rounded-3xl border border-border bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-5">
-        <span className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-background text-3xl shadow-sm">
-          🛒
-        </span>
-        <div className="min-w-0">
-          <h1 className="text-2xl font-extrabold tracking-tight text-foreground">
-            Shop {STORE.name}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Groceries, snacks &amp; household essentials — delivered across {STORE.city}.
-          </p>
-        </div>
-      </div>
+      {/* Keep an accessible/SEO heading without the visible banner. */}
+      <h1 className="sr-only">Shop {STORE.name}</h1>
 
       {/* Categories on mobile (desktop uses the sidebar below). */}
       <div className="lg:hidden">
