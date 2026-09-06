@@ -97,10 +97,10 @@
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
   /* Mart brand — fresh grocery green (exact #0c831f; white text ~4.9:1) */
-  --primary: #0c831f;
+  --primary: oklch(0.6 0.1 190); /* Apex Mart teal (brand logo colour) */
   --primary-foreground: oklch(0.985 0 0);
-  --primary-hover: #0a6d19; /* darker green for button/link hover */
-  --primary-tint: #e6f4ea; /* faint green for tinted panels + focus rings */
+  --primary-hover: oklch(0.52 0.1 190); /* darker teal for button/link hover */
+  --primary-tint: oklch(0.95 0.025 190); /* faint teal for tinted panels + focus rings */
   --warning: #b45309; /* amber-700 — readable low-stock text on light */
   --elevation-float: 0 10px 30px -12px oklch(0.2 0.02 265 / 0.28),
     0 4px 12px -6px oklch(0.2 0.02 265 / 0.12);
@@ -117,7 +117,7 @@
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: #0c831f;
+  --ring: oklch(0.6 0.1 190);
   --chart-1: #0c831f;
   --chart-2: #ffc400;
   --chart-3: oklch(0.439 0 0);
@@ -142,10 +142,10 @@
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
   /* Brand green, lifted for contrast on dark surfaces (dark text on top) */
-  --primary: #22c55e;
-  --primary-foreground: #052e16;
-  --primary-hover: #16a34a; /* deeper green on hover against dark surfaces */
-  --primary-tint: oklch(0.32 0.06 152); /* subtle green fill + focus ring */
+  --primary: oklch(0.72 0.1 190); /* brighter teal on dark surfaces */
+  --primary-foreground: oklch(0.2 0.03 200);
+  --primary-hover: oklch(0.78 0.1 190); /* brighter teal on hover against dark surfaces */
+  --primary-tint: oklch(0.33 0.05 195); /* subtle teal fill + focus ring */
   --warning: #fbbf24; /* amber-400 — bright low-stock text on dark */
   --elevation-float: 0 12px 34px -12px oklch(0 0 0 / 0.6),
     0 4px 14px -6px oklch(0 0 0 / 0.45);
@@ -161,7 +161,7 @@
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: #22c55e;
+  --ring: oklch(0.72 0.1 190);
   --chart-1: #22c55e;
   --chart-2: #ffc400;
   --chart-3: oklch(0.439 0 0);

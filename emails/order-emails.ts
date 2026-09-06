@@ -80,7 +80,7 @@ export function orderShippedEmail(o: {
   return {
     subject: `Your order has shipped 📦 — ${o.orderNumber}`,
     html: template({
-      accent: "#4f6fd0",
+      accent: "#0f8a80",
       icon: "📦",
       heading: "On its way!",
       body: "Good news — your order is out for delivery. Use the tracking number below to follow along.",

@@ -13,7 +13,7 @@ function shell(inner: string): string {
   return `
   <div style="background:#f2f4f2;padding:28px 0;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;">
     <div style="max-width:480px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(40,60,40,.08);">
-      <div style="background:linear-gradient(155deg,#0c831f 0%,#0a6d19 100%);padding:26px 32px;">
+      <div style="background:linear-gradient(155deg,#0f8a80 0%,#0a6b64 100%);padding:26px 32px;">
         <span style="font-weight:800;font-size:22px;color:#fff;letter-spacing:-.02em;">${BRAND}</span>
       </div>
       <div style="padding:34px 32px;color:#33403f;">${inner}</div>
@@ -34,9 +34,9 @@ function body(opts: {
   return shell(`
     <h2 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:22px;letter-spacing:-.02em;margin:0 0 14px;color:#1f2b2a;">${opts.heading}</h2>
     <p style="margin:0 0 22px;font-size:15px;line-height:1.6;color:#4a5654;">${opts.intro}</p>
-    <a href="${opts.url}" style="display:inline-block;background:#0c831f;color:#fff;text-decoration:none;padding:14px 30px;border-radius:10px;font-size:15px;font-weight:700;">${opts.cta}</a>
+    <a href="${opts.url}" style="display:inline-block;background:#0f8a80;color:#fff;text-decoration:none;padding:14px 30px;border-radius:10px;font-size:15px;font-weight:700;">${opts.cta}</a>
     <p style="margin:26px 0 8px;color:#69736f;font-size:13px;line-height:1.6;">Or paste this link into your browser:</p>
-    <div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#2f632f;word-break:break-all;background:#f7f9f7;border:1px solid #e9eee9;border-radius:8px;padding:10px 12px;">${opts.url}</div>
+    <div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#1f5f5a;word-break:break-all;background:#f7f9f7;border:1px solid #e9eee9;border-radius:8px;padding:10px 12px;">${opts.url}</div>
     <div style="margin-top:22px;padding:12px 14px;background:#fbf6ea;border:1px solid #efe0bd;border-radius:9px;font-size:13px;color:#7a6636;line-height:1.5;">${opts.expiry}</div>
     <p style="margin:22px 0 0;color:#8a9a99;font-size:13px;line-height:1.6;">If you didn't request this, you can safely ignore this email — no changes will be made.</p>
   `);
@@ -52,7 +52,7 @@ function codeBody(opts: {
   return shell(`
     <h2 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:22px;letter-spacing:-.02em;margin:0 0 14px;color:#1f2b2a;">${opts.heading}</h2>
     <p style="margin:0 0 22px;font-size:15px;line-height:1.6;color:#4a5654;">${opts.intro}</p>
-    <div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:34px;font-weight:700;letter-spacing:.32em;color:#0c831f;background:#f2f8f2;border:1px solid #d8e8d8;border-radius:12px;padding:20px 12px;text-align:center;">${opts.code}</div>
+    <div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:34px;font-weight:700;letter-spacing:.32em;color:#0f8a80;background:#eef7f6;border:1px solid #cfe6e4;border-radius:12px;padding:20px 12px;text-align:center;">${opts.code}</div>
     <div style="margin-top:22px;padding:12px 14px;background:#fbf6ea;border:1px solid #efe0bd;border-radius:9px;font-size:13px;color:#7a6636;line-height:1.5;">This code expires in 10 minutes and can be used once.</div>
     <p style="margin:22px 0 0;color:#8a9a99;font-size:13px;line-height:1.6;">${opts.footer}</p>
   `);
