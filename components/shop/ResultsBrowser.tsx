@@ -21,6 +21,8 @@ type ResultsBrowserProps = {
   activeSlug?: string;
   /** "filter" (home): sidebar categories set `?cat=` in place; "link": go to /c/[slug]. */
   categoryMode?: "link" | "filter";
+  /** Drop the sub-header's top margin — for pages with no banner above it (home). */
+  flush?: boolean;
   /** Rendered inside the grid column when `items` is empty (page-specific copy). */
   empty: React.ReactNode;
 };
@@ -41,12 +43,15 @@ export function ResultsBrowser({
   searchParams,
   activeSlug,
   categoryMode = "link",
+  flush = false,
   empty,
 }: ResultsBrowserProps) {
   return (
     <>
       {/* Sticky sort/filter sub-header (sits under the shell header) */}
-      <div className="sticky top-[136px] z-30 -mx-4 mt-4 flex items-center gap-3 border-b border-border bg-background/95 px-4 py-2 backdrop-blur sm:top-[84px]">
+      <div
+        className={`sticky top-[136px] z-30 -mx-4 flex items-center gap-3 border-b border-border bg-background/95 px-4 py-2 backdrop-blur sm:top-[84px] ${flush ? "" : "mt-4"}`}
+      >
         <span className="text-xs font-bold text-muted-foreground">
           {total} {total === 1 ? "product" : "products"}
         </span>

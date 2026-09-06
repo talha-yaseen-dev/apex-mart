@@ -36,7 +36,7 @@ export default async function HomePage({ searchParams }: PageProps) {
   );
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-4">
+    <div className="mx-auto max-w-7xl px-4 pb-4 pt-1">
       {/* Keep an accessible/SEO heading without the visible banner. */}
       <h1 className="sr-only">Shop {STORE.name}</h1>
 
@@ -57,6 +57,7 @@ export default async function HomePage({ searchParams }: PageProps) {
         searchParams={sp}
         activeSlug={cat}
         categoryMode="filter"
+        flush
         empty={
           <div className="rounded-2xl border border-dashed border-border py-20 text-center">
             <div className="mb-3 text-4xl">🛒</div>
