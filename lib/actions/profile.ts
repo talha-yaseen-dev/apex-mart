@@ -192,11 +192,12 @@ export async function deleteAccountAction(input: { password?: string; confirmTex
 
   const dbUser = await prisma.user.findUnique({
     where: { id: sessionUser.id },
-    select: { passwordHash: true, isPrimaryAdmin: true },
+    select: { passwordHash: true, isPrimaryAdmin: true, isEmployee: true, role: true },
   });
   if (!dbUser) return { ok: false as const, error: "Account not found." };
-  if (dbUser.isPrimaryAdmin) {
-    return { ok: false as const, error: "The primary admin account can't be deleted here." };
+  // Admin/staff accounts can never be deleted — they gate the store's operations.
+  if (dbUser.isEmployee || dbUser.role === "ADMIN" || dbUser.isPrimaryAdmin) {
+    return { ok: false as const, error: "Admin accounts can't be deleted." };
   }
 
   // Password accounts must reauthenticate; Google-only accounts are gated by the

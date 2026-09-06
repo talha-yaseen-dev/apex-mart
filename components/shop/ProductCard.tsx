@@ -149,17 +149,17 @@ export function ProductCard({ card, originalMinor, isNew, hideWishlist }: Produc
                 + Add
               </button>
             ) : (
-              <div className="flex flex-1 items-center justify-between rounded-xl border border-primary/30 bg-primary/5">
+              <div className="flex h-11 flex-1 items-center justify-between rounded-xl bg-primary text-primary-foreground">
                 <button
                   type="button"
                   onClick={dec}
                   disabled={pending}
                   aria-label="Decrease quantity"
-                  className="tap-target flex items-center justify-center px-3 text-primary disabled:opacity-50"
+                  className="flex h-full items-center justify-center px-3 text-primary-foreground/85 transition-colors hover:text-primary-foreground disabled:opacity-50"
                 >
                   <Minus className="size-4" />
                 </button>
-                <span className="text-sm font-extrabold text-primary" aria-live="polite">
+                <span className="text-sm font-bold" aria-live="polite">
                   {qty}
                 </span>
                 <button
@@ -167,7 +167,7 @@ export function ProductCard({ card, originalMinor, isNew, hideWishlist }: Produc
                   onClick={inc}
                   disabled={pending || (item ? qty >= item.available : false)}
                   aria-label="Increase quantity"
-                  className="tap-target flex items-center justify-center px-3 text-primary disabled:opacity-50"
+                  className="flex h-full items-center justify-center px-3 text-primary-foreground/85 transition-colors hover:text-primary-foreground disabled:opacity-50"
                 >
                   <Plus className="size-4" />
                 </button>

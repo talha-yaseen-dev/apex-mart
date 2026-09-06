@@ -80,8 +80,9 @@ export async function SiteHeader() {
             </Link>
             <Link
               href="/account"
-              className="tap-target hidden items-center rounded-xl px-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted md:inline-flex"
+              className="tap-target hidden items-center gap-2 rounded-xl border border-input px-3.5 text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-muted md:inline-flex sm:px-4"
             >
+              <User className="size-[18px]" aria-hidden />
               Account
             </Link>
             <CartButton />

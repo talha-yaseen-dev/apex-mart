@@ -1,6 +1,13 @@
 "use client";
 
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
 const OPTIONS = [
   { value: "featured", label: "Relevance" },
@@ -10,15 +17,16 @@ const OPTIONS = [
 ];
 
 /**
- * Sort dropdown — maps to the catalog route's `sort` param and resets page.
- * `block` renders a full-width select (for the sidebar); otherwise the compact
- * inline "Sort ▾" (for the mobile bar).
+ * Sort dropdown — a styled Radix Select (not the native OS dropdown) that maps
+ * to the catalog route's `sort` param and resets the page. `block` fills the
+ * sidebar width; otherwise it's the compact trigger for the mobile bar.
  */
 export function SortSelect({ block = false }: { block?: boolean }) {
   const router = useRouter();
   const pathname = usePathname();
   const sp = useSearchParams();
   const current = sp.get("sort") ?? "featured";
+  const currentLabel = OPTIONS.find((o) => o.value === current)?.label ?? "Relevance";
 
   const onChange = (value: string) => {
     const next = new URLSearchParams(sp.toString());
@@ -28,38 +36,21 @@ export function SortSelect({ block = false }: { block?: boolean }) {
     router.push(`${pathname}?${next.toString()}`, { scroll: false });
   };
 
-  if (block) {
-    return (
-      <select
-        value={current}
-        onChange={(e) => onChange(e.target.value)}
-        aria-label="Sort products"
-        className="tap-target w-full rounded-lg border border-input bg-background px-2.5 text-sm font-semibold text-foreground outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40"
-      >
-        {OPTIONS.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      </select>
-    );
-  }
-
   return (
-    <label className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-      <span className="hidden sm:inline">Sort</span>
-      <select
-        value={current}
-        onChange={(e) => onChange(e.target.value)}
+    <Select value={current} onValueChange={onChange}>
+      <SelectTrigger
         aria-label="Sort products"
-        className="tap-target rounded-lg border border-input bg-background px-2.5 text-xs font-bold text-foreground outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40"
+        className={cn("font-semibold text-foreground", block ? "h-11 w-full" : "h-9")}
       >
+        <span>{currentLabel}</span>
+      </SelectTrigger>
+      <SelectContent align="start">
         {OPTIONS.map((o) => (
-          <option key={o.value} value={o.value}>
+          <SelectItem key={o.value} value={o.value}>
             {o.label}
-          </option>
+          </SelectItem>
         ))}
-      </select>
-    </label>
+      </SelectContent>
+    </Select>
   );
 }

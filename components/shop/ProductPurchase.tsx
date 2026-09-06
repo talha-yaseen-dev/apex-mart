@@ -101,7 +101,7 @@ export function ProductPurchase({
       return (
         <div
           className={cn(
-            "flex items-center justify-center rounded-xl bg-muted py-3 text-sm font-bold text-muted-foreground",
+            "flex h-11 items-center justify-center rounded-xl bg-muted text-sm font-bold text-muted-foreground",
             variantClass,
           )}
         >
@@ -116,7 +116,7 @@ export function ProductPurchase({
           onClick={() => add(selected.id)}
           disabled={pending}
           className={cn(
-            "tap-target rounded-xl bg-primary px-6 text-sm font-extrabold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60",
+            "flex h-11 items-center justify-center rounded-xl bg-primary px-5 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60",
             variantClass,
           )}
         >
@@ -127,7 +127,7 @@ export function ProductPurchase({
     return (
       <div
         className={cn(
-          "flex items-center justify-between rounded-xl border border-primary/30 bg-primary/5",
+          "flex h-11 items-center justify-between rounded-xl bg-primary text-primary-foreground",
           variantClass,
         )}
       >
@@ -136,11 +136,11 @@ export function ProductPurchase({
           onClick={dec}
           disabled={pending}
           aria-label="Decrease quantity"
-          className="tap-target flex items-center justify-center px-4 text-primary disabled:opacity-50"
+          className="flex h-full items-center justify-center px-4 text-primary-foreground/85 transition-colors hover:text-primary-foreground disabled:opacity-50"
         >
           <Minus className="size-4" />
         </button>
-        <span className="text-sm font-extrabold text-primary" aria-live="polite">
+        <span className="text-sm font-bold" aria-live="polite">
           {qty} in cart
         </span>
         <button
@@ -148,7 +148,7 @@ export function ProductPurchase({
           onClick={inc}
           disabled={pending || qty >= (item?.available ?? stock)}
           aria-label="Increase quantity"
-          className="tap-target flex items-center justify-center px-4 text-primary disabled:opacity-50"
+          className="flex h-full items-center justify-center px-4 text-primary-foreground/85 transition-colors hover:text-primary-foreground disabled:opacity-50"
         >
           <Plus className="size-4" />
         </button>
@@ -217,24 +217,19 @@ export function ProductPurchase({
         </div>
       </div>
 
-      <div className="hidden gap-3 md:flex">
+      <div className="hidden items-center gap-2.5 md:flex">
         {addControl("flex-1")}
         {stock > 0 && (
           <button
             type="button"
             onClick={() => void buyNow()}
             disabled={pending || buying}
-            className="tap-target shrink-0 rounded-xl border-2 border-primary bg-background px-6 text-sm font-extrabold text-primary transition-colors hover:bg-primary hover:text-primary-foreground disabled:opacity-60"
+            className="flex h-11 flex-1 items-center justify-center rounded-xl border border-primary bg-primary/5 text-sm font-bold text-primary transition-colors hover:bg-primary hover:text-primary-foreground disabled:opacity-60"
           >
             Buy now
           </button>
         )}
-        <WishlistButton
-          variant="labeled"
-          productId={productId}
-          initialSaved={savedInitial}
-          className="shrink-0"
-        />
+        <WishlistButton variant="action" productId={productId} initialSaved={savedInitial} />
       </div>
 
       <div className="fixed inset-x-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-40 border-t border-border bg-background/95 px-4 py-3 backdrop-blur md:hidden">
@@ -247,18 +242,14 @@ export function ProductPurchase({
               {selected.attrs.packSize ?? selected.attrs.pack}
             </div>
           </div>
-          <WishlistButton
-            productId={productId}
-            initialSaved={savedInitial}
-            className="shrink-0 border border-input"
-          />
+          <WishlistButton variant="action" productId={productId} initialSaved={savedInitial} />
           {addControl("flex-1 min-w-0")}
           {stock > 0 && (
             <button
               type="button"
               onClick={() => void buyNow()}
               disabled={pending || buying}
-              className="tap-target shrink-0 rounded-xl border-2 border-primary bg-background px-4 text-sm font-extrabold text-primary transition-colors hover:bg-primary hover:text-primary-foreground disabled:opacity-60"
+              className="flex h-11 shrink-0 items-center justify-center rounded-xl border border-primary bg-primary/5 px-4 text-sm font-bold text-primary transition-colors hover:bg-primary hover:text-primary-foreground disabled:opacity-60"
             >
               Buy
             </button>

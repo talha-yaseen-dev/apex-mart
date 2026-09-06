@@ -10,8 +10,9 @@ import { cn } from "@/lib/utils";
 type WishlistButtonProps = {
   productId: string;
   initialSaved: boolean;
-  /** "icon" = compact heart for grid cards; "labeled" = heart + Save/Saved text. */
-  variant?: "icon" | "labeled";
+  /** "icon" = compact heart for grid cards; "labeled" = heart + Save/Saved text;
+   *  "action" = square icon button matching the PDP add-to-cart row. */
+  variant?: "icon" | "labeled" | "action";
   className?: string;
 };
 
@@ -71,6 +72,30 @@ export function WishlistButton({
       aria-hidden
     />
   );
+
+  if (variant === "action") {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={pending}
+        aria-pressed={saved}
+        aria-label={label}
+        className={cn(
+          "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border text-muted-foreground transition-colors disabled:opacity-60",
+          saved
+            ? "border-primary/40 bg-primary/5 text-primary"
+            : "border-input bg-background hover:border-primary/40 hover:text-primary",
+          className,
+        )}
+      >
+        <Heart
+          className={cn("size-5 transition-colors", saved ? "fill-primary text-primary" : "fill-none")}
+          aria-hidden
+        />
+      </button>
+    );
+  }
 
   if (variant === "labeled") {
     return (

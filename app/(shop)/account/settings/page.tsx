@@ -29,7 +29,8 @@ export default async function SettingsPage() {
         <ProfileForm name={user.name ?? ""} phone={user.phone ?? ""} />
         <ChangeEmailForm currentEmail={user.email ?? ""} hasPassword={hasPassword} />
         {hasPassword ? <PasswordForm /> : <SetPasswordForm />}
-        <DeleteAccountForm hasPassword={hasPassword} />
+        {/* Admin/staff accounts can't be deleted — they run the store. */}
+        {!user.isEmployee && <DeleteAccountForm hasPassword={hasPassword} />}
       </div>
     </div>
   );
