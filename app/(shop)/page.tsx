@@ -1,4 +1,4 @@
-import { getSearchResults, getCategories } from "@/lib/storefront";
+import { getSearchResults, getCategoryProducts, getCategories } from "@/lib/storefront";
 import { getCurrentUser } from "@/lib/session";
 import { withWishlistState } from "@/lib/account";
 import { CategoryRail } from "@/components/shop/CategoryRail";
@@ -18,8 +18,16 @@ type PageProps = {
  */
 export default async function HomePage({ searchParams }: PageProps) {
   const sp = await searchParams;
+  // A category click sets ?cat= — filter to that aisle in place (only the grid
+  // re-renders). No cat = the whole catalogue.
+  const raw = sp.cat;
+  const cat = Array.isArray(raw) ? raw[0] : raw;
   const [{ items: rawItems, total, page, totalPages, facets }, categories, user] =
-    await Promise.all([getSearchResults(sp), getCategories(), getCurrentUser()]);
+    await Promise.all([
+      cat ? getCategoryProducts(cat, sp) : getSearchResults(sp),
+      getCategories(),
+      getCurrentUser(),
+    ]);
   const items = await withWishlistState(user?.id, rawItems);
 
   const order = Object.keys(CATEGORY_ICONS);
@@ -59,6 +67,8 @@ export default async function HomePage({ searchParams }: PageProps) {
         facets={{ ...facets, sizes: [] }}
         basePath="/"
         searchParams={sp}
+        activeSlug={cat}
+        categoryMode="filter"
         empty={
           <div className="rounded-2xl border border-dashed border-border py-20 text-center">
             <div className="mb-3 text-4xl">🛒</div>

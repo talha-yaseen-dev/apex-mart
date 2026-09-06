@@ -17,8 +17,10 @@ type ResultsBrowserProps = {
   /** Route path for pagination links, e.g. /c/grocery or /search. */
   basePath: string;
   searchParams: Record<string, string | string[] | undefined>;
-  /** Current aisle slug (category pages), highlighted in the sidebar categories. */
+  /** Current aisle slug (category pages) / active `?cat=` (home), highlighted. */
   activeSlug?: string;
+  /** "filter" (home): sidebar categories set `?cat=` in place; "link": go to /c/[slug]. */
+  categoryMode?: "link" | "filter";
   /** Rendered inside the grid column when `items` is empty (page-specific copy). */
   empty: React.ReactNode;
 };
@@ -38,6 +40,7 @@ export function ResultsBrowser({
   basePath,
   searchParams,
   activeSlug,
+  categoryMode = "link",
   empty,
 }: ResultsBrowserProps) {
   return (
@@ -57,7 +60,7 @@ export function ResultsBrowser({
         <aside className="hidden w-56 shrink-0 lg:block">
           <div className="sticky top-[100px]">
             {/* Categories sit above the price/other filters. */}
-            <CategoryNav activeSlug={activeSlug} />
+            <CategoryNav activeSlug={activeSlug} mode={categoryMode} />
             <FilterControls colors={facets.colors} sizes={facets.sizes} />
           </div>
         </aside>
