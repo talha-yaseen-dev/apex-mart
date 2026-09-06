@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Minus, Plus } from "lucide-react";
+import { toast } from "sonner";
 import type { StoreCard } from "@/lib/catalog-filter";
 import { formatPKR } from "@/lib/format";
 import { useCart } from "@/components/cart/CartProvider";
@@ -22,11 +23,12 @@ type ProductCardProps = {
 /**
  * Storefront product card. The add control writes the cheapest variant to the
  * real cart and mirrors its quantity; reused on home, category, and search.
+ * Busy state is LOCAL to each card so acting on one card never dims the others.
  */
 export function ProductCard({ card, originalMinor, isNew, hideWishlist }: ProductCardProps) {
-  const { itemForVariant, add, addAsync, setQty, remove, pending } = useCart();
+  const { itemForVariant, addAsync, setQty, remove } = useCart();
   const router = useRouter();
-  const [buying, setBuying] = useState(false);
+  const [busy, setBusy] = useState(false);
   const item = itemForVariant(card.variantId);
   const qty = item?.qty ?? 0;
 
@@ -43,16 +45,29 @@ export function ProductCard({ card, originalMinor, isNew, hideWishlist }: Produc
   };
   const inc = () => item && setQty(item.itemId, qty + 1);
 
+  const onAdd = async () => {
+    if (busy || !card.variantId) return;
+    setBusy(true);
+    try {
+      await addAsync(card.variantId);
+      toast.success("Added to cart");
+    } catch {
+      toast.error("Couldn’t add to cart. Try again.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   // Buy now: ensure the item is in the cart, then straight to checkout. Awaits
   // the add so checkout never lands on a not-yet-updated (empty) cart.
   const buyNow = async () => {
-    if (!card.inStock || !card.variantId || pending || buying) return;
-    setBuying(true);
+    if (!card.inStock || !card.variantId || busy) return;
+    setBusy(true);
     try {
       if (qty === 0) await addAsync(card.variantId);
       router.push("/checkout");
     } catch {
-      setBuying(false);
+      setBusy(false);
     }
   };
 
@@ -68,7 +83,7 @@ export function ProductCard({ card, originalMinor, isNew, hideWishlist }: Produc
       )}
       <Link
         href={href}
-        className="relative block aspect-square overflow-hidden bg-muted"
+        className="relative block aspect-[4/3] overflow-hidden bg-muted"
         aria-label={card.name}
       >
         {card.image ? (
@@ -142,9 +157,9 @@ export function ProductCard({ card, originalMinor, isNew, hideWishlist }: Produc
             {qty === 0 ? (
               <button
                 type="button"
-                onClick={() => add(card.variantId!)}
-                disabled={pending}
-                className="tap-target flex-1 rounded-xl bg-primary text-xs font-extrabold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
+                onClick={() => void onAdd()}
+                disabled={busy}
+                className="tap-target flex-1 rounded-xl bg-primary text-xs font-bold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
               >
                 + Add
               </button>
@@ -153,7 +168,7 @@ export function ProductCard({ card, originalMinor, isNew, hideWishlist }: Produc
                 <button
                   type="button"
                   onClick={dec}
-                  disabled={pending}
+                  disabled={busy}
                   aria-label="Decrease quantity"
                   className="flex h-full items-center justify-center px-3 text-primary-foreground/85 transition-colors hover:text-primary-foreground disabled:opacity-50"
                 >
@@ -165,7 +180,7 @@ export function ProductCard({ card, originalMinor, isNew, hideWishlist }: Produc
                 <button
                   type="button"
                   onClick={inc}
-                  disabled={pending || (item ? qty >= item.available : false)}
+                  disabled={busy || (item ? qty >= item.available : false)}
                   aria-label="Increase quantity"
                   className="flex h-full items-center justify-center px-3 text-primary-foreground/85 transition-colors hover:text-primary-foreground disabled:opacity-50"
                 >
@@ -176,8 +191,8 @@ export function ProductCard({ card, originalMinor, isNew, hideWishlist }: Produc
             <button
               type="button"
               onClick={() => void buyNow()}
-              disabled={pending || buying}
-              className="tap-target shrink-0 rounded-xl border-2 border-primary bg-background px-3 text-xs font-extrabold text-primary transition-colors hover:bg-primary hover:text-primary-foreground disabled:opacity-60"
+              disabled={busy}
+              className="tap-target shrink-0 rounded-xl bg-foreground px-3.5 text-xs font-bold text-background transition-colors hover:bg-foreground/90 disabled:opacity-60"
             >
               Buy
             </button>

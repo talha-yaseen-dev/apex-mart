@@ -224,7 +224,7 @@ export function ProductPurchase({
             type="button"
             onClick={() => void buyNow()}
             disabled={pending || buying}
-            className="flex h-11 flex-1 items-center justify-center rounded-xl border border-primary bg-primary/5 text-sm font-bold text-primary transition-colors hover:bg-primary hover:text-primary-foreground disabled:opacity-60"
+            className="flex h-11 flex-1 items-center justify-center rounded-xl bg-foreground text-sm font-bold text-background transition-colors hover:bg-foreground/90 disabled:opacity-60"
           >
             Buy now
           </button>
@@ -249,7 +249,7 @@ export function ProductPurchase({
               type="button"
               onClick={() => void buyNow()}
               disabled={pending || buying}
-              className="flex h-11 shrink-0 items-center justify-center rounded-xl border border-primary bg-primary/5 px-4 text-sm font-bold text-primary transition-colors hover:bg-primary hover:text-primary-foreground disabled:opacity-60"
+              className="flex h-11 shrink-0 items-center justify-center rounded-xl bg-foreground px-4 text-sm font-bold text-background transition-colors hover:bg-foreground/90 disabled:opacity-60"
             >
               Buy
             </button>
