@@ -87,38 +87,37 @@
 }
 
 :root {
-  /* Type: Inter first, then a robust system stack (Inter web font wired in the Step 6 layout). */
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
-    Roboto, "Helvetica Neue", Arial, sans-serif;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  /* Mart brand — fresh grocery green (exact #0c831f; white text ~4.9:1) */
-  --primary: oklch(0.6 0.1 190); /* Apex Mart teal (brand logo colour) */
-  --primary-foreground: oklch(0.985 0 0);
-  --primary-hover: oklch(0.52 0.1 190); /* darker teal for button/link hover */
-  --primary-tint: oklch(0.95 0.025 190); /* faint teal for tinted panels + focus rings */
+  /* Font families are provided by next/font on <html> (--font-sans = Geist,
+     --font-geist-mono = Geist Mono); see app/layout.tsx. */
+  /* Apex Mart redesign palette — soft teal-tinted neutrals + deep-teal brand. */
+  --background: #f5f8f7;
+  --foreground: #10201f;
+  --card: #ffffff;
+  --card-foreground: #10201f;
+  --popover: #ffffff;
+  --popover-foreground: #10201f;
+  --primary: #0b7580; /* Apex Mart deep teal (redesign brand colour) */
+  --primary-foreground: #ffffff;
+  --primary-hover: #095f68; /* darker teal for button/link hover */
+  --primary-tint: #eaf5f6; /* faint teal for tinted panels + focus rings */
   --warning: #b45309; /* amber-700 — readable low-stock text on light */
   --elevation-float: 0 10px 30px -12px oklch(0.2 0.02 265 / 0.28),
     0 4px 12px -6px oklch(0.2 0.02 265 / 0.12);
   --ink: oklch(0.19 0.02 265); /* near-black navy for admin sidebar/drawer */
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --secondary: #eef3f2;
+  --secondary-foreground: #10201f;
+  --muted: #eef3f2;
+  --muted-foreground: #6b7a78;
+  --accent: #eef3f2;
+  --accent-foreground: #10201f;
   /* Warm-yellow deal accent (exact #ffc400) with dark text for badges/prices */
   --deal: #ffc400;
   --deal-foreground: oklch(0.27 0.035 78);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.6 0.1 190);
-  --chart-1: #0c831f;
+  --border: #e3e9e8;
+  --input: #e3e9e8;
+  --ring: #0b7580;
+  --chart-1: #0b7580;
   --chart-2: #ffc400;
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);

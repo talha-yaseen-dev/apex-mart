@@ -1,13 +1,11 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getProduct, getCategoryProducts } from "@/lib/storefront";
 import { getCurrentUser } from "@/lib/session";
 import { isWishlisted, withWishlistState } from "@/lib/account";
 import { saleOriginalMinor } from "@/lib/home-content";
 import { DELIVERY_ESTIMATE } from "@/lib/delivery-config";
-import { ProductGallery } from "@/components/shop/ProductGallery";
-import { ProductPurchase } from "@/components/shop/ProductPurchase";
+import { ProductDetail } from "@/components/shop/ProductDetail";
 import { ProductSection, type SectionItem } from "@/components/shop/ProductSection";
 import { Breadcrumbs } from "@/components/shop/Breadcrumbs";
 
@@ -76,7 +74,7 @@ export default async function ProductPage({ params }: PageProps) {
   };
 
   return (
-    <div className="mx-auto max-w-[1600px] px-4 pb-10 pt-4 md:pb-0">
+    <div className="mx-auto max-w-[1400px] px-4 pb-12 pt-4 md:pb-0">
       <Breadcrumbs
         items={[
           { label: "Home", href: "/" },
@@ -86,67 +84,18 @@ export default async function ProductPage({ params }: PageProps) {
         ]}
       />
 
-      <div className="mt-3 grid gap-6 lg:grid-cols-2">
-        {/* Gallery — edge-to-edge on mobile */}
-        <div className="-mx-4 sm:mx-0">
-          <ProductGallery images={p.images} name={p.name} />
-        </div>
-
-        {/* Info column */}
-        <div className="flex flex-col gap-5">
-          <div>
-            {p.brand && (
-              <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
-                {p.brand}
-              </p>
-            )}
-            <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-foreground">
-              {p.name}
-            </h1>
-            <Link
-              href={`/c/${p.categorySlug}`}
-              className="mt-1 inline-block text-sm font-semibold text-primary hover:underline"
-            >
-              {p.categoryName}
-            </Link>
-            {/* Rating summary only if the API returns reviews (none for grocery). */}
-            {p.reviewCount > 0 && (
-              <p className="mt-1 text-sm font-semibold text-foreground">
-                ★ {p.rating.toFixed(1)}{" "}
-                <span className="font-normal text-muted-foreground">
-                  ({p.reviewCount} reviews)
-                </span>
-              </p>
-            )}
-          </div>
-
-          <ProductPurchase
-            variants={p.variants}
-            saleOriginalMinor={saleOriginalMinor(p.slug)}
-            deliveryEstimate={DELIVERY_ESTIMATE}
-            productId={p.id}
-            savedInitial={savedInitial}
-          />
-
-          {/* Product details — real facts only (no invented description/nutrition). */}
-          <div className="rounded-2xl border border-border p-4">
-            <h2 className="mb-3 text-sm font-extrabold text-foreground">Product details</h2>
-            <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
-              {p.brand && (
-                <>
-                  <dt className="font-semibold text-muted-foreground">Brand</dt>
-                  <dd className="text-foreground">{p.brand}</dd>
-                </>
-              )}
-              <dt className="font-semibold text-muted-foreground">Category</dt>
-              <dd className="text-foreground">{p.categoryName}</dd>
-              <dt className="font-semibold text-muted-foreground">Pack sizes</dt>
-              <dd className="text-foreground">
-                {p.variants.map((v) => v.attrs.packSize ?? v.attrs.pack).filter(Boolean).join(", ")}
-              </dd>
-            </dl>
-          </div>
-        </div>
+      <div className="mt-4">
+        <ProductDetail
+          name={p.name}
+          brand={p.brand}
+          categoryName={p.categoryName}
+          categorySlug={p.categorySlug}
+          images={p.images}
+          variants={p.variants}
+          productId={p.id}
+          savedInitial={savedInitial}
+          deliveryEstimate={DELIVERY_ESTIMATE}
+        />
       </div>
 
       {similar.length > 0 && (
