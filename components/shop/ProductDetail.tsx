@@ -84,9 +84,9 @@ export function ProductDetail({
   const stockLabel = stock <= 0 ? "Out of stock" : stock <= 5 ? `Only ${stock} left` : "In stock";
 
   return (
-    <div className="grid gap-7 lg:grid-cols-2 lg:items-start">
+    <div className="grid gap-8 lg:grid-cols-[minmax(0,420px)_minmax(0,620px)] lg:items-start lg:justify-center">
       {/* Image card */}
-      <div className="mx-auto w-full max-w-[520px] rounded-[20px] border border-border bg-card p-4 lg:sticky lg:top-[116px]">
+      <div className="w-full rounded-[20px] border border-border bg-card p-4 lg:sticky lg:top-[116px]">
         <div className="relative aspect-square overflow-hidden rounded-2xl bg-muted">
           {image ? (
             // eslint-disable-next-line @next/next/no-img-element
