@@ -7,7 +7,7 @@
 
 export const RETURN_REASONS = [
   { value: "wrong_item", label: "Wrong item received" },
-  { value: "damaged", label: "Damaged / expired" },
+  { value: "damaged", label: "Damaged / defective" },
   { value: "missing", label: "Missing item" },
   { value: "quality", label: "Quality issue" },
   { value: "other", label: "Other" },

@@ -3,7 +3,7 @@ import { ResetForm } from "@/components/auth/ResetForm";
 
 export const metadata: Metadata = {
   title: "Reset password",
-  description: "Set a new password for your Apex Mart account.",
+  description: "Set a new password for your Apex Tyres account.",
   robots: { index: false, follow: false },
 };
 

@@ -43,7 +43,7 @@ export function VariantEditor({
             <tr>
               <th className="px-4 py-2.5 font-semibold">Variant</th>
               <th className="px-4 py-2.5 font-semibold">SKU</th>
-              <th className="px-4 py-2.5 font-semibold">Price ($)</th>
+              <th className="px-4 py-2.5 font-semibold">Price (PKR)</th>
               <th className="px-4 py-2.5 font-semibold">Stock</th>
               <th className="px-4 py-2.5" />
             </tr>
@@ -82,7 +82,7 @@ function ReadOnlyCard({ variant }: { variant: Variant }) {
       </div>
       <div className="mt-3 grid grid-cols-2 gap-3">
         <div>
-          <span className={cardLabelCls}>Price ($)</span>
+          <span className={cardLabelCls}>Price (PKR)</span>
           <div className="tabular-nums">{fmtPrice(variant.priceMinor)}</div>
         </div>
         <div>
@@ -178,7 +178,7 @@ function VariantCard({ variant }: { variant: Variant }) {
       </div>
       <div className="mt-3 grid grid-cols-2 gap-3">
         <label className="block">
-          <span className={cardLabelCls}>Price ($)</span>
+          <span className={cardLabelCls}>Price (PKR)</span>
           <input
             value={price}
             onChange={(e) => setPrice(e.target.value.replace(/[^0-9.]/g, ""))}

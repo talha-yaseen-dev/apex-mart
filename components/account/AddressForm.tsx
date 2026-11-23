@@ -51,7 +51,7 @@ export function AddressForm({
       name: initial?.name ?? "",
       line1: initial?.line1 ?? "",
       line2: initial?.line2 ?? "",
-      // Apex Mart delivers within Sargodha only — city/region/country are fixed.
+      // Apex Tyres delivers within Sargodha only — city/region/country are fixed.
       city: initial?.city ?? STORE.city,
       region: initial?.region ?? STORE.region,
       // Single-city store — postal code is fixed to Sargodha's 40100.
@@ -90,7 +90,7 @@ export function AddressForm({
           <input
             className={cn(inputCls, "cursor-not-allowed bg-muted/50 opacity-70")}
             readOnly
-            title="Apex Mart delivers within Sargodha only"
+            title="Apex Tyres delivers within Sargodha only"
             {...register("city")}
           />
         </Field>
@@ -98,7 +98,7 @@ export function AddressForm({
           <input
             className={cn(inputCls, "cursor-not-allowed bg-muted/50 opacity-70")}
             readOnly
-            title="Apex Mart delivers within Sargodha (40100) only"
+            title="Apex Tyres delivers within Sargodha (40100) only"
             {...register("postalCode")}
           />
         </Field>

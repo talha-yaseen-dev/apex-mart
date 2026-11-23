@@ -1,6 +1,7 @@
 import "server-only";
-import { OrderStatus, Prisma, ProductStatus, Role } from "@prisma/client";
+import { OrderStatus, Prisma, Role } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { TYRE_CATEGORY_SLUGS } from "@/lib/tyres";
 
 const PAID_STATES = [
   OrderStatus.PAID,
@@ -19,14 +20,14 @@ export async function getDashboard() {
       }),
       prisma.order.count(),
       prisma.order.count({ where: { status: OrderStatus.PENDING } }),
-      prisma.productVariant.count({ where: { stock: { lt: LOW_STOCK } } }),
+      prisma.productVariant.count({ where: { stock: { lt: LOW_STOCK }, product: { status: "ACTIVE", deletedAt: null, category: { slug: { in: [...TYRE_CATEGORY_SLUGS] } } } } }),
       prisma.order.findMany({
         orderBy: { createdAt: "desc" },
         take: 6,
         include: { user: { select: { name: true } } },
       }),
       prisma.productVariant.findMany({
-        where: { stock: { lt: LOW_STOCK } },
+        where: { stock: { lt: LOW_STOCK }, product: { status: "ACTIVE", deletedAt: null, category: { slug: { in: [...TYRE_CATEGORY_SLUGS] } } } },
         orderBy: { stock: "asc" },
         take: 6,
         include: { product: { select: { name: true } } },
@@ -91,7 +92,7 @@ export async function getAdminProducts(query = "") {
 export function getCategories() {
   return prisma.category.findMany({
     orderBy: { name: "asc" },
-    select: { id: true, name: true },
+    select: { id: true, name: true, slug: true },
   });
 }
 
@@ -126,7 +127,10 @@ export async function getAdminProduct(id: string) {
     },
   });
   if (!p) return null;
-  const categories = await prisma.category.findMany({ orderBy: { name: "asc" } });
+  const categories = await prisma.category.findMany({
+    where: { slug: { in: [...TYRE_CATEGORY_SLUGS] } },
+    orderBy: { name: "asc" },
+  });
   return {
     id: p.id,
     name: p.name,
@@ -149,6 +153,7 @@ export async function getAdminProduct(id: string) {
 // ── Inventory ─────────────────────────────────────────────────
 export async function getInventory() {
   const variants = await prisma.productVariant.findMany({
+    where: { product: { status: "ACTIVE", deletedAt: null, category: { slug: { in: [...TYRE_CATEGORY_SLUGS] } } } },
     orderBy: { stock: "asc" },
     include: { product: { select: { name: true } } },
   });

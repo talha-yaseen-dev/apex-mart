@@ -3,6 +3,7 @@ import { unstable_cache } from "next/cache";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import type { StoreCard } from "@/lib/catalog-filter";
+import { TYRE_CATEGORY_SLUGS } from "@/lib/tyres";
 
 export type { StoreCard } from "@/lib/catalog-filter";
 
@@ -31,10 +32,6 @@ export const cardInclude = {
   reviews: { select: { rating: true } },
 } satisfies Prisma.ProductInclude;
 
-type ProductRow = Prisma.ProductGetPayload<{ include: typeof productInclude }>;
-// The card row differs from ProductRow only in the (narrower) images shape, and
-// ProductRow is assignable to it — so the shared derivation helpers below type
-// their input as CardRow and still accept the richer detail row.
 export type CardRow = Prisma.ProductGetPayload<{ include: typeof cardInclude }>;
 
 type Attrs = Record<string, string>;
@@ -103,7 +100,7 @@ function ratingOf(reviews: { rating: number }[]) {
 export function toCard(p: CardRow): StoreCard {
   const { avg, count } = ratingOf(p.reviews);
   // Variants are ordered by priceMinor asc, so the first is the cheapest — the
-  // one whose price the card shows. Surface its pack + unit price (grocery).
+  // one whose price the card shows. Surface its tyre size when available.
   const cheapest = p.variants[0];
   const cheapestAttrs = cheapest ? attrsOf(cheapest) : {};
   return {
@@ -114,7 +111,7 @@ export function toCard(p: CardRow): StoreCard {
     categoryName: p.category.name,
     categorySlug: p.category.slug,
     variantId: cheapest?.id ?? null,
-    pack: cheapestAttrs.packSize ?? cheapestAttrs.pack ?? null,
+    pack: cheapestAttrs.size ?? cheapestAttrs.packSize ?? cheapestAttrs.pack ?? null,
     unitPrice: cheapestAttrs.unitPrice ?? null,
     // Keep the raw url here (data URL or remote) so the cached card + the
     // native REST client stay self-contained; the web render swaps data URLs
@@ -139,7 +136,7 @@ export function toCard(p: CardRow): StoreCard {
 export const getActiveCards = unstable_cache(
   async (): Promise<StoreCard[]> => {
     const rows = await prisma.product.findMany({
-      where: { status: "ACTIVE", deletedAt: null },
+      where: { status: "ACTIVE", deletedAt: null, category: { slug: { in: [...TYRE_CATEGORY_SLUGS] } } },
       include: cardInclude,
       orderBy: { createdAt: "desc" },
     });
@@ -154,7 +151,7 @@ export function getProductDetail(slug: string) {
   return unstable_cache(
     async () => {
       const p = await prisma.product.findFirst({
-        where: { slug, status: "ACTIVE", deletedAt: null },
+        where: { slug, status: "ACTIVE", deletedAt: null, category: { slug: { in: [...TYRE_CATEGORY_SLUGS] } } },
         include: {
           ...productInclude,
           reviews: {

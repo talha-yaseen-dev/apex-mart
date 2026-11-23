@@ -13,7 +13,7 @@ export function CategoryRail({ categories }: { categories: Category[] }) {
   return (
     <section id="categories" className="scroll-mt-28 pt-6">
       <div className="mb-3 flex items-baseline gap-3">
-        <h2 className="text-lg font-extrabold tracking-tight text-foreground">Shop by aisle</h2>
+        <h2 className="text-lg font-extrabold tracking-tight text-foreground">Shop by vehicle</h2>
         <span className="text-xs font-semibold text-muted-foreground">
           {categories.length} categories
         </span>

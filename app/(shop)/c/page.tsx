@@ -7,7 +7,7 @@ import { CategoryTile } from "@/components/shop/CategoryTile";
 export const metadata: Metadata = {
   title: "Shop by category",
   description:
-    "Browse every aisle at Apex Mart — groceries, beverages, snacks, household, personal care, and baby & kids. Cash on delivery, free delivery over Rs. 1,000.",
+    "Browse bike, car and truck tyres by vehicle type at Apex Tyres.",
 };
 
 export default async function CategoriesIndexPage() {
@@ -29,10 +29,10 @@ export default async function CategoriesIndexPage() {
 
       <h1 className="text-2xl font-extrabold tracking-tight text-foreground">Shop by category</h1>
       <p className="mt-1 text-sm text-muted-foreground">
-        {sorted.length} aisles · tap one to browse
+        {sorted.length} vehicle types · tap one to browse
       </p>
 
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
         {sorted.map((c) => (
           <CategoryTile key={c.slug} slug={c.slug} name={c.name} count={c.count} size="lg" />
         ))}

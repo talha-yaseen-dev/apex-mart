@@ -1,5 +1,5 @@
 /**
- * Make a real person the single Apex Mart admin, and retire the seeded
+ * Make a real person the single Apex Tyres admin, and retire the seeded
  * placeholder admin (admin@apexmart.local).
  *
  * What it does, in one transaction:

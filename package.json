@@ -9,7 +9,7 @@
     "lint": "eslint",
     "postinstall": "prisma generate",
     "db:seed": "tsx --env-file=.env prisma/seed.ts",
-    "db:seed:mart": "rm -rf .next/cache && tsx --env-file=.env prisma/seed-mart.ts",
+    "db:import:tyres": "node --env-file=.env --import tsx prisma/import-tyres.ts",
     "db:seed:e2e": "tsx --env-file=.env prisma/seed-test-customer.ts",
     "db:seed:admin": "tsx --env-file=.env prisma/seed-admin.ts",
     "db:set:admin": "tsx --env-file=.env prisma/set-admin.ts",

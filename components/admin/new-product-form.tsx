@@ -21,6 +21,7 @@ export function NewProductForm({ categories }: { categories: Category[] }) {
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
   const [sku, setSku] = useState("");
+  const [size, setSize] = useState("");
   const [images, setImages] = useState<string[]>([]);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
@@ -31,6 +32,7 @@ export function NewProductForm({ categories }: { categories: Category[] }) {
     setPrice("");
     setStock("");
     setSku("");
+    setSize("");
     setImages([]);
     setError("");
   }
@@ -50,6 +52,7 @@ export function NewProductForm({ categories }: { categories: Category[] }) {
       priceMinor,
       stock: Number.isFinite(stockNum) ? stockNum : 0,
       sku: sku.trim() || undefined,
+      size: size.trim(),
       images: images.map((s) => s.trim()).filter(Boolean),
     });
     setPending(false);
@@ -106,7 +109,7 @@ export function NewProductForm({ categories }: { categories: Category[] }) {
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. Vortex Pro Gaming Mouse"
+            placeholder="e.g. Touring Car Tyre"
             className={inputCls}
           />
         </div>
@@ -115,7 +118,7 @@ export function NewProductForm({ categories }: { categories: Category[] }) {
           <input
             value={brand}
             onChange={(e) => setBrand(e.target.value)}
-            placeholder="e.g. Samsung, Apple"
+            placeholder="Manufacturer name"
             className={inputCls}
           />
         </div>
@@ -134,6 +137,16 @@ export function NewProductForm({ categories }: { categories: Category[] }) {
           </select>
         </div>
         <div className="col-span-2">
+          <label className={labelCls}>Tyre size</label>
+          <input
+            value={size}
+            onChange={(e) => setSize(e.target.value)}
+            placeholder="e.g. 195/65 R15"
+            className={inputCls}
+            required
+          />
+        </div>
+        <div className="col-span-2">
           <label className={labelCls}>SKU (optional)</label>
           <input
             value={sku}
@@ -143,12 +156,12 @@ export function NewProductForm({ categories }: { categories: Category[] }) {
           />
         </div>
         <div className="col-span-2">
-          <label className={labelCls}>Price (USD)</label>
+          <label className={labelCls}>Price (PKR)</label>
           <input
             value={price}
             onChange={(e) => setPrice(e.target.value.replace(/[^0-9.]/g, ""))}
             inputMode="decimal"
-            placeholder="59.99"
+            placeholder="12000"
             className={inputCls}
           />
         </div>
@@ -170,7 +183,7 @@ export function NewProductForm({ categories }: { categories: Category[] }) {
         <div className="col-span-2 flex items-center gap-3 sm:col-span-4">
           <button
             type="submit"
-            disabled={pending || !name || !price || !categoryId}
+            disabled={pending || !name || !price || !size || !categoryId}
             className="h-10 rounded-lg bg-primary px-5 text-[13px] font-bold text-primary-foreground hover:bg-primary-hover disabled:opacity-60"
           >
             {pending ? "Creating…" : "Create product"}

@@ -2,6 +2,7 @@ import "server-only";
 import { OrderStatus, ShipmentStatus } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { cardInclude, toCard, type StoreCard } from "@/lib/catalog";
+import { TYRE_CATEGORY_SLUGS } from "@/lib/tyres";
 
 const money = (c: number) => c;
 
@@ -134,7 +135,7 @@ export function getAddresses(userId: string) {
 // ── Wishlist ──────────────────────────────────────────────────
 export async function getWishlist(userId: string) {
   const rows = await prisma.wishlist.findMany({
-    where: { userId },
+    where: { userId, product: { status: "ACTIVE", deletedAt: null, category: { slug: { in: [...TYRE_CATEGORY_SLUGS] } } } },
     orderBy: { createdAt: "desc" },
     include: {
       product: {
@@ -166,7 +167,7 @@ export async function getWishlist(userId: string) {
  */
 export async function getWishlistCards(userId: string) {
   const rows = await prisma.wishlist.findMany({
-    where: { userId },
+    where: { userId, product: { status: "ACTIVE", deletedAt: null, category: { slug: { in: [...TYRE_CATEGORY_SLUGS] } } } },
     orderBy: { createdAt: "desc" },
     include: { product: { include: cardInclude } },
   });

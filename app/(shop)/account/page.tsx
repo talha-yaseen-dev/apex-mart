@@ -103,7 +103,7 @@ export default async function AccountOverviewPage() {
           <ActionCard
             icon={ShoppingBag}
             title="Continue shopping"
-            subtitle="Back to the aisles"
+            subtitle="Browse tyres"
             href="/"
           />
         </div>

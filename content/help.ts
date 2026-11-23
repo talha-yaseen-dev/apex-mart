@@ -35,7 +35,7 @@ const deliveryTopic: HelpTopic = {
   preview: "Zones we cover, fees, and 2-hour delivery slots.",
   metaTitle: "Delivery information",
   metaDescription:
-    "Apex Mart delivery zones, fees, and 2-hour time slots. Free delivery over Rs. 1,000, cash on delivery.",
+    "Apex Tyres delivery zones, fees, and 2-hour time slots. Free delivery over Rs. 1,000, cash on delivery.",
   sections: [
     {
       id: "delivery-zones",
@@ -61,7 +61,7 @@ const deliveryTopic: HelpTopic = {
       blocks: [
         { p: "Pick a 2-hour delivery window at checkout, seven days a week:" },
         { list: [...DELIVERY_SLOTS] },
-        { p: "Order before 6pm for same-day dispatch." },
+        { p: "Available slots are confirmed at checkout." },
       ],
     },
     {
@@ -69,7 +69,7 @@ const deliveryTopic: HelpTopic = {
       heading: "What if I miss my delivery?",
       blocks: [
         {
-          todo: "Describe the missed-delivery process — re-attempt window, how the rider makes contact, and how to reschedule.",
+          todo: "Describe the missed-delivery process — re-attempt window, how the driver makes contact, and how to reschedule.",
         },
       ],
     },
@@ -78,7 +78,7 @@ const deliveryTopic: HelpTopic = {
       heading: "Contactless delivery",
       blocks: [
         {
-          todo: "Describe contactless delivery (leave-at-door option, how to request it, and how cash-on-delivery is handled).",
+          todo: "Describe delivery handover, how the buyer can inspect tyre size, and how cash-on-delivery is handled.",
         },
       ],
     },
@@ -94,13 +94,13 @@ const returnsTopic: HelpTopic = {
   title: "Returns and refunds",
   preview: "Our return policy and how to request one.",
   metaTitle: "Returns and refunds",
-  metaDescription: "Apex Mart returns and refunds policy.",
+  metaDescription: "Apex Tyres returns and refunds policy.",
   sections: [
     { id: "our-return-policy", heading: "Our return policy", blocks: [{ todo: "State the overall return policy and the return window." }] },
     {
       id: "what-can-be-returned",
       heading: "What can be returned",
-      blocks: [{ todo: "List what can and cannot be returned — e.g. perishables, opened packages, hygiene items." }],
+      blocks: [{ todo: "List tyre return conditions, including whether fitted or used tyres are eligible." }],
     },
     {
       id: "how-to-request-a-return",
@@ -119,7 +119,7 @@ const faqTopic: HelpTopic = {
   preview: "Quick answers to common questions.",
   metaTitle: "Frequently asked questions",
   metaDescription:
-    "Answers to common questions about ordering, payment, delivery, and accounts at Apex Mart.",
+    "Answers to common questions about ordering, payment, delivery, and accounts at Apex Tyres.",
   faqGroups: [
     {
       id: "delivery",
@@ -131,7 +131,7 @@ const faqTopic: HelpTopic = {
         },
         {
           q: "How long does delivery take?",
-          a: "Most orders are delivered within 2 hours during our operating hours. You can select a specific time slot at checkout, including next-day slots.",
+          a: "Choose an available delivery slot at checkout. Contact the store if you need to confirm timing for a truck or commercial tyre.",
         },
         {
           q: "What is the delivery fee?",
@@ -139,7 +139,7 @@ const faqTopic: HelpTopic = {
         },
         {
           q: "What if I'm not home when the rider arrives?",
-          a: "Our rider will call you before arrival. If you're unavailable, they wait briefly or reschedule. Missed deliveries can be redelivered the same day or the next available slot.",
+          a: "Contact the store with your order reference to arrange the next available delivery slot.",
         },
       ],
     },
@@ -161,7 +161,7 @@ const faqTopic: HelpTopic = {
         },
         {
           q: "What if an item is out of stock after I order?",
-          a: "We check stock at the time of order. If something becomes unavailable, we contact you on WhatsApp before dispatch to confirm a substitute or remove the item.",
+          a: "We check stock at the time of order. If your tyre size becomes unavailable, we contact you on WhatsApp before dispatch to agree on the next step.",
         },
       ],
     },
@@ -175,7 +175,7 @@ const faqTopic: HelpTopic = {
         },
         {
           q: "What's your return policy?",
-          a: "If you receive damaged, expired, or wrong items, contact us within 24 hours of delivery on WhatsApp or through the \"Report a problem\" button on your order page. We'll arrange a replacement or refund.",
+          a: "If a tyre arrives damaged or in the wrong size, contact us on WhatsApp or use the \"Report a problem\" button on your order page. Return eligibility is shown in our returns policy.",
         },
         {
           q: "How do I contact you?",

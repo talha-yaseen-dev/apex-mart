@@ -4,7 +4,7 @@ import { googleEnabled } from "@/lib/env";
 
 export const metadata: Metadata = {
   title: "Sign in",
-  description: "Sign in to your Apex Mart account.",
+  description: "Sign in to your Apex Tyres account.",
   robots: { index: false, follow: true },
 };
 

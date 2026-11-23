@@ -19,6 +19,7 @@ import { logAudit } from "@/lib/audit";
 import { ORDER_TRANSITIONS } from "@/lib/admin";
 import { notifyOrderRefunded, notifyOrderShipped } from "@/lib/notify";
 import { isDemoAccount, DEMO_ACCOUNT_WRITE_BLOCK_MESSAGE } from "@/lib/auth-constants";
+import { isTyreCategory } from "@/lib/tyres";
 
 const DENIED = { ok: false as const, error: "You don't have permission to do that." };
 const DEMO_BLOCKED = { ok: false as const, error: DEMO_ACCOUNT_WRITE_BLOCK_MESSAGE };
@@ -86,8 +87,9 @@ const productImagesSchema = z
 const createProductSchema = z.object({
   name: z.string().trim().min(2, "Enter a product name."),
   categoryId: z.string().min(1, "Choose a category."),
-  // Optional brand/manufacturer (e.g. Samsung, Apple).
+  // Optional tyre manufacturer.
   brand: z.string().trim().max(60, "Brand name is too long.").optional(),
+  size: z.string().trim().min(3, "Enter a tyre size."),
   priceMinor: z.number().int().min(0, "Price can’t be negative."),
   stock: z.number().int().min(0, "Stock can’t be negative."),
   sku: z.string().trim().toUpperCase().optional(),
@@ -109,7 +111,8 @@ export async function createProductAction(input: unknown) {
   const d = parsed.data;
 
   const category = await prisma.category.findUnique({ where: { id: d.categoryId } });
-  if (!category) return { ok: false as const, error: "Category not found." };
+  if (!category || !isTyreCategory(category.slug))
+    return { ok: false as const, error: "Choose a tyre category." };
 
   // Unique slug (append a short suffix if the base is taken).
   let slug = slugify(d.name) || `product-${randomBytes(3).toString("hex")}`;
@@ -133,7 +136,7 @@ export async function createProductAction(input: unknown) {
       categoryId: d.categoryId,
       brand: d.brand || null,
       status: publishNow ? ProductStatus.ACTIVE : ProductStatus.DRAFT,
-      variants: { create: { sku, priceMinor: d.priceMinor, stock: d.stock } },
+      variants: { create: { sku, priceMinor: d.priceMinor, stock: d.stock, currency: "PKR", attributes: { size: d.size } } },
       images: d.images?.length
         ? { create: d.images.map((url, i) => ({ url, alt: d.name, position: i })) }
         : undefined,
@@ -183,7 +186,8 @@ export async function updateProductAction(input: unknown) {
   if (!existing) return { ok: false as const, error: "Product not found." };
 
   const category = await prisma.category.findUnique({ where: { id: d.categoryId } });
-  if (!category) return { ok: false as const, error: "Category not found." };
+  if (!category || !isTyreCategory(category.slug))
+    return { ok: false as const, error: "Choose a tyre category." };
 
   try {
     await prisma.$transaction([

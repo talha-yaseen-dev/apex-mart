@@ -9,41 +9,20 @@ export type CategoryMeta = {
 };
 
 export const CATEGORY_META: Record<string, CategoryMeta> = {
-  grocery: {
-    title: "Grocery",
-    description:
-      "Rice, atta, cooking oil, daal, sugar, tea and everyday pantry staples — delivered across the city. PKR prices, cash on delivery.",
-    tagline: "Pantry staples & daily essentials",
+  "bike-tyres": {
+    title: "Bike Tyres",
+    description: "Explore motorcycle and scooter tyres by size at Apex Tyres.",
+    tagline: "Motorcycle and scooter tyres",
   },
-  beverages: {
-    title: "Beverages",
-    description:
-      "Soft drinks, juices, squashes, water, tea and coffee at Apex Mart. Same-day delivery, cash on delivery.",
-    tagline: "Drinks, juices, tea & coffee",
+  "car-tyres": {
+    title: "Car Tyres",
+    description: "Explore car and SUV tyres by size at Apex Tyres.",
+    tagline: "Car and SUV tyres",
   },
-  snacks: {
-    title: "Snacks",
-    description:
-      "Chips, biscuits, chocolate, namkeen and everything to munch on — delivered fast. Cash on delivery.",
-    tagline: "Chips, biscuits & chocolate",
-  },
-  household: {
-    title: "Household",
-    description:
-      "Detergents, cleaners, dishwash, tissues and home essentials at everyday prices. Free delivery over Rs. 1,000.",
-    tagline: "Cleaning & home essentials",
-  },
-  "personal-care": {
-    title: "Personal Care",
-    description:
-      "Shampoo, soap, toothpaste, skincare and grooming essentials — delivered to your door. Cash on delivery.",
-    tagline: "Bath, hair & grooming",
-  },
-  "baby-kids": {
-    title: "Baby & Kids",
-    description:
-      "Diapers, wipes, baby food, baby care and kids' essentials at Apex Mart. Same-day delivery.",
-    tagline: "Diapers, baby food & care",
+  "truck-tyres": {
+    title: "Truck Tyres",
+    description: "Explore commercial and light truck tyres by size at Apex Tyres.",
+    tagline: "Light truck and commercial tyres",
   },
 };
 
@@ -51,7 +30,7 @@ export function categoryMeta(slug: string, name: string): CategoryMeta {
   return (
     CATEGORY_META[slug] ?? {
       title: name,
-      description: `Shop ${name} online at Apex Mart — PKR prices, cash on delivery, free delivery over Rs. 1,000.`,
+      description: `Shop ${name} online at Apex Tyres — PKR prices and cash on delivery.`,
       tagline: name,
     }
   );

@@ -2,6 +2,7 @@ import "server-only";
 import type { Cart } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
+import { isTyreCategory } from "@/lib/tyres";
 import {
   clearCartCookie,
   readCartCookie,
@@ -41,7 +42,7 @@ export async function ensureCart(): Promise<Cart> {
   if (user) {
     const userCart =
       (await prisma.cart.findFirst({ where: { userId: user.id } })) ??
-      (await prisma.cart.create({ data: { userId: user.id } }));
+      (await prisma.cart.create({ data: { userId: user.id, currency: "PKR" } }));
 
     const guestId = await readCartCookie();
     if (guestId && guestId !== userCart.id) {
@@ -79,7 +80,7 @@ export async function ensureCart(): Promise<Cart> {
     const existing = await prisma.cart.findUnique({ where: { id: guestId } });
     if (existing) return existing;
   }
-  const created = await prisma.cart.create({ data: {} });
+  const created = await prisma.cart.create({ data: { currency: "PKR" } });
   await writeCartCookie(created.id);
   return created;
 }
@@ -118,7 +119,7 @@ export async function getCartView(): Promise<CartView | null> {
     include: {
       variant: {
         include: {
-          product: { include: { images: { orderBy: { position: "asc" }, take: 1 } } },
+          product: { include: { category: true, images: { orderBy: { position: "asc" }, take: 1 } } },
         },
       },
     },
@@ -133,7 +134,9 @@ export async function getCartView(): Promise<CartView | null> {
     // checkout reservation guard (reserveCart) rejects it. Keeps a removed
     // product from being bought out of a stale cart.
     const purchasable =
-      i.variant.product.deletedAt === null && i.variant.product.status === "ACTIVE";
+      i.variant.product.deletedAt === null &&
+      i.variant.product.status === "ACTIVE" &&
+      isTyreCategory(i.variant.product.category.slug);
     return {
       itemId: i.id,
       variantId: i.variantId,
@@ -161,9 +164,10 @@ export async function getCartView(): Promise<CartView | null> {
 export async function addToCart(variantId: string, qty = 1): Promise<void> {
   const cart = await ensureCart();
   const variant = await prisma.productVariant.findUnique({
-    where: { id: variantId },
+    where: { id: variantId }, include: { product: { include: { category: true } } },
   });
-  if (!variant) throw new Error("Variant not found");
+  if (!variant || variant.product.status !== "ACTIVE" || variant.product.deletedAt || !isTyreCategory(variant.product.category.slug))
+    throw new Error("Tyre is unavailable");
 
   const reserved = (await reservedByVariant([variantId])).get(variantId) ?? 0;
   const available = variant.stock - reserved;

@@ -2,6 +2,7 @@ import "server-only";
 import type { Cart } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { reservedByVariant, type CartView, type CartItemView } from "@/lib/cart";
+import { isTyreCategory } from "@/lib/tyres";
 
 /**
  * User-scoped cart operations for the mobile API. Mobile clients are always
@@ -12,7 +13,7 @@ import { reservedByVariant, type CartView, type CartItemView } from "@/lib/cart"
 async function ensureUserCart(userId: string): Promise<Cart> {
   return (
     (await prisma.cart.findFirst({ where: { userId } })) ??
-    (await prisma.cart.create({ data: { userId } }))
+    (await prisma.cart.create({ data: { userId, currency: "PKR" } }))
   );
 }
 
@@ -27,7 +28,7 @@ export async function getCartViewFor(userId: string): Promise<CartView> {
       variant: {
         include: {
           product: {
-            include: { images: { orderBy: { position: "asc" }, take: 1 } },
+            include: { category: true, images: { orderBy: { position: "asc" }, take: 1 } },
           },
         },
       },
@@ -47,7 +48,9 @@ export async function getCartViewFor(userId: string): Promise<CartView> {
     image: i.variant.product.images[0]?.url ?? null,
     unitPriceMinor: i.unitPriceMinor,
     qty: i.quantity,
-    available: i.variant.stock - (reserved.get(i.variantId) ?? 0),
+    available: i.variant.product.status === "ACTIVE" &&
+      !i.variant.product.deletedAt && isTyreCategory(i.variant.product.category.slug)
+      ? i.variant.stock - (reserved.get(i.variantId) ?? 0) : 0,
     lineTotalMinor: i.unitPriceMinor * i.quantity,
   }));
 
@@ -65,8 +68,11 @@ export async function addToCartFor(
   qty = 1,
 ): Promise<CartView> {
   const cart = await ensureUserCart(userId);
-  const variant = await prisma.productVariant.findUnique({ where: { id: variantId } });
-  if (!variant) throw new Error("Variant not found");
+  const variant = await prisma.productVariant.findUnique({
+    where: { id: variantId }, include: { product: { include: { category: true } } },
+  });
+  if (!variant || variant.product.status !== "ACTIVE" || variant.product.deletedAt || !isTyreCategory(variant.product.category.slug))
+    throw new Error("Tyre is unavailable");
 
   const reserved = (await reservedByVariant([variantId])).get(variantId) ?? 0;
   const available = variant.stock - reserved;

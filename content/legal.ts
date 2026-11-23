@@ -1,5 +1,5 @@
 /**
- * Legal document templates for Apex Mart.
+ * Legal document templates for Apex Tyres.
  *
  * These are SCAFFOLDS, not policies. Every section body is a TODO marker — no
  * real policy text, effective dates, company legal name, jurisdiction, data
@@ -37,9 +37,9 @@ const s = (heading: string): LegalSection => ({ heading, body: TODO });
 export const LEGAL_DOCS: Record<string, LegalDoc> = {
   privacy: {
     slug: "privacy",
-    title: "Apex Mart Privacy Policy",
+    title: "Apex Tyres Privacy Policy",
     description:
-      "How Apex Mart collects, uses, and protects your personal information.",
+      "How Apex Tyres collects, uses, and protects your personal information.",
     updatedAt: null,
     sections: [
       s("What we collect"),
@@ -53,12 +53,12 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
   },
   terms: {
     slug: "terms",
-    title: "Apex Mart Terms of Service",
-    description: "The terms that govern your use of Apex Mart.",
+    title: "Apex Tyres Terms of Service",
+    description: "The terms that govern your use of Apex Tyres.",
     updatedAt: null,
     sections: [
       s("Acceptance of these terms"),
-      s("Using Apex Mart"),
+      s("Using Apex Tyres"),
       s("Orders & pricing"),
       s("Payment"),
       s("Delivery"),
@@ -70,8 +70,8 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
   },
   returns: {
     slug: "returns",
-    title: "Apex Mart Returns & Refund Policy",
-    description: "How returns and refunds work at Apex Mart.",
+    title: "Apex Tyres Returns & Refund Policy",
+    description: "How returns and refunds work at Apex Tyres.",
     updatedAt: null,
     sections: [
       s("Return eligibility"),
@@ -84,8 +84,8 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
   },
   shipping: {
     slug: "shipping",
-    title: "Apex Mart Shipping Policy",
-    description: "Delivery areas, times, and fees for Apex Mart orders.",
+    title: "Apex Tyres Shipping Policy",
+    description: "Delivery areas, times, and fees for Apex Tyres orders.",
     updatedAt: null,
     sections: [
       s("Delivery areas"),
@@ -98,8 +98,8 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
   },
   cookies: {
     slug: "cookies",
-    title: "Apex Mart Cookie Policy",
-    description: "How Apex Mart uses cookies and similar technologies.",
+    title: "Apex Tyres Cookie Policy",
+    description: "How Apex Tyres uses cookies and similar technologies.",
     updatedAt: null,
     sections: [
       s("What cookies are"),

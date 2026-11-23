@@ -197,7 +197,7 @@ export function CheckoutForm({
               <input
                 className={cn(inputCls, "cursor-not-allowed bg-muted/50 opacity-70")}
                 readOnly
-                title="Apex Mart delivers within Sargodha only"
+                title="Apex Tyres delivers within Sargodha only"
                 {...register("city")}
               />
             </Field>

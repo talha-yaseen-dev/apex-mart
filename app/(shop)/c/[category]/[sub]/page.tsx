@@ -6,9 +6,9 @@ import { CategoryListing } from "@/components/shop/CategoryListing";
 
 /**
  * Subcategory listing — same components, same facets as the parent category
- * page, scoped to the child aisle.
+ * page, scoped to the child category.
  *
- * NOTE: the current grocery catalogue is flat (6 top-level aisles, no children),
+ * NOTE: the current tyre catalogue is flat (3 vehicle categories, no children),
  * and /api/v1/* exposes no category tree, so `sub` is validated against the flat
  * category list. With the present data these URLs 404; the page renders the
  * correct parent→child hierarchy once subcategories are seeded.
@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const title = meta?.title ?? sub;
   return {
     title,
-    description: meta?.description ?? `Shop ${title} at Apex Mart.`,
+    description: meta?.description ?? `Shop ${title} at Apex Tyres.`,
     alternates: { canonical: `/c/${category}/${sub}` },
   };
 }

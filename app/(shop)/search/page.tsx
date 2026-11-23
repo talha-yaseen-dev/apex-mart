@@ -29,7 +29,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
     return {
       title: "Search",
       description:
-        "Search groceries, snacks and household essentials at Apex Mart. Cash on delivery, free delivery over Rs. 1,000.",
+        "Search bike, car and truck tyres by name or size at Apex Tyres.",
       robots: { index: false, follow: true },
     };
   }
@@ -38,7 +38,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
   // drops filter/sort/page noise.
   return {
     title: `Search "${q}"`,
-    description: `Search results for "${q}" at Apex Mart — PKR prices, cash on delivery, free delivery over Rs. 1,000.`,
+    description: `Search results for "${q}" at Apex Tyres — bike, car and truck tyres.`,
     alternates: { canonical: `/search?q=${encodeURIComponent(q)}` },
   };
 }
@@ -56,10 +56,10 @@ export default async function SearchPage({ searchParams }: PageProps) {
             🔍
           </div>
           <h1 className="text-2xl font-extrabold tracking-tight text-foreground">
-            Search Apex Mart
+            Search Apex Tyres
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Find groceries, snacks and household essentials — start typing in the search bar above.
+            Find tyres by vehicle, name or size — start typing in the search bar above.
           </p>
         </div>
 
@@ -122,7 +122,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
 /**
  * No-results state. Nova's catalog does exact substring matching only — there's
  * no fuzzy / "did you mean" support — so we don't guess a correction; we point
- * the shopper at the busiest aisles to browse instead.
+ * the shopper at the busiest tyre categories to browse instead.
  */
 function NoResults({
   q,
@@ -155,7 +155,7 @@ function NoResults({
                 href={`/c/${c.slug}`}
                 className="tap-target inline-flex items-center gap-2 rounded-full border border-input bg-background px-4 text-sm font-bold text-foreground transition-colors hover:border-primary hover:bg-primary/5 hover:text-primary"
               >
-                <span aria-hidden>{CATEGORY_ICONS[c.slug] ?? "🛒"}</span>
+                <span aria-hidden>{CATEGORY_ICONS[c.slug] ?? "🛞"}</span>
                 {c.name}
               </Link>
             ))}

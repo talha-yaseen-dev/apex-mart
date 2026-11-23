@@ -38,9 +38,11 @@ export async function reserveCart(cartId: string): Promise<Date> {
             ), 0)::int AS reserved
           FROM "ProductVariant" v
           JOIN "Product" p ON p.id = v."productId"
+          JOIN "Category" c ON c.id = p."categoryId"
           WHERE v.id = ${line.variantId}
             AND p."deletedAt" IS NULL
             AND p.status = 'ACTIVE'
+            AND c.slug IN ('bike-tyres', 'car-tyres', 'truck-tyres')
           FOR UPDATE OF v`;
         const row = rows[0];
         if (!row || row.stock - row.reserved < line.quantity) {

@@ -157,11 +157,11 @@ export function RegisterForm() {
       <aside className="hidden flex-col justify-center gap-7 border-r border-border bg-muted/40 p-10 md:flex">
         <div className="flex items-center gap-2">
           <BrandMark size={30} />
-          <span className="text-lg font-extrabold tracking-tight text-foreground">Apex Mart</span>
+          <span className="text-lg font-extrabold tracking-tight text-foreground">Apex Tyres</span>
         </div>
         <div>
           <h2 className="text-2xl font-extrabold tracking-tight text-foreground">
-            Shop faster with Apex Mart
+            Shop faster with Apex Tyres
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
             Create a free account to breeze through checkout and keep every order in one place.

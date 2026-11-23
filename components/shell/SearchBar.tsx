@@ -60,7 +60,7 @@ export function SearchBar({ className }: { className?: string }) {
         name="q"
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        placeholder="Search rice, oil, shampoo, drinks…"
+        placeholder="Search tyres, sizes, vehicles…"
         aria-label="Search products"
         enterKeyHint="search"
         autoComplete="off"

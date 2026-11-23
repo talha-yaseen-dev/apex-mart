@@ -7,8 +7,8 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /** Format integer minor units (cents) as a currency string. */
-export function formatMoney(minor: number, currency = "USD") {
-  return new Intl.NumberFormat("en-US", {
+export function formatMoney(minor: number, currency = "PKR") {
+  return new Intl.NumberFormat("en-PK", {
     style: "currency",
     currency,
   }).format(minor / 100);

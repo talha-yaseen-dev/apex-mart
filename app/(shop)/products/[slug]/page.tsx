@@ -16,10 +16,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const p = await getProduct(slug);
   if (!p) return { title: "Product not found" };
 
-  const packs = p.variants.map((v) => v.attrs.packSize ?? v.attrs.pack).filter(Boolean).join(", ");
-  const description = `${p.brand ? `${p.brand} ` : ""}${p.name}${
-    packs ? ` — available in ${packs}` : ""
-  }. PKR prices, cash on delivery at Apex Mart.`;
+  const sizes = p.variants.map((v) => v.attrs.size ?? v.attrs.packSize).filter(Boolean).join(", ");
+  const description = `${p.name}${sizes ? ` — tyre sizes ${sizes}` : ""}. Shop at Apex Tyres in Sargodha.`;
 
   return {
     title: p.name,
@@ -45,7 +43,7 @@ export default async function ProductPage({ params }: PageProps) {
   const user = await getCurrentUser();
   const savedInitial = user ? await isWishlisted(user.id, p.id) : false;
 
-  // Similar products from the same aisle (reuse ProductCard via ProductSection).
+  // Similar tyres from the same vehicle category.
   const related = await getCategoryProducts(p.categorySlug, {});
   const relatedItems = await withWishlistState(user?.id, related.items);
   const similar: SectionItem[] = relatedItems

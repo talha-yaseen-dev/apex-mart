@@ -1,8 +1,9 @@
 import { formatMoney } from "@/lib/utils";
+import { STORE } from "@/lib/delivery-config";
 
 /**
  * Order-lifecycle transactional emails — HTML mirrors the templates in
- * Hardening.dc.html (Nova gradient header, accent bar, meta box, single CTA).
+ * Shared branded header, accent bar, order details and a single action.
  */
 type Email = { subject: string; html: string };
 type Line = { label: string; value: string };
@@ -24,8 +25,8 @@ function template(opts: {
   return `
   <div style="background:#f2f4f4;padding:26px 0;font-family:'IBM Plex Sans',system-ui,sans-serif;">
     <div style="max-width:460px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(40,60,60,.08);">
-      <div style="background:linear-gradient(155deg,#274b4f,#1c3a40);padding:22px 30px;">
-        <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:20px;color:#fff;letter-spacing:-.02em;">Nova</span>
+      <div style="background:linear-gradient(155deg,#252b33,#111827);padding:22px 30px;">
+        <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:20px;color:#fff;letter-spacing:-.02em;">${STORE.name}</span>
       </div>
       <div style="height:4px;background:${opts.accent};"></div>
       <div style="padding:30px;color:#33403f;">
@@ -44,7 +45,7 @@ function template(opts: {
         <a href="${opts.ctaHref}" style="display:inline-block;background:${opts.accent};color:#fff;text-decoration:none;padding:13px 28px;border-radius:10px;font-size:14.5px;font-weight:700;">${opts.cta}</a>
         <p style="margin:22px 0 0;color:#8a9a99;font-size:12.5px;line-height:1.6;">${opts.footer}</p>
       </div>
-      <div style="padding:18px 30px;border-top:1px solid #eef1f1;text-align:center;font-size:11.5px;color:#8a9a99;line-height:1.6;">Nova, Inc. · 100 Market St, San Francisco, CA<br>Transactional message about your order.</div>
+      <div style="padding:18px 30px;border-top:1px solid #eef1f1;text-align:center;font-size:11.5px;color:#8a9a99;line-height:1.6;">${STORE.name} · ${STORE.city}, Pakistan<br>Transactional message about your order.</div>
     </div>
   </div>`;
 }
@@ -56,12 +57,12 @@ export function orderConfirmedEmail(o: {
   totalMinor: number;
 }): Email {
   return {
-    subject: `Your Nova order is confirmed — ${o.orderNumber}`,
+    subject: `Your ${STORE.name} order is confirmed — ${o.orderNumber}`,
     html: template({
-      accent: "#3f7e82",
+      accent: "#c95a12",
       icon: "✓",
       heading: "Order confirmed",
-      body: `Thanks, ${o.name}! We've received your order and payment. We'll email you again the moment it ships.`,
+      body: `Thanks, ${o.name}! We've received your tyre order. Payment is due on delivery. We'll update you when it is dispatched.`,
       metaLabel: "Order number",
       metaValue: o.orderNumber,
       lines: [...o.lines, { label: "Total", value: formatMoney(o.totalMinor) }],
@@ -80,7 +81,7 @@ export function orderShippedEmail(o: {
   return {
     subject: `Your order has shipped 📦 — ${o.orderNumber}`,
     html: template({
-      accent: "#0f8a80",
+      accent: "#c95a12",
       icon: "📦",
       heading: "On its way!",
       body: "Good news — your order is out for delivery. Use the tracking number below to follow along.",
@@ -104,13 +105,13 @@ export function orderRefundedEmail(o: {
       accent: "#c0553f",
       icon: "↩",
       heading: "Refund processed",
-      body: "We've issued a refund to your original payment method. It typically appears within 5–10 business days.",
+      body: "Your refund has been processed. Contact the store if you need details about the refund method or timing.",
       metaLabel: "Refund amount",
       metaValue: formatMoney(o.amountMinor),
       lines: [{ label: "Order", value: o.orderNumber }],
       cta: "View order",
       ctaHref: `${APP}/account/orders`,
-      footer: "The timing depends on your bank; Nova has completed its part.",
+      footer: "Need help? Contact the store through the Help Center.",
     }),
   };
 }

@@ -102,7 +102,7 @@ export function SignInForm({
   const unverified = errorCode === AUTH_ERRORS.EMAIL_NOT_VERIFIED;
 
   return (
-    <AuthCard title="Sign in" subtitle="Welcome back to Apex Mart.">
+    <AuthCard title="Sign in" subtitle="Welcome back to Apex Tyres.">
       {(justCreated || justVerified) && (
         <div
           role="status"
@@ -198,7 +198,7 @@ export function SignInForm({
       </form>
 
       <AuthFootLink>
-        New to Apex Mart?{" "}
+        New to Apex Tyres?{" "}
         <Link href="/register" className="font-bold text-primary hover:underline">
           Create account
         </Link>

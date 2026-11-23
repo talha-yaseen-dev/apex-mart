@@ -1,20 +1,7 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { STORE } from "@/lib/delivery-config";
 import { env } from "@/lib/env";
-
-const geist = Geist({
-  subsets: ["latin"],
-  variable: "--font-sans",
-  display: "swap",
-});
-
-const geistMono = Geist_Mono({
-  subsets: ["latin"],
-  variable: "--font-geist-mono",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   // Env-driven base for absolute canonical + Open Graph URLs. Resolves to the
@@ -26,7 +13,7 @@ export const metadata: Metadata = {
     template: `%s · ${STORE.name}`,
   },
   description:
-    "Groceries, snacks and household essentials delivered to your door. Cash on delivery, free delivery over Rs. 1,000.",
+    "Shop bike, car and truck tyres by vehicle and size at Apex Tyres in Sargodha.",
 };
 
 /**
@@ -38,7 +25,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" dir="ltr" className={`${geist.variable} ${geistMono.variable}`} suppressHydrationWarning>
+    <html lang="en" dir="ltr" suppressHydrationWarning>
       <body className="min-h-dvh bg-background text-foreground antialiased">
         {children}
       </body>

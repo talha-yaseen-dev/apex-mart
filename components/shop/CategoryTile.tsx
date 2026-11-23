@@ -27,7 +27,7 @@ export function CategoryTile({ slug, name, count, size = "sm" }: CategoryTilePro
           lg ? "size-16 text-4xl" : "size-12 text-2xl",
         )}
       >
-        {CATEGORY_ICONS[slug] ?? "🛒"}
+        {CATEGORY_ICONS[slug] ?? "🛞"}
       </span>
       <span className={cn("font-bold leading-tight text-foreground", lg ? "text-sm" : "text-xs")}>
         {name}

@@ -1,9 +1,8 @@
-import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { STORE } from "@/lib/delivery-config";
 
 /**
- * Apex Mart brand mark — a sparkle glyph in the brand colour. In the app chrome
+ * Apex Tyres brand mark — a tyre glyph in the brand colour. In the app chrome
  * the wordmark (STORE.name) sits beside it (headers, footer, auth panel).
  *
  * Flat and theme-aware: brand-coloured on normal surfaces, and white on
@@ -30,13 +29,19 @@ export function BrandMark({
       role="img"
       aria-label={STORE.name}
     >
-      <Sparkles
-        size={Math.round(size * 0.82)}
-        fill="currentColor"
-        strokeWidth={1.25}
+      <svg
+        viewBox="0 0 40 40"
+        width={Math.round(size * 0.9)}
+        height={Math.round(size * 0.9)}
+        fill="none"
         className={onDark ? "text-white" : "text-primary"}
         aria-hidden
-      />
+      >
+        <circle cx="20" cy="20" r="17" stroke="currentColor" strokeWidth="4" />
+        <circle cx="20" cy="20" r="10" stroke="currentColor" strokeWidth="4" />
+        <circle cx="20" cy="20" r="3" fill="currentColor" />
+        <path d="M20 3v7M20 30v7M3 20h7M30 20h7M8 8l5 5m14 14 5 5M32 8l-5 5M13 27l-5 5" stroke="currentColor" strokeWidth="2" />
+      </svg>
     </span>
   );
 }

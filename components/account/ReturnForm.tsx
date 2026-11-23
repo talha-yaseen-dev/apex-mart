@@ -58,7 +58,7 @@ export function ReturnForm({
         <CheckCircle2 className="mx-auto size-14 text-primary" aria-hidden />
         <h2 className="mt-3 text-lg font-extrabold text-foreground">Request received</h2>
         <p className="mx-auto mt-1 max-w-sm text-sm text-muted-foreground">
-          We&apos;ve received your request. We&apos;ll reply within 24 hours.
+          We&apos;ve received your request. The store will review it and contact you.
         </p>
         <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
           Or contact us directly:{" "}

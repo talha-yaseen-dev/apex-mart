@@ -24,7 +24,7 @@ type ProductDetailProps = {
 
 /**
  * Redesigned product detail — a white image card (sticky on desktop) beside the
- * info column: brand/title, price + unit, pack-size buttons (with prices),
+ * info column: brand/title, price, tyre-size buttons (with prices),
  * add/stepper + buy-now, a trust row, and the product-details list. Pack state
  * is shared across both columns (the badge + price + stock all follow it).
  * Reuses the real cart/wishlist wiring; busy state is local so it never dims
@@ -52,8 +52,18 @@ export function ProductDetail({
   const qty = item?.qty ?? 0;
   const image = images[0];
 
-  const packOf = (v: ProductVariantView) => v.attrs.packSize ?? v.attrs.pack ?? v.sku;
+  const packOf = (v: ProductVariantView) => v.attrs.size ?? v.attrs.packSize ?? v.attrs.pack ?? v.sku;
   const packsLabel = variants.map(packOf).filter(Boolean).join(", ");
+  const specs = [
+    ["pattern", "Pattern"],
+    ["construction", "Construction"],
+    ["position", "Position"],
+    ["season", "Season"],
+    ["tubeless", "Tubeless"],
+    ["loadIndex", "Load index"],
+    ["speedRating", "Speed rating"],
+    ["plyRating", "Ply rating"],
+  ] as const;
 
   const onAdd = async () => {
     if (busy || stock <= 0) return;
@@ -107,7 +117,7 @@ export function ProductDetail({
           <span className="text-xs text-muted-foreground">
             {variants.length > 1
               ? "Tap a pack size to switch bottle"
-              : "Fresh from the Sargodha City store"}
+              : "Tyre delivery in Sargodha City"}
           </span>
           <WishlistButton
             variant="labeled"
@@ -149,14 +159,14 @@ export function ProductDetail({
             )}
           </div>
           <p className="mt-1.5 text-[13px] text-muted-foreground">
-            Inclusive of all taxes · Cash on delivery available
+            Price in PKR · Cash on delivery available
           </p>
         </div>
 
         {variants.length > 1 && (
           <div>
             <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-              Pack size
+              Tyre size
             </p>
             <div className="flex flex-wrap gap-2.5">
               {variants.map((v) => {
@@ -259,7 +269,7 @@ export function ProductDetail({
               <Truck className="size-4 text-primary" aria-hidden />
               {deliveryEstimate}
             </div>
-            <p className="mt-1.5 text-xs text-muted-foreground">Order before 6pm · pay the rider</p>
+            <p className="mt-1.5 text-xs text-muted-foreground">Choose a delivery slot at checkout</p>
           </div>
         </div>
 
@@ -277,10 +287,16 @@ export function ProductDetail({
             <dd className="m-0 text-foreground">{categoryName}</dd>
             {packsLabel && (
               <>
-                <dt className="text-muted-foreground">Pack sizes</dt>
+                <dt className="text-muted-foreground">Tyre sizes</dt>
                 <dd className="m-0 text-foreground">{packsLabel}</dd>
               </>
             )}
+            {specs.map(([key, label]) => selected.attrs[key] ? (
+              <div key={key} className="contents">
+                <dt className="text-muted-foreground">{label}</dt>
+                <dd className="m-0 text-foreground">{selected.attrs[key]}</dd>
+              </div>
+            ) : null)}
             <dt className="text-muted-foreground">Payment</dt>
             <dd className="m-0 text-foreground">Cash on delivery</dd>
           </dl>

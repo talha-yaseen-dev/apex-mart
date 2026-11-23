@@ -1,8 +1,8 @@
 /**
- * Hardcoded delivery configuration for Apex Mart.
+ * Hardcoded delivery configuration for Apex Tyres.
  *
  * Decision: no admin delivery config (that screen is out of scope). The zone,
- * fee, and 2-hour slots live here as static data: Apex Mart delivers a single
+ * fee, and 2-hour slots live here as static data: the store delivers a single
  * city zone (Sargodha City) at a flat Rs.100, free over Rs.1,000.
  * All money is integer minor units (paisa); display via lib/format.formatPKR.
  */
@@ -44,23 +44,20 @@ export const DELIVERY_SLOTS: string[] = [
   "8:00 – 10:00 PM",
 ];
 
-/** Order cutoff for same-day dispatch. */
-export const SAME_DAY_CUTOFF = "6pm";
-
 /** Static delivery estimate shown on product pages. */
-export const DELIVERY_ESTIMATE = "Delivery in 2 hours across Sargodha City";
+export const DELIVERY_ESTIMATE = "Delivery available across Sargodha City";
 
 /**
  * Store profile (address, hours, contact) used across the shell and About page.
- * These are Apex Mart's real business details — the About page renders them
+ * These are the store's existing business details — the About page renders them
  * verbatim and also emits them as LocalBusiness structured data for Google.
  * There is deliberately no `email` field — the store is contacted via WhatsApp
  * (wa.me/<STORE.whatsapp>), not email.
  */
 export const STORE = {
-  name: "Apex Mart",
-  displayName: "Apex Mart",
-  tagline: "Your local mini-mart",
+  name: "Apex Tyres",
+  displayName: "Apex Tyres",
+  tagline: "Tyres for every road",
   phone: "0342-4348110",
   /** WhatsApp number in E.164 without the leading + (used in wa.me links). */
   whatsapp: "923424348110",

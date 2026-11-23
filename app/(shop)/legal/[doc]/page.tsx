@@ -22,8 +22,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const d = getLegalDoc(doc);
   if (!d) return { title: "Legal" };
   return {
-    // Titles already carry the brand ("Apex Mart Privacy Policy"), so use an
-    // absolute title to avoid the root "%s · Apex Mart" template doubling it.
+    // Titles already carry the brand ("Apex Tyres Privacy Policy"), so use an
+    // absolute title to avoid the root "%s · Apex Tyres" template doubling it.
     title: { absolute: d.title },
     description: d.description,
     alternates: { canonical: `/legal/${d.slug}` },

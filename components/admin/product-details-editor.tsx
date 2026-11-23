@@ -76,7 +76,7 @@ export function ProductDetailsEditor({
           <input
             value={brand}
             onChange={(e) => setBrand(e.target.value)}
-            placeholder="e.g. Samsung, Apple"
+            placeholder="Manufacturer name"
             className={inputCls}
           />
         </div>

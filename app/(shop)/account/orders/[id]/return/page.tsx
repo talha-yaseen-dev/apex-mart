@@ -36,7 +36,7 @@ export default async function ReturnPage({ params }: PageProps) {
         Report a problem
       </h1>
       <p className="mt-1 text-sm text-muted-foreground">
-        Tell us what went wrong with this order and we&apos;ll reply within 24 hours.
+        Tell us what went wrong with this tyre order and we&apos;ll review your request.
       </p>
 
       {/* Order context — read-only, auto-attached to the request */}

@@ -3,7 +3,7 @@
  * by the customer tracking pages and the admin so the two never drift ("PAID"
  * in admin vs "Confirmed" for the customer was the old mismatch).
  *
- * Apex Mart is Cash-on-Delivery: money is collected by the rider on delivery,
+ * Apex Tyres is Cash-on-Delivery: money is collected by the rider on delivery,
  * so an order that has been captured is "placed", never "paid". The four public
  * stages are: Order placed → Packed → Out for delivery → Delivered.
  */

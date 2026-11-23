@@ -1,5 +1,5 @@
 /**
- * Static home-page merchandising for Apex Mart.
+ * Static home-page merchandising for Apex Tyres.
  *
  * There is no merchandising CMS (that's Phase 5), so the hero, the curated
  * "Popular" picks, and the promotional "was" prices for the sale rail live here
@@ -9,57 +9,35 @@
  */
 
 export const HERO = {
-  eyebrow: "Groceries · Snacks · Household",
-  title: "The whole shop, at your door today.",
+  eyebrow: "Bike · Car · Truck tyres",
+  title: "Find the right tyres for the road ahead.",
   subtitle:
-    "Everyday groceries and essentials, delivered to your door. Order before 6pm and pay cash when it arrives.",
-  ctaLabel: "Start shopping",
+    "Browse tyres by vehicle and size. Compare options, check availability, and order with cash on delivery in Sargodha.",
+  ctaLabel: "Browse tyres",
   ctaHref: "#shop",
-  image:
-    "https://images.unsplash.com/photo-1606824722920-4c652a70f348?w=1200&h=600&fit=crop&auto=format",
+  image: "/tyres/hero.svg",
   cards: [
     { icon: "💵", title: "Cash on Delivery", body: "No advance payment. Pay the rider at your door." },
-    { icon: "⚡", title: "2-hour delivery", body: "Across Sargodha City, seven days a week." },
+    { icon: "📏", title: "Shop by size", body: "Use the size filter to narrow down compatible tyres." },
   ],
 } as const;
 
-/** Emoji per category slug, mirroring the design's aisle icons. */
+/** Emoji per tyre category slug. */
 export const CATEGORY_ICONS: Record<string, string> = {
-  grocery: "🌾",
-  beverages: "🥤",
-  snacks: "🍿",
-  household: "🏠",
-  "personal-care": "🧴",
-  "baby-kids": "👶",
+  "bike-tyres": "🏍️",
+  "car-tyres": "🚗",
+  "truck-tyres": "🚛",
 };
 
 /** Curated "Popular this week" picks (product slugs), one merchandising choice. */
-export const POPULAR_SLUGS: string[] = [
-  "sufi-basmati-rice",
-  "coca-cola",
-  "lays-masala",
-  "tapal-danedar",
-  "dalda-ghee",
-  "head-shoulders-shampoo",
-  "pampers-baby-dry-size-3",
-  "nestle-milk-pak",
-];
+export const POPULAR_SLUGS: string[] = [];
 
 /**
  * Active promotions: product slug → original (compare-at) price in whole rupees.
  * Must be higher than the product's current cheapest price. The card renders the
  * strike-through original + a computed discount badge.
  */
-export const SALE: Record<string, number> = {
-  "sufi-basmati-rice": 420,
-  "coca-cola": 240,
-  "lays-masala": 90,
-  "surf-excel-matic": 999,
-  "dalda-ghee": 899,
-  "colgate-total-toothpaste": 240,
-  "tapal-danedar": 899,
-  "head-shoulders-shampoo": 720,
-};
+export const SALE: Record<string, number> = {};
 
 export const JUST_ARRIVED_LIMIT = 8;
 
@@ -69,7 +47,7 @@ export const saleOriginalMinor = (slug: string): number | null =>
 
 /** Compact trust points shown under the product sections. */
 export const TRUST_POINTS = [
-  { icon: "🚚", title: "Free delivery over Rs. 1,000", body: "Rs. 100 flat below that. Same-day delivery." },
+  { icon: "🚚", title: "Sargodha delivery", body: "Choose an available delivery slot at checkout." },
   { icon: "💵", title: "Pay on delivery", body: "Cash at your door. Nothing upfront." },
-  { icon: "↩️", title: "Wrong item? Send it back", body: "Refused at the door or returned within 24 hours." },
+  { icon: "📏", title: "Check your tyre size", body: "Confirm the size on your vehicle before ordering." },
 ] as const;

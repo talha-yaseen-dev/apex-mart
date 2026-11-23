@@ -5,7 +5,7 @@ import { HELP_TOPICS } from "@/content/help";
 export const metadata: Metadata = {
   title: "Help & support",
   description:
-    "Get help with Apex Mart — delivery, store pickup, returns and refunds, and frequently asked questions.",
+    "Get help with Apex Tyres — delivery, store pickup, returns and refunds, and frequently asked questions.",
   alternates: { canonical: "/help" },
 };
 

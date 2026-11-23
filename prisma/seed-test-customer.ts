@@ -1,5 +1,5 @@
 /**
- * E2E test-customer seed for the Apex Mart account area.
+ * E2E test-customer seed for the Apex Tyres account area.
  *
  * Creates ONE verified customer + ONE completed COD order so the account
  * mutations (addresses, profile, password, wishlist, return form) can be
@@ -69,7 +69,7 @@ async function main() {
       take: 2,
     });
     if (products.length === 0) {
-      throw new Error("No active products found — run `npm run db:seed:mart` first.");
+      throw new Error("No active products found — import real tyre inventory first.");
     }
 
     const qtys = [2, 1];

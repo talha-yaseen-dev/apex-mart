@@ -14,7 +14,7 @@ type FilterControlsProps = {
 /**
  * Category filter controls, driven entirely by the catalog route's real params
  * (min/max, stock, color, size). No invented facets — colors/sizes only appear
- * when the API actually returns them (empty for the grocery catalogue).
+ * when the API actually returns them (tyre sizes come from variant attributes).
  */
 export function FilterControls({ colors, sizes, onApplied }: FilterControlsProps) {
   const router = useRouter();
@@ -148,7 +148,7 @@ export function FilterControls({ colors, sizes, onApplied }: FilterControlsProps
       )}
       {sizes.length > 0 && (
         <FacetCheckboxes
-          legend="Size"
+          legend="Tyre size"
           options={sizes}
           active={activeSizes}
           onToggle={(v) => toggleList("size", v, activeSizes)}

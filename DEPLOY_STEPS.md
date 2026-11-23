@@ -1,4 +1,4 @@
-# Apex Mart — Vercel Deployment Steps
+# Apex Tyres — Vercel Deployment Steps
 
 Cash-on-Delivery storefront. No payment gateway (SafePay/Stripe) needed for
 this deploy. Follow top to bottom; it takes ~15 minutes.
@@ -14,7 +14,7 @@ Prerequisites:
 
 1. Go to https://vercel.com → **Add New… → Project**.
 2. **Import** this Git repository.
-3. **Project Name: `apex-mart`**. The canonical production domain is the custom
+3. **Project Name: `apex-tyres`**. The canonical production domain is the custom
    domain **`https://buildora.fun`** (added in Step 3). Vercel also assigns a
    `*.vercel.app` alias, but all env vars and links below use the custom domain.
 4. Framework Preset: **Next.js** (auto-detected). Leave Build & Output settings
@@ -43,7 +43,7 @@ Required:
 Optional now (leave unset for this COD launch):
 - `RESEND_API_KEY` — Phase C (order/verification emails). Without it those emails
   are skipped; COD checkout still works.
-- `EMAIL_FROM` — e.g. `Apex Mart <no-reply@buildora.fun>` (must be on a
+- `EMAIL_FROM` — e.g. `Apex Tyres <no-reply@buildora.fun>` (must be on a
   Resend-verified domain; only matters once Resend is set — see Step 3b).
 - `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — Phase D (Google sign-in). If set,
   register the callback `https://buildora.fun/api/auth/callback/google` (Step 3c).
@@ -95,7 +95,7 @@ Verification and password-reset emails send only once Resend is configured:
    `send.buildora.fun`).
 2. Add the **SPF/DKIM (and DMARC) DNS records** Resend shows, at your DNS host.
 3. Set `EMAIL_FROM` to an address on that verified domain, e.g.
-   `Apex Mart <no-reply@buildora.fun>`, and set `RESEND_API_KEY`. Redeploy.
+   `Apex Tyres <no-reply@buildora.fun>`, and set `RESEND_API_KEY`. Redeploy.
 
 ## 3c. Google OAuth (only if enabling Google sign-in)
 
@@ -124,25 +124,28 @@ This applies all migrations in `prisma/migrations/` to the prod database.
 
 ---
 
-## 5. Seed the catalog + admin on prod
+## 5. Import the verified tyre catalog and create the admin on prod
 
 Run against the same prod `DATABASE_URL`. The `db:seed:*` scripts read `.env`, so
 the simplest approach is to temporarily put the **prod** `DATABASE_URL` in a local
 `.env` and run:
 
 ```bash
-npm run db:seed:mart     # 50 Apex Mart products / 95 variants (6 aisles)
+npm run db:import:tyres -- inventory/your-inventory.csv # validate real inventory
+npm run db:import:tyres -- inventory/your-inventory.csv --apply --archive-missing
 npm run db:seed:admin    # admin@apexmart.local / MartAdmin1234!
 ```
 
 Or without touching `.env`, pass it inline (inline vars win over `--env-file`):
 
 ```bash
-DATABASE_URL="postgresql://…prod…?sslmode=require" npm run db:seed:mart
+DATABASE_URL="postgresql://…prod…?sslmode=require" npm run db:import:tyres -- inventory/your-inventory.csv --apply --archive-missing
 DATABASE_URL="postgresql://…prod…?sslmode=require" npm run db:seed:admin
 ```
 
 Do **not** run `db:seed:e2e` on prod — that's a test customer for local QA only.
+Use `--archive-missing` only if the CSV contains the complete current tyre stock.
+The import uses the exact prices, quantities, and photo sources in that file.
 
 > **Change the admin password after first login.** The seed sets a known default
 > (`MartAdmin1234!`). Sign in at `https://buildora.fun/signin`, then

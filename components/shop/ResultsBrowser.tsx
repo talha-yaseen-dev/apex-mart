@@ -14,10 +14,10 @@ type ResultsBrowserProps = {
   page: number;
   totalPages: number;
   facets: CatalogFacets;
-  /** Route path for pagination links, e.g. /c/grocery or /search. */
+  /** Route path for pagination links, e.g. /c/car-tyres or /search. */
   basePath: string;
   searchParams: Record<string, string | string[] | undefined>;
-  /** Current aisle slug (category pages) / active `?cat=` (home), highlighted. */
+  /** Current category slug (category pages) / active `?cat=` (home), highlighted. */
   activeSlug?: string;
   /** "filter" (home): sidebar categories set `?cat=` in place; "link": go to /c/[slug]. */
   categoryMode?: "link" | "filter";

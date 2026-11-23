@@ -26,7 +26,7 @@ function stockLabel(stock: number): { text: string; tone: "in" | "low" | "out" }
 }
 
 /**
- * Pack-size switcher + price/stock + add-to-cart. Selecting a variant updates
+ * Tyre-size switcher + price/stock + add-to-cart. Selecting a variant updates
  * price/unit/stock; the add control writes the selected variant to the real
  * cart and mirrors its quantity.
  */
@@ -168,7 +168,7 @@ export function ProductPurchase({
       {variants.length > 1 && (
         <div>
           <p className="mb-2 text-xs font-extrabold uppercase tracking-wide text-muted-foreground">
-            Pack size
+            Tyre size
           </p>
           <div className="flex flex-wrap gap-2">
             {variants.map((v) => {
@@ -188,7 +188,7 @@ export function ProductPurchase({
                     soldOut && "opacity-50",
                   )}
                 >
-                  {v.attrs.packSize ?? v.attrs.pack ?? v.sku}
+                  {v.attrs.size ?? v.attrs.packSize ?? v.attrs.pack ?? v.sku}
                   {soldOut && <span className="ml-1 text-[10px] font-semibold">· sold out</span>}
                 </button>
               );

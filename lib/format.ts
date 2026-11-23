@@ -1,5 +1,5 @@
 /**
- * Storefront money formatting for Apex Mart.
+ * Storefront money formatting for Apex Tyres.
  *
  * All catalogue prices are stored as integer minor units (paisa) with currency
  * PKR. Pakistani retail prices are whole rupees, so we show "Rs. 1,234" with no
@@ -24,7 +24,7 @@ export function formatDate(d: Date | string | number): string {
 }
 
 /**
- * Currency-aware storefront price. Defaults to PKR (the mart's currency). Any
+ * Currency-aware storefront price. Defaults to PKR (the tyre store's currency). Any
  * other currency falls back to the standard Intl currency formatter so the
  * helper stays correct if a non-PKR value ever flows through.
  */

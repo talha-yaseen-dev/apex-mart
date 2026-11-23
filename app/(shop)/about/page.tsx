@@ -1,48 +1,36 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import { STORE, STORE_GEO, SAME_DAY_CUTOFF } from "@/lib/delivery-config";
+import { STORE, STORE_GEO } from "@/lib/delivery-config";
 import { Breadcrumbs } from "@/components/shop/Breadcrumbs";
 
 export const metadata: Metadata = {
   title: "About",
   description:
-    "Apex Mart is your neighbourhood mini-mart — groceries, snacks, household and personal-care essentials delivered the same day, with cash on delivery.",
+    "Apex Tyres helps Sargodha drivers shop bike, car and truck tyres by vehicle type and size.",
   alternates: { canonical: "/about" },
 };
 
 /**
- * Hero background. TODO(owner): replace this stock Unsplash photo with a real
- * photo of the shop / storefront. Decorative only (the H1 sits on top), so the
- * alt stays empty.
+ * Decorative tyre illustration. Replace it with an actual store photo when available.
  */
-const HERO_IMAGE =
-  "https://images.unsplash.com/photo-1578916171728-46686eac8d58?w=1600&h=700&fit=crop&auto=format";
+const HERO_IMAGE = "/tyres/hero.svg";
 
 /** What we stock — factual category summaries (no invented ranges or counts). */
 const DELIVER = [
-  { icon: "🌾", label: "Fresh Groceries", note: "Rice, atta, cooking oil, daal, sugar and tea." },
-  { icon: "🧽", label: "Household Essentials", note: "Detergents, cleaners, dishwash and home care." },
-  { icon: "🧴", label: "Personal Care", note: "Shampoo, soap, toothpaste and grooming." },
-  { icon: "👶", label: "Baby & Kids", note: "Diapers, wipes, baby food and kids' care." },
-  { icon: "🥤", label: "Snacks & Beverages", note: "Chips, biscuits, chocolate, drinks and juices." },
-  { icon: "⚡", label: "Same-Day Delivery", note: `Order before ${SAME_DAY_CUTOFF} for same-day to selected zones.` },
+  { icon: "🏍️", label: "Bike Tyres", note: "Motorcycle and scooter tyres in a range of sizes." },
+  { icon: "🚗", label: "Car Tyres", note: "Everyday car and SUV tyre options." },
+  { icon: "🚛", label: "Truck Tyres", note: "Light truck and commercial tyre options." },
+  { icon: "📏", label: "Size-first shopping", note: "Filter by tyre size and verify fit before ordering." },
+  { icon: "💵", label: "Cash on Delivery", note: "Pay when your order arrives." },
+  { icon: "📍", label: "Sargodha", note: "Delivery is available within the configured city zone." },
 ];
 
 /** Our promises — one line each, tied to real store facts (COD, PKR, returns). */
 const COMMITMENTS = [
-  { icon: "✅", title: "Quality guarantee", body: "Not right or damaged? Send it back at the door." },
+  { icon: "📏", title: "Size matters", body: "Check the size printed on your current tyre before ordering." },
   { icon: "🏷️", title: "Honest prices", body: "Clear PKR pricing — no surprises when the rider arrives." },
-  { icon: "🛵", title: "Fast delivery", body: "Same-day delivery to selected residential zones." },
+  { icon: "💬", title: "Need help?", body: "Contact the store on WhatsApp about tyre fitment." },
 ];
-
-/** Small amber flag marking placeholder content the owner must replace. */
-function Todo({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="inline-flex items-center gap-1 rounded-md border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-amber-700">
-      <span aria-hidden>⚠</span> TODO {children}
-    </span>
-  );
-}
 
 export default async function AboutPage() {
   // Absolute origin for the LocalBusiness structured data (mirrors Breadcrumbs).
@@ -56,11 +44,11 @@ export default async function AboutPage() {
   const waHref = `https://wa.me/${STORE.whatsapp}`;
   const telHref = `tel:${STORE.phone.replace(/[^\d+]/g, "")}`;
 
-  // LocalBusiness (GroceryStore) JSON-LD. Only emits fields we actually hold;
+  // LocalBusiness JSON-LD. Only emits fields we actually hold;
   // geo is omitted until STORE_GEO is set (no guessed coordinates).
   const businessLd = {
     "@context": "https://schema.org",
-    "@type": "GroceryStore",
+    "@type": "AutoPartsStore",
     "@id": `${origin}/#store`,
     name: STORE.name,
     description: metadata.description,
@@ -106,15 +94,11 @@ export default async function AboutPage() {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/70 to-slate-900/20" />
         <div className="relative mx-auto w-full max-w-5xl px-4 pb-8 pt-16">
-          <div className="mb-3">
-            <Todo>replace hero photo</Todo>
-          </div>
           <h1 className="text-balance text-3xl font-extrabold leading-tight tracking-tight text-white sm:text-4xl">
             About {STORE.name}
           </h1>
           <p className="mt-3 max-w-xl text-pretty text-sm leading-relaxed text-slate-200 sm:text-base">
-            Your neighbourhood mini-mart — groceries, snacks and household essentials,
-            delivered to your door the same day.
+            Bike, car and truck tyres for drivers in Sargodha. Browse by vehicle and size.
           </p>
         </div>
       </section>
@@ -125,9 +109,8 @@ export default async function AboutPage() {
           <h2 className="text-2xl font-extrabold tracking-tight text-foreground">Our story</h2>
           <div className="mt-4 max-w-2xl space-y-4 text-[15px] leading-relaxed text-muted-foreground">
             <p>
-              {STORE.name} is a Sargodha-based grocery and household essentials store,
-              offering fast, honest delivery across the city. Order online, pay on delivery,
-              and get your daily items to your door within a couple of hours.
+              {STORE.name} is a Sargodha-based tyre store. Explore bike, car and truck tyres,
+              check the size you need, and order online with cash on delivery.
             </p>
           </div>
         </section>
@@ -136,7 +119,7 @@ export default async function AboutPage() {
         <section className="border-t border-border py-12">
           <h2 className="text-2xl font-extrabold tracking-tight text-foreground">What we deliver</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Everything for the home, across six aisles.
+            Tyres for different vehicles and road needs.
           </p>
           <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {DELIVER.map((d) => (

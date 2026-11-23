@@ -27,13 +27,13 @@ export async function SiteHeader() {
         <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-3 px-4 py-1.5 text-xs">
           <LocationBar />
           <div className="hidden items-center gap-3 sm:flex">
-            <span>Free delivery over Rs. 1,000</span>
+            <span>Bike, car and truck tyres</span>
             <span className="text-slate-600">·</span>
             <span>Cash on Delivery</span>
             <span className="text-slate-600">·</span>
-            <span>Dispatch before 6pm</span>
+            <span>Sargodha delivery</span>
           </div>
-          <span className="font-medium sm:hidden">Free over Rs. 1,000</span>
+          <span className="font-medium sm:hidden">Tyres for every road</span>
         </div>
       </div>
 

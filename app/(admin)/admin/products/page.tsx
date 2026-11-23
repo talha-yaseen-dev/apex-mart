@@ -8,6 +8,7 @@ import { ProductStatusSelect } from "@/components/admin/product-status-select";
 import { NewProductForm } from "@/components/admin/new-product-form";
 import { ProductRowActions } from "@/components/admin/product-row-actions";
 import { formatMoney } from "@/lib/utils";
+import { isTyreCategory } from "@/lib/tyres";
 
 export const dynamic = "force-dynamic";
 
@@ -44,7 +45,7 @@ export default async function AdminProductsPage({
               className="h-9 w-56 rounded-lg border bg-card px-3 text-sm focus:border-primary focus:outline-none"
             />
           </form>
-          <NewProductForm categories={categories} />
+          <NewProductForm categories={categories.filter((c) => isTyreCategory(c.slug))} />
         </div>
       </div>
 

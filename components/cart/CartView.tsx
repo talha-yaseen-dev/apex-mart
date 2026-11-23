@@ -31,7 +31,7 @@ export function CartView() {
         <div className="mb-4 text-6xl">🛒</div>
         <h1 className="text-xl font-extrabold text-foreground">Your cart is empty</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Add some groceries and they&apos;ll show up here.
+          Add tyres to your cart and they&apos;ll show up here.
         </p>
         <Link
           href="/c"

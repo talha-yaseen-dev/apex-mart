@@ -100,7 +100,7 @@ export async function getCategories(): Promise<CatalogFacets["categories"]> {
 }
 
 /**
- * Category listing: products in one aisle plus the shared facets. Only forwards
+ * Category listing: tyres in one vehicle category plus the shared facets. Only forwards
  * the params the catalog route understands (cat + q/sort/page/stock/min/max/
  * color/size) — no invented params. `sp` is the page's searchParams.
  */

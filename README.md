@@ -1,36 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Apex Tyres
 
-## Getting Started
+A Next.js tyre storefront for bike, car, and truck tyres. It includes tyre size filtering, product pages, cart and cash-on-delivery checkout, customer accounts, order tracking, and an admin catalogue.
 
-First, run the development server:
+## Run locally
+
+From `~/Claude/Mart/mart-shop`:
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`. The app uses the PostgreSQL database configured by `DATABASE_URL` in `.env`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Import real inventory
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The project contains no verified stock counts, selling prices, or product photographs. These must come from the store's inventory records; they are never generated as demo stock. Fill [inventory/tyres-template.csv](inventory/tyres-template.csv) with one row per SKU and tyre size. Required columns are product slug, product name, brand, category slug (`bike-tyres`, `car-tyres`, or `truck-tyres`), SKU, tyre size, PKR selling price, stock quantity, and at least one product image path or HTTPS image URL per product. Optional columns include pattern, construction, front/rear position, season, tubeless, load index, speed rating, and ply rating.
 
-## Learn More
+Local photo paths are relative to the CSV file. The importer copies them into `public/tyre-products/` with content-based filenames; commit those files along with the code when deploying. HTTPS image URLs are used as supplied. Product images should be photos of the actual SKU or model, with permission to use them.
 
-To learn more about Next.js, take a look at the following resources:
+Preview validation without changing the database:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run db:import:tyres -- inventory/your-inventory.csv
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+After reviewing the CSV and confirming which database `.env` points to, import:
 
-## Deploy on Vercel
+```bash
+npm run db:import:tyres -- inventory/your-inventory.csv --apply
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Add `--archive-missing` only when the CSV contains the *complete* current tyre inventory. It archives tyre products missing from the file and sets missing variants' stock to zero. Imports update prices and quantities to the exact values in the CSV. The importer preserves product and order history; it does not delete old orders. The public catalogue only shows products in the three tyre categories.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Checks
+
+```bash
+npx tsc --noEmit
+npm run lint
+npm test
+npm run build
+```

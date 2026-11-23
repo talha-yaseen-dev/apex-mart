@@ -76,13 +76,13 @@ export async function createOrderFor(
   userId: string,
   email: string,
   input: CheckoutInput,
-  // Apex Mart override (opt-in, backward compatible): the storefront prices
+  // Apex Tyres override (opt-in, backward compatible): the storefront prices
   // delivery from lib/delivery-config (Rs.100 flat / free over Rs.1,000) and
   // does not itemise GST to end customers, so it passes an explicit delivery
   // fee and skips tax. Absent these, Nova's default shipping/tax apply.
   opts?: { deliveryFeeOverride?: number; skipTax?: boolean; currency?: string },
 ) {
-  const orderCurrency = opts?.currency ?? "USD";
+  const orderCurrency = opts?.currency ?? "PKR";
   const { address, shipMethod, couponCode } = input;
 
   const view = await getCartViewFor(userId);

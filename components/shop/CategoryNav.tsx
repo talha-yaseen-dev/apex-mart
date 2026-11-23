@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 /**
  * Categories list for the listing sidebar — sits ABOVE the price/other filters.
  *
- * mode "link"   (category/search pages): each row links to that aisle's page.
+ * mode "link"   (category/search pages): each row links to that vehicle type's page.
  * mode "filter" (home): each row sets `?cat=` on the current route via a soft
  *   navigation (scroll preserved), so ONLY the product grid re-renders — the
  *   page never fully reloads. Includes an "All products" row to clear it.
@@ -48,7 +48,7 @@ export async function CategoryNav({
             aria-current={!activeSlug ? "page" : undefined}
             className={rowCls(!activeSlug)}
           >
-            <span className="text-base leading-none">🛒</span>
+            <span className="text-base leading-none">🛞</span>
             <span className="min-w-0 flex-1 truncate">All products</span>
             <span className="text-xs font-medium text-muted-foreground">{totalCount}</span>
           </Link>
@@ -63,7 +63,7 @@ export async function CategoryNav({
               aria-current={active ? "page" : undefined}
               className={rowCls(active)}
             >
-              <span className="text-base leading-none">{CATEGORY_ICONS[c.slug] ?? "🛒"}</span>
+              <span className="text-base leading-none">{CATEGORY_ICONS[c.slug] ?? "🛞"}</span>
               <span className="min-w-0 flex-1 truncate">{c.name}</span>
               <span className="text-xs font-medium text-muted-foreground">{c.count}</span>
             </Link>

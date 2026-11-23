@@ -20,9 +20,9 @@ export type StoreCard = {
   minPriceMinor: number;
   /** Cheapest variant's id — the default add-to-cart target from a grid card. */
   variantId: string | null;
-  /** Cheapest variant's pack label (e.g. "5kg") from variant.attributes.packSize. */
+  /** Cheapest variant's tyre size from variant.attributes.size. */
   pack: string | null;
-  /** Cheapest variant's per-unit price (e.g. "Rs. 224/kg") from attributes. */
+  /** Optional per-unit price from attributes. */
   unitPrice: string | null;
   rating: number;
   reviewCount: number;
@@ -166,7 +166,7 @@ export function filterSort(cards: StoreCard[], p: CatalogParams): StoreCard[] {
   const q = p.q.trim().toLowerCase();
   if (q) {
     rows = rows.filter((c) => {
-      const haystack = `${c.name} ${c.brand ?? ""} ${c.categoryName} ${c.skus.join(" ")}`.toLowerCase();
+      const haystack = `${c.name} ${c.brand ?? ""} ${c.categoryName} ${c.sizes.join(" ")} ${c.skus.join(" ")}`.toLowerCase();
       return haystack.includes(q);
     });
   }

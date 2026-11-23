@@ -1,7 +1,7 @@
 /**
- * Seed the single Apex Mart admin.
+ * Seed the single Apex Tyres admin.
  *
- * Apex Mart runs with one internal operator (see the single-admin scope: the
+ * Apex Tyres runs with one internal operator (see the single-admin scope: the
  * Team & Access page is hidden from the admin nav). This seeds that one account
  * so the admin panel is reachable in dev/staging without wiring SSO.
  *

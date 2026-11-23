@@ -16,6 +16,7 @@ import { logAudit } from "@/lib/audit";
 import { ORDER_TRANSITIONS } from "@/lib/admin";
 import { notifyOrderRefunded, notifyOrderShipped } from "@/lib/notify";
 import { ApiError } from "@/lib/api/http";
+import { isTyreCategory } from "@/lib/tyres";
 
 /**
  * Admin mutations for the mobile API. Each mirrors the corresponding server
@@ -76,6 +77,7 @@ const createProductSchema = z.object({
   name: z.string().trim().min(2, "Enter a product name."),
   categoryId: z.string().min(1, "Choose a category."),
   brand: z.string().trim().max(60, "Brand name is too long.").optional(),
+  size: z.string().trim().min(3, "Enter a tyre size."),
   priceMinor: z.number().int().min(0, "Price can’t be negative."),
   stock: z.number().int().min(0, "Stock can’t be negative."),
   sku: z.string().trim().toUpperCase().optional(),
@@ -95,7 +97,8 @@ export async function createProduct(
   const d = parsed.data;
 
   const category = await prisma.category.findUnique({ where: { id: d.categoryId } });
-  if (!category) throw new ApiError(400, "Category not found.");
+  if (!category || !isTyreCategory(category.slug))
+    throw new ApiError(400, "Choose a tyre category.");
 
   let slug = slugify(d.name) || `product-${randomBytes(3).toString("hex")}`;
   if (await prisma.product.findUnique({ where: { slug } })) {
@@ -117,7 +120,7 @@ export async function createProduct(
       categoryId: d.categoryId,
       brand: d.brand || null,
       status: publishNow ? ProductStatus.ACTIVE : ProductStatus.DRAFT,
-      variants: { create: { sku, priceMinor: d.priceMinor, stock: d.stock } },
+      variants: { create: { sku, priceMinor: d.priceMinor, stock: d.stock, currency: "PKR", attributes: { size: d.size } } },
       images: d.images?.length
         ? { create: d.images.map((url, i) => ({ url, alt: d.name, position: i })) }
         : undefined,
@@ -158,7 +161,8 @@ export async function updateProduct(actorId: string, input: unknown) {
   if (!existing) throw new ApiError(404, "Product not found.");
 
   const category = await prisma.category.findUnique({ where: { id: d.categoryId } });
-  if (!category) throw new ApiError(400, "Category not found.");
+  if (!category || !isTyreCategory(category.slug))
+    throw new ApiError(400, "Choose a tyre category.");
 
   try {
     await prisma.$transaction([
