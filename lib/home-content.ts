@@ -12,12 +12,12 @@ export const HERO = {
   eyebrow: "Bike · Car · Truck tyres",
   title: "Find the right tyres for the road ahead.",
   subtitle:
-    "Browse tyres by vehicle and size. Compare options, check availability, and order with cash on delivery in Sargodha.",
+    "Explore genuine tyre models for bikes, cars and trucks. Compare sizes and ask our team to confirm price and availability.",
   ctaLabel: "Browse tyres",
   ctaHref: "#shop",
   image: "/tyres/hero.svg",
   cards: [
-    { icon: "💵", title: "Cash on Delivery", body: "No advance payment. Pay the rider at your door." },
+    { icon: "💬", title: "Ask for a quote", body: "Confirm price and availability with our team." },
     { icon: "📏", title: "Shop by size", body: "Use the size filter to narrow down compatible tyres." },
   ],
 } as const;
@@ -47,7 +47,7 @@ export const saleOriginalMinor = (slug: string): number | null =>
 
 /** Compact trust points shown under the product sections. */
 export const TRUST_POINTS = [
-  { icon: "🚚", title: "Sargodha delivery", body: "Choose an available delivery slot at checkout." },
-  { icon: "💵", title: "Pay on delivery", body: "Cash at your door. Nothing upfront." },
+  { icon: "🛞", title: "Real tyre models", body: "Browse manufacturer-backed product details and images." },
+  { icon: "💬", title: "Get a confirmed quote", body: "Ask us to confirm current price, stock and delivery." },
   { icon: "📏", title: "Check your tyre size", body: "Confirm the size on your vehicle before ordering." },
 ] as const;

@@ -87,6 +87,8 @@ export async function createOrderFor(
 
   const view = await getCartViewFor(userId);
   if (view.items.length === 0) throw new ApiError(400, "Your cart is empty.");
+  if (view.items.some((item) => item.unitPriceMinor <= 0 || item.available < item.qty))
+    throw new ApiError(409, "Confirm each tyre’s price and availability before checkout.");
 
   const rl = await rateLimit(`checkout:${userId}`, 10, 60);
   if (!rl.allowed) {

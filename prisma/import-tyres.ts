@@ -25,6 +25,9 @@ const SPEC_COLUMNS = {
   load_index: "loadIndex",
   speed_rating: "speedRating",
   ply_rating: "plyRating",
+  description: "description",
+  usage: "usage",
+  source_url: "sourceUrl",
 } as const;
 
 type InventoryRow = {
@@ -120,11 +123,13 @@ function loadRows(csvFile: string): InventoryRow[] {
     if (seenSku.has(sku)) throw new Error(`Duplicate SKU in CSV: ${sku}`);
     seenSku.add(sku);
     if (size.length < 3 || size.length > 40) throw new Error(`Row ${i + 1}: invalid tyre_size.`);
-    if (!/^(?:0|[1-9]\d*)(?:\.\d{1,2})?$/.test(priceText) || Number(priceText) <= 0)
-      throw new Error(`Row ${i + 1}: price_pkr must be a positive amount.`);
-    if (!/^(?:0|[1-9]\d*)$/.test(stockText)) throw new Error(`Row ${i + 1}: stock must be a non-negative whole number.`);
-    const priceMinor = Math.round(Number(priceText) * 100);
-    const stock = Number(stockText);
+    const quoteOnly = priceText === "" && stockText === "";
+    if (!quoteOnly && (!/^(?:0|[1-9]\d*)(?:\.\d{1,2})?$/.test(priceText) || Number(priceText) <= 0))
+      throw new Error(`Row ${i + 1}: price_pkr must be positive, or leave price and stock blank for Ask for price.`);
+    if (!quoteOnly && !/^(?:0|[1-9]\d*)$/.test(stockText))
+      throw new Error(`Row ${i + 1}: stock must be a non-negative whole number, or leave price and stock blank.`);
+    const priceMinor = quoteOnly ? 0 : Math.round(Number(priceText) * 100);
+    const stock = quoteOnly ? 0 : Number(stockText);
     if (!Number.isSafeInteger(priceMinor) || !Number.isSafeInteger(stock))
       throw new Error(`Row ${i + 1}: price or stock is too large.`);
 
@@ -139,6 +144,8 @@ function loadRows(csvFile: string): InventoryRow[] {
     for (const [column, key] of Object.entries(SPEC_COLUMNS)) {
       if (value(column)) attributes[key] = value(column);
     }
+    if (attributes.sourceUrl && !/^https:\/\//i.test(attributes.sourceUrl))
+      throw new Error(`Row ${i + 1}: source_url must use HTTPS.`);
     rows.push({ slug, name, brand, category, sku, size, priceMinor, stock, images, attributes });
   }
   for (const [slug, product] of products) {
@@ -242,7 +249,7 @@ async function main() {
         }
         await tx.productImage.deleteMany({ where: { productId: product.id } });
         await tx.productImage.createMany({
-          data: imageUrls.get(slug)!.map((url, position) => ({ productId: product.id, url, alt: `${first.brand} ${first.name} tyre`, position })),
+          data: imageUrls.get(slug)!.map((url, position) => ({ productId: product.id, url, alt: `${first.name} tyre`, position })),
         });
         for (const row of productRows) {
           const existing = await tx.productVariant.findUnique({ where: { sku: row.sku }, select: { id: true, productId: true, stock: true } });

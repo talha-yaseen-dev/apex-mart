@@ -9,6 +9,7 @@ import { formatPKR } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/components/cart/CartProvider";
 import { WishlistButton } from "./WishlistButton";
+import { STORE } from "@/lib/delivery-config";
 
 type ProductDetailProps = {
   name: string;
@@ -48,6 +49,8 @@ export function ProductDetail({
 
   const selected = variants.find((v) => v.id === selectedId) ?? variants[0];
   const stock = selected?.stock ?? 0;
+  const quoteOnly = selected?.priceMinor <= 0;
+  const enquiryUrl = `https://wa.me/${STORE.whatsapp}?text=${encodeURIComponent(`Hello, please confirm the price and availability of ${name} (${selected?.attrs.size ?? "tyre"}).`)}`;
   const item = itemForVariant(selected?.id);
   const qty = item?.qty ?? 0;
   const image = images[0];
@@ -103,7 +106,7 @@ export function ProductDetail({
             <img
               src={image.url}
               alt={image.alt || name}
-              className="size-full object-cover"
+              className="size-full object-contain p-5"
               fetchPriority="high"
             />
           ) : (
@@ -116,8 +119,8 @@ export function ProductDetail({
         <div className="mt-3.5 flex items-center gap-2.5 px-1">
           <span className="text-xs text-muted-foreground">
             {variants.length > 1
-              ? "Tap a pack size to switch bottle"
-              : "Tyre delivery in Sargodha City"}
+              ? "Select your tyre size to view its details"
+              : quoteOnly ? "Confirm fitment, price and availability before ordering" : "Tyre delivery in Sargodha City"}
           </span>
           <WishlistButton
             variant="labeled"
@@ -126,6 +129,7 @@ export function ProductDetail({
             className="ml-auto h-9 rounded-[11px] border-border px-3 text-[13px] font-medium"
           />
         </div>
+        <p className="mt-2 px-1 text-[11px] text-muted-foreground">Manufacturer image for reference. Tyre only; wheel shown for display.</p>
       </div>
 
       {/* Info column */}
@@ -150,7 +154,7 @@ export function ProductDetail({
         <div>
           <div className="flex flex-wrap items-baseline gap-2.5">
             <span className="text-4xl font-semibold tracking-tight text-foreground">
-              {formatPKR(selected.priceMinor)}
+              {quoteOnly ? "Ask for price" : formatPKR(selected.priceMinor)}
             </span>
             {selected.attrs.unitPrice && (
               <span className="font-mono text-[13px] text-muted-foreground">
@@ -159,7 +163,7 @@ export function ProductDetail({
             )}
           </div>
           <p className="mt-1.5 text-[13px] text-muted-foreground">
-            Price in PKR · Cash on delivery available
+            {quoteOnly ? "Price and availability are confirmed by the shop before purchase." : "Price in PKR · Cash on delivery available"}
           </p>
         </div>
 
@@ -171,7 +175,7 @@ export function ProductDetail({
             <div className="flex flex-wrap gap-2.5">
               {variants.map((v) => {
                 const active = v.id === selectedId;
-                const soldOut = v.stock <= 0;
+                const soldOut = v.priceMinor > 0 && v.stock <= 0;
                 return (
                   <button
                     key={v.id}
@@ -195,7 +199,7 @@ export function ProductDetail({
                         active ? "text-primary/80" : "text-muted-foreground",
                       )}
                     >
-                      {formatPKR(v.priceMinor)}
+                      {v.priceMinor <= 0 ? "Ask for price" : formatPKR(v.priceMinor)}
                     </div>
                   </button>
                 );
@@ -206,7 +210,16 @@ export function ProductDetail({
 
         {/* Actions */}
         <div className="flex flex-wrap gap-3">
-          {stock <= 0 ? (
+          {quoteOnly ? (
+            <a
+              href={enquiryUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex h-[52px] min-w-[180px] flex-1 items-center justify-center rounded-2xl bg-primary px-5 text-[15px] font-semibold text-primary-foreground hover:bg-primary-hover"
+            >
+              Ask for price on WhatsApp
+            </a>
+          ) : stock <= 0 ? (
             <div className="flex h-[52px] min-w-[180px] flex-1 items-center justify-center rounded-2xl bg-muted text-sm font-semibold text-muted-foreground">
               Out of stock
             </div>
@@ -243,7 +256,7 @@ export function ProductDetail({
               </button>
             </div>
           )}
-          {stock > 0 && (
+          {!quoteOnly && stock > 0 && (
             <button
               type="button"
               onClick={() => void buyNow()}
@@ -256,7 +269,11 @@ export function ProductDetail({
         </div>
 
         {/* Trust row */}
-        <div className="grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-border bg-border sm:grid-cols-2">
+        {quoteOnly ? (
+          <div className="rounded-2xl border border-primary/20 bg-primary-tint p-4 text-sm text-foreground">
+            Checkout is unavailable until this tyre’s price and stock are confirmed. Ask us for a quote and fitment advice.
+          </div>
+        ) : <div className="grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-border bg-border sm:grid-cols-2">
           <div className="bg-card p-4">
             <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
               <span className={cn("size-[7px] rounded-full", stock > 0 ? "bg-primary" : "bg-muted-foreground")} />
@@ -271,11 +288,14 @@ export function ProductDetail({
             </div>
             <p className="mt-1.5 text-xs text-muted-foreground">Choose a delivery slot at checkout</p>
           </div>
-        </div>
+        </div>}
 
         {/* Product details */}
         <div className="rounded-2xl border border-border bg-card p-[18px]">
           <h2 className="mb-3 text-sm font-semibold text-foreground">Product details</h2>
+          {selected.attrs.description && (
+            <p className="mb-4 text-sm leading-6 text-muted-foreground">{selected.attrs.description}</p>
+          )}
           <dl className="grid grid-cols-[minmax(96px,auto)_1fr] gap-x-[18px] gap-y-[9px] text-[13.5px]">
             {brand && (
               <>
@@ -285,6 +305,12 @@ export function ProductDetail({
             )}
             <dt className="text-muted-foreground">Category</dt>
             <dd className="m-0 text-foreground">{categoryName}</dd>
+            {selected.attrs.usage && (
+              <>
+                <dt className="text-muted-foreground">Best for</dt>
+                <dd className="m-0 text-foreground">{selected.attrs.usage}</dd>
+              </>
+            )}
             {packsLabel && (
               <>
                 <dt className="text-muted-foreground">Tyre sizes</dt>
@@ -297,9 +323,13 @@ export function ProductDetail({
                 <dd className="m-0 text-foreground">{selected.attrs[key]}</dd>
               </div>
             ) : null)}
-            <dt className="text-muted-foreground">Payment</dt>
-            <dd className="m-0 text-foreground">Cash on delivery</dd>
+            {!quoteOnly && <><dt className="text-muted-foreground">Payment</dt><dd className="m-0 text-foreground">Cash on delivery</dd></>}
           </dl>
+          {selected.attrs.sourceUrl && (
+            <a href={selected.attrs.sourceUrl} target="_blank" rel="noopener noreferrer" className="mt-4 inline-block text-sm font-medium text-primary hover:underline">
+              View manufacturer specifications ↗
+            </a>
+          )}
         </div>
       </div>
     </div>

@@ -40,6 +40,7 @@ export async function reserveCart(cartId: string): Promise<Date> {
           JOIN "Product" p ON p.id = v."productId"
           JOIN "Category" c ON c.id = p."categoryId"
           WHERE v.id = ${line.variantId}
+            AND v."priceMinor" > 0
             AND p."deletedAt" IS NULL
             AND p.status = 'ACTIVE'
             AND c.slug IN ('bike-tyres', 'car-tyres', 'truck-tyres')

@@ -74,7 +74,9 @@ export default async function AdminProductsPage({
                   {p.category}
                 </div>
                 <div className="mt-1.5 text-[13px] font-bold tabular-nums">
-                  {p.loMinor === p.hiMinor
+                  {p.loMinor === 0 && p.hiMinor === 0
+                    ? "Ask for price"
+                    : p.loMinor === p.hiMinor
                     ? formatMoney(p.loMinor)
                     : `${formatMoney(p.loMinor)}–${formatMoney(p.hiMinor)}`}
                 </div>
@@ -86,7 +88,7 @@ export default async function AdminProductsPage({
               </span>
               <span aria-hidden>·</span>
               <span className={p.stock < 10 ? "font-bold text-warning" : "tabular-nums"}>
-                {p.stock} in stock
+                {p.loMinor === 0 && p.hiMinor === 0 ? "Availability unconfirmed" : `${p.stock} in stock`}
               </span>
               <div className="ml-auto flex items-center gap-3">
                 <ProductStatusSelect productId={p.id} status={p.status} canEdit={canPublish} />
@@ -146,11 +148,13 @@ export default async function AdminProductsPage({
                 <td className="px-4 py-3 tabular-nums">{p.variantCount}</td>
                 <td className="px-4 py-3">
                   <span className={p.stock < 10 ? "font-bold text-warning" : "tabular-nums"}>
-                    {p.stock}
+                    {p.loMinor === 0 && p.hiMinor === 0 ? "Unconfirmed" : p.stock}
                   </span>
                 </td>
                 <td className="px-4 py-3 tabular-nums">
-                  {p.loMinor === p.hiMinor
+                  {p.loMinor === 0 && p.hiMinor === 0
+                    ? "Ask for price"
+                    : p.loMinor === p.hiMinor
                     ? formatMoney(p.loMinor)
                     : `${formatMoney(p.loMinor)}–${formatMoney(p.hiMinor)}`}
                 </td>

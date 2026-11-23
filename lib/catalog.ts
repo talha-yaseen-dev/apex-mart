@@ -88,7 +88,7 @@ const sizesOf = (p: CardRow): string[] => {
 const minPriceOf = (p: CardRow) =>
   p.variants.length ? Math.min(...p.variants.map((v) => v.priceMinor)) : 0;
 
-const inStockOf = (p: CardRow) => p.variants.some((v) => v.stock > 0);
+const inStockOf = (p: CardRow) => p.variants.some((v) => v.stock > 0 && v.priceMinor > 0);
 
 function ratingOf(reviews: { rating: number }[]) {
   if (!reviews.length) return { avg: 0, count: 0 };
@@ -142,7 +142,7 @@ export const getActiveCards = unstable_cache(
     });
     return rows.map(toCard);
   },
-  ["catalog:cards:v3"],
+  ["catalog:cards:v4"],
   { tags: ["catalog"], revalidate: 300 },
 );
 

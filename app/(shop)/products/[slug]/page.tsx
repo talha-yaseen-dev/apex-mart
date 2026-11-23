@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!p) return { title: "Product not found" };
 
   const sizes = p.variants.map((v) => v.attrs.size ?? v.attrs.packSize).filter(Boolean).join(", ");
-  const description = `${p.name}${sizes ? ` — tyre sizes ${sizes}` : ""}. Shop at Apex Tyres in Sargodha.`;
+  const description = p.variants[0]?.attrs.description ?? `${p.name}${sizes ? ` — tyre sizes ${sizes}` : ""}. Enquire at Apex Tyres in Sargodha.`;
 
   return {
     title: p.name,
@@ -38,6 +38,7 @@ export default async function ProductPage({ params }: PageProps) {
   if (!p) notFound();
 
   const prices = p.variants.map((v) => v.priceMinor);
+  const priced = prices.length > 0 && prices.every((price) => price > 0);
   const anyInStock = p.variants.some((v) => v.stock > 0);
 
   const user = await getCurrentUser();
@@ -59,7 +60,7 @@ export default async function ProductPage({ params }: PageProps) {
     ...(p.brand ? { brand: { "@type": "Brand", name: p.brand } } : {}),
     category: p.categoryName,
     ...(p.variants[0]?.sku ? { sku: p.variants[0].sku } : {}),
-    offers: {
+    ...(priced ? { offers: {
       "@type": "AggregateOffer",
       priceCurrency: "PKR",
       lowPrice: Math.min(...prices) / 100,
@@ -68,7 +69,7 @@ export default async function ProductPage({ params }: PageProps) {
       availability: anyInStock
         ? "https://schema.org/InStock"
         : "https://schema.org/OutOfStock",
-    },
+    }} : {}),
   };
 
   return (

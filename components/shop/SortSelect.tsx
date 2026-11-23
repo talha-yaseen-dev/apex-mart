@@ -21,7 +21,7 @@ const OPTIONS = [
  * to the catalog route's `sort` param and resets the page. `block` fills the
  * sidebar width; otherwise it's the compact trigger for the mobile bar.
  */
-export function SortSelect({ block = false }: { block?: boolean }) {
+export function SortSelect({ block = false, showPrice = true }: { block?: boolean; showPrice?: boolean }) {
   const router = useRouter();
   const pathname = usePathname();
   const sp = useSearchParams();
@@ -45,7 +45,7 @@ export function SortSelect({ block = false }: { block?: boolean }) {
         <span>{currentLabel}</span>
       </SelectTrigger>
       <SelectContent align="start">
-        {OPTIONS.map((o) => (
+        {OPTIONS.filter((o) => showPrice || !o.value.startsWith("price-")).map((o) => (
           <SelectItem key={o.value} value={o.value}>
             {o.label}
           </SelectItem>

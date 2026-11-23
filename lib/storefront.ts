@@ -37,8 +37,9 @@ export async function getCatalog(
   search?: URLSearchParams,
 ): Promise<CatalogResponse> {
   const base = await baseUrl();
-  const qs = search?.toString();
-  const res = await fetch(`${base}/api/v1/catalog${qs ? `?${qs}` : ""}`, {
+  const params = new URLSearchParams(search);
+  params.set("_catalog", "manufacturer-20261124");
+  const res = await fetch(`${base}/api/v1/catalog?${params.toString()}`, {
     next: { revalidate: 300, tags: ["catalog"] },
   });
   if (!res.ok) throw new Error(`catalog request failed: ${res.status}`);

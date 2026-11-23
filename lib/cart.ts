@@ -136,7 +136,8 @@ export async function getCartView(): Promise<CartView | null> {
     const purchasable =
       i.variant.product.deletedAt === null &&
       i.variant.product.status === "ACTIVE" &&
-      isTyreCategory(i.variant.product.category.slug);
+      isTyreCategory(i.variant.product.category.slug) &&
+      i.variant.priceMinor > 0;
     return {
       itemId: i.id,
       variantId: i.variantId,
@@ -166,7 +167,7 @@ export async function addToCart(variantId: string, qty = 1): Promise<void> {
   const variant = await prisma.productVariant.findUnique({
     where: { id: variantId }, include: { product: { include: { category: true } } },
   });
-  if (!variant || variant.product.status !== "ACTIVE" || variant.product.deletedAt || !isTyreCategory(variant.product.category.slug))
+  if (!variant || variant.priceMinor <= 0 || variant.product.status !== "ACTIVE" || variant.product.deletedAt || !isTyreCategory(variant.product.category.slug))
     throw new Error("Tyre is unavailable");
 
   const reserved = (await reservedByVariant([variantId])).get(variantId) ?? 0;

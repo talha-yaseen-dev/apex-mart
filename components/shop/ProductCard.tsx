@@ -33,7 +33,8 @@ export function ProductCard({ card, originalMinor, isNew, hideWishlist }: Produc
   const qty = item?.qty ?? 0;
 
   const href = `/products/${card.slug}`;
-  const onSale = !!originalMinor && originalMinor > card.minPriceMinor;
+  const quoteOnly = card.minPriceMinor <= 0;
+  const onSale = !quoteOnly && !!originalMinor && originalMinor > card.minPriceMinor;
   const discount = onSale
     ? Math.round((1 - card.minPriceMinor / originalMinor!) * 100)
     : 0;
@@ -92,7 +93,7 @@ export function ProductCard({ card, originalMinor, isNew, hideWishlist }: Produc
             src={card.image}
             alt={card.name}
             loading="lazy"
-            className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
+            className="size-full object-contain p-3 transition-transform duration-300 group-hover:scale-105"
           />
         ) : (
           <div className="flex size-full items-center justify-center text-3xl">🛞</div>
@@ -113,7 +114,7 @@ export function ProductCard({ card, originalMinor, isNew, hideWishlist }: Produc
           </div>
         )}
 
-        {!card.inStock && (
+        {!quoteOnly && !card.inStock && (
           <div className="absolute inset-0 flex items-center justify-center bg-background/70">
             <span className="text-[11px] font-extrabold uppercase tracking-widest text-muted-foreground">
               Out of stock
@@ -134,7 +135,7 @@ export function ProductCard({ card, originalMinor, isNew, hideWishlist }: Produc
         </Link>
         <div className="mt-auto flex items-baseline gap-2 pt-2">
           <span className="text-[15px] font-extrabold text-primary">
-            {formatPKR(card.minPriceMinor)}
+            {quoteOnly ? "Ask for price" : formatPKR(card.minPriceMinor)}
           </span>
           {onSale && (
             <span className="text-[11px] font-semibold text-muted-foreground line-through">
@@ -148,7 +149,11 @@ export function ProductCard({ card, originalMinor, isNew, hideWishlist }: Produc
       </div>
 
       <div className="p-3 pt-2">
-        {!card.inStock || !card.variantId ? (
+        {quoteOnly ? (
+          <Link href={href} className="block rounded-xl bg-primary py-2.5 text-center text-xs font-bold text-primary-foreground hover:bg-primary/90">
+            View details &amp; enquire
+          </Link>
+        ) : !card.inStock || !card.variantId ? (
           <div className="rounded-xl bg-muted py-2.5 text-center text-xs font-bold text-muted-foreground">
             Unavailable
           </div>

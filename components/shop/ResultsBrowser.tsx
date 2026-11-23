@@ -46,6 +46,7 @@ export function ResultsBrowser({
   flush = false,
   empty,
 }: ResultsBrowserProps) {
+  const showPrice = items.some((item) => item.minPriceMinor > 0);
   return (
     <>
       {/* Mobile-only bar (the desktop controls live in the sidebar). */}
@@ -56,8 +57,8 @@ export function ResultsBrowser({
           {total} {total === 1 ? "product" : "products"}
         </span>
         <div className="ml-auto flex items-center gap-2">
-          <MobileFilters colors={facets.colors} sizes={facets.sizes} />
-          <SortSelect />
+          <MobileFilters colors={facets.colors} sizes={facets.sizes} showPrice={showPrice} />
+          <SortSelect showPrice={showPrice} />
         </div>
       </div>
 
@@ -70,9 +71,9 @@ export function ResultsBrowser({
               <legend className="mb-2 text-xs font-extrabold uppercase tracking-wide text-muted-foreground">
                 Sort by
               </legend>
-              <SortSelect block />
+              <SortSelect block showPrice={showPrice} />
             </fieldset>
-            <FilterControls colors={facets.colors} sizes={facets.sizes} />
+            <FilterControls colors={facets.colors} sizes={facets.sizes} showPrice={showPrice} />
           </div>
         </aside>
 

@@ -8,6 +8,7 @@ type FilterControlsProps = {
   /** Real facet values from /api/v1/catalog (empty arrays are hidden). */
   colors: string[];
   sizes: string[];
+  showPrice?: boolean;
   onApplied?: () => void;
 };
 
@@ -16,7 +17,7 @@ type FilterControlsProps = {
  * (min/max, stock, color, size). No invented facets — colors/sizes only appear
  * when the API actually returns them (tyre sizes come from variant attributes).
  */
-export function FilterControls({ colors, sizes, onApplied }: FilterControlsProps) {
+export function FilterControls({ colors, sizes, showPrice = true, onApplied }: FilterControlsProps) {
   const router = useRouter();
   const pathname = usePathname();
   const sp = useSearchParams();
@@ -76,7 +77,7 @@ export function FilterControls({ colors, sizes, onApplied }: FilterControlsProps
   return (
     <div className="flex flex-col gap-6">
       {/* Price — custom min/max range (Rs.) */}
-      <fieldset>
+      {(showPrice || curMin || curMax) && <fieldset>
         <legend className="mb-2 text-xs font-extrabold uppercase tracking-wide text-muted-foreground">
           Price (Rs.)
         </legend>
@@ -113,10 +114,10 @@ export function FilterControls({ colors, sizes, onApplied }: FilterControlsProps
         >
           Apply
         </button>
-      </fieldset>
+      </fieldset>}
 
       {/* Availability */}
-      <fieldset>
+      {(showPrice || stockOn) && <fieldset>
         <legend className="mb-2 text-xs font-extrabold uppercase tracking-wide text-muted-foreground">
           Availability
         </legend>
@@ -135,7 +136,7 @@ export function FilterControls({ colors, sizes, onApplied }: FilterControlsProps
           </span>
           In stock only
         </button>
-      </fieldset>
+      </fieldset>}
 
       {/* Colors / sizes only appear if the API returns them */}
       {colors.length > 0 && (

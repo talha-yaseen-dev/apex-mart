@@ -13,7 +13,7 @@ import {
 import { FilterControls } from "./FilterControls";
 
 /** Mobile "Filter" button that opens the facets in a bottom sheet (<lg). */
-export function MobileFilters({ colors, sizes }: { colors: string[]; sizes: string[] }) {
+export function MobileFilters({ colors, sizes, showPrice = true }: { colors: string[]; sizes: string[]; showPrice?: boolean }) {
   const [open, setOpen] = useState(false);
   const sp = useSearchParams();
 
@@ -39,7 +39,7 @@ export function MobileFilters({ colors, sizes }: { colors: string[]; sizes: stri
           <SheetTitle>Filters</SheetTitle>
         </SheetHeader>
         <div className="px-4 pb-8">
-          <FilterControls colors={colors} sizes={sizes} onApplied={() => setOpen(false)} />
+          <FilterControls colors={colors} sizes={sizes} showPrice={showPrice} onApplied={() => setOpen(false)} />
         </div>
       </SheetContent>
     </Sheet>

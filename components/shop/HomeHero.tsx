@@ -37,7 +37,7 @@ export function HomeHero() {
               rel="noopener noreferrer"
               className="tap-target inline-flex items-center rounded-xl border border-white/25 px-6 text-sm font-bold text-white transition-colors hover:bg-white/10"
             >
-              📱 WhatsApp order
+              💬 Ask on WhatsApp
             </a>
           </div>
         </div>
