@@ -7,6 +7,7 @@ import {
   InvReason,
   OrderStatus,
   PaymentStatus,
+  Prisma,
   ProductStatus,
   RefundStatus,
   ShipmentStatus,
@@ -266,6 +267,61 @@ export async function deleteProductAction(productId: string) {
   revalidatePath("/admin/products");
   revalidateTag("catalog");
   return { ok: true as const, mode: "deleted" as const };
+}
+
+/**
+ * Permanently delete the entire product catalog, including archived products.
+ * Product relations cascade, while past order lines keep their item snapshots.
+ * The displayed count must still match so a stale confirmation cannot delete
+ * products added after the admin opened the page.
+ */
+export async function deleteAllProductsAction(expectedCount: number) {
+  const user = await authorize(PERMISSIONS.CATALOG_DELETE);
+  if (!user) return DENIED;
+  if (isDemoAccount(user.email)) return DEMO_BLOCKED;
+  if (!Number.isSafeInteger(expectedCount) || expectedCount < 1) {
+    return { ok: false as const, error: "Refresh the products page and try again." };
+  }
+
+  const actor = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { isPrimaryAdmin: true },
+  });
+  if (!actor?.isPrimaryAdmin) {
+    return { ok: false as const, error: "Only the primary admin can delete all products." };
+  }
+
+  try {
+    const result = await prisma.$transaction(
+      async (tx) => {
+        const count = await tx.product.count();
+        if (count !== expectedCount) {
+          return { ok: false as const, error: "The catalog changed. Refresh the page and try again." };
+        }
+        const deleted = await tx.product.deleteMany();
+        if (deleted.count !== count) throw new Error("Catalog changed during deletion");
+        await tx.auditLog.create({
+          data: {
+            actorId: user.id,
+            action: "product.delete_all",
+            targetType: "Product",
+            targetId: "*",
+            diff: { deletedProducts: deleted.count },
+          },
+        });
+        return { ok: true as const, deleted: deleted.count };
+      },
+      { isolationLevel: Prisma.TransactionIsolationLevel.Serializable, timeout: 30_000 },
+    );
+    if (!result.ok) return result;
+    revalidatePath("/admin/products");
+    revalidatePath("/admin/inventory");
+    revalidatePath("/admin/categories");
+    revalidateTag("catalog");
+    return result;
+  } catch {
+    return { ok: false as const, error: "Couldn't delete all products. Please try again." };
+  }
 }
 
 /**

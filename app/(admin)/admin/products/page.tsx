@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { prisma } from "@/lib/db";
 import { getAdminProducts, getCategories } from "@/lib/admin";
 import { can } from "@/lib/authz";
 import { getCurrentUser } from "@/lib/session";
@@ -7,6 +8,7 @@ import { PERMISSIONS } from "@/lib/permissions";
 import { ProductStatusSelect } from "@/components/admin/product-status-select";
 import { NewProductForm } from "@/components/admin/new-product-form";
 import { ProductRowActions } from "@/components/admin/product-row-actions";
+import { DeleteAllProductsButton } from "@/components/admin/delete-all-products-button";
 import { formatMoney } from "@/lib/utils";
 import { isTyreCategory } from "@/lib/tyres";
 
@@ -18,17 +20,19 @@ export default async function AdminProductsPage({
   searchParams: Promise<{ q?: string }>;
 }) {
   const query = (await searchParams).q ?? "";
-  const [products, categories, canArchive, canDelete, canPublish, user] = await Promise.all([
+  const [products, categories, canArchive, canDelete, canPublish, user, totalCount] = await Promise.all([
     getAdminProducts(query),
     getCategories(),
     can(PERMISSIONS.CATALOG_ARCHIVE),
     can(PERMISSIONS.CATALOG_DELETE),
     can(PERMISSIONS.CATALOG_PUBLISH),
     getCurrentUser(),
+    prisma.product.count(),
   ]);
   // Permanent (irreversible) delete is hidden for the shared demo accounts;
   // archiving stays available to anyone with catalog:archive.
   const canPermanentDelete = canDelete && !isDemoAccount(user?.email);
+  const canDeleteAll = canPermanentDelete && Boolean(user?.isPrimaryAdmin);
   // Whether to render the removal column at all (archive and/or permanent delete).
   const canRemove = canArchive || canPermanentDelete;
 
@@ -36,7 +40,8 @@ export default async function AdminProductsPage({
     <div className="animate-fade">
       <div className="mb-5 flex flex-wrap items-center gap-3">
         <h1 className="font-display text-2xl font-bold tracking-tight">Products</h1>
-        <div className="ml-auto flex items-center gap-3">
+        <div className="ml-auto flex flex-wrap items-center justify-end gap-3">
+          {canDeleteAll && <DeleteAllProductsButton count={totalCount} />}
           <form>
             <input
               name="q"

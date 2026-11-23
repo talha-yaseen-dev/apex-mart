@@ -36,7 +36,7 @@ export const getCurrentUser = cache(async () => {
   if (!user) return null;
   const dbUser = await prisma.user.findUnique({
     where: { id: user.id },
-    select: { deactivatedAt: true, image: true, name: true, phone: true, email: true },
+    select: { deactivatedAt: true, image: true, name: true, phone: true, email: true, isPrimaryAdmin: true },
   });
   if (dbUser?.deactivatedAt) return null;
   // Source identity (name/phone/image/EMAIL) from the DB, not the sign-in-time
@@ -48,6 +48,7 @@ export const getCurrentUser = cache(async () => {
     name: dbUser?.name ?? user.name,
     phone: dbUser?.phone ?? null,
     image: dbUser?.image ?? user.image ?? null,
+    isPrimaryAdmin: dbUser?.isPrimaryAdmin ?? false,
   };
 });
 
