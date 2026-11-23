@@ -88,7 +88,7 @@ export default async function AdminDashboard() {
             </div>
           ))}
           {d.lowStock.length === 0 && (
-            <div className="px-4 py-8 text-center text-sm text-muted-foreground">All stocked up.</div>
+            <div className="px-4 py-8 text-center text-sm text-muted-foreground">No priced tyres are low on stock.</div>
           )}
         </section>
       </div>

@@ -1,6 +1,7 @@
 import "server-only";
 import type { Cart } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { formatVariantLabel } from "@/lib/variant-label";
 import { getCurrentUser } from "@/lib/session";
 import { isTyreCategory } from "@/lib/tyres";
 import {
@@ -107,9 +108,6 @@ export type CartView = {
   subtotalMinor: number;
 };
 
-const variantLabel = (attrs: unknown) =>
-  Object.values((attrs as Record<string, string>) ?? {}).join(" · ");
-
 export async function getCartView(): Promise<CartView | null> {
   const cart = await resolveCart();
   if (!cart) return null;
@@ -143,7 +141,7 @@ export async function getCartView(): Promise<CartView | null> {
       variantId: i.variantId,
       slug: i.variant.product.slug,
       name: i.variant.product.name,
-      variantLabel: variantLabel(i.variant.attributes),
+      variantLabel: formatVariantLabel(i.variant.attributes),
       sku: i.variant.sku,
       image: i.variant.product.images[0]?.url ?? null,
       unitPriceMinor: i.unitPriceMinor,

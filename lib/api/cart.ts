@@ -3,6 +3,7 @@ import type { Cart } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { reservedByVariant, type CartView, type CartItemView } from "@/lib/cart";
 import { isTyreCategory } from "@/lib/tyres";
+import { formatVariantLabel } from "@/lib/variant-label";
 
 /**
  * User-scoped cart operations for the mobile API. Mobile clients are always
@@ -16,9 +17,6 @@ async function ensureUserCart(userId: string): Promise<Cart> {
     (await prisma.cart.create({ data: { userId, currency: "PKR" } }))
   );
 }
-
-const variantLabel = (attrs: unknown) =>
-  Object.values((attrs as Record<string, string>) ?? {}).join(" · ");
 
 export async function getCartViewFor(userId: string): Promise<CartView> {
   const cart = await ensureUserCart(userId);
@@ -43,7 +41,7 @@ export async function getCartViewFor(userId: string): Promise<CartView> {
     variantId: i.variantId,
     slug: i.variant.product.slug,
     name: i.variant.product.name,
-    variantLabel: variantLabel(i.variant.attributes),
+    variantLabel: formatVariantLabel(i.variant.attributes),
     sku: i.variant.sku,
     image: i.variant.product.images[0]?.url ?? null,
     unitPriceMinor: i.unitPriceMinor,

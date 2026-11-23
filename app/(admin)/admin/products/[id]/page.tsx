@@ -46,6 +46,11 @@ export default async function AdminProductEditPage({
 
         <div>
           <VariantEditor variants={p.variants} canEdit={canEditPricing} />
+          {p.variants.some((variant) => variant.priceMinor === 0) && (
+            <p className="mt-3 rounded-lg bg-primary-tint px-3 py-2 text-[12.5px] text-foreground">
+              Price 0 is displayed as “Ask for price”. Checkout remains unavailable until a positive price and available stock are entered.
+            </p>
+          )}
           <p className="mt-3 text-[12.5px] text-muted-foreground">
             {canEditPricing
               ? "Price and stock edits are written straight to the variant and recorded in the audit log. Larger stock changes should go through "

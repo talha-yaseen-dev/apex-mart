@@ -87,7 +87,7 @@ export default async function AdminProductsPage({
                 {p.variantCount} {p.variantCount === 1 ? "variant" : "variants"}
               </span>
               <span aria-hidden>·</span>
-              <span className={p.stock < 10 ? "font-bold text-warning" : "tabular-nums"}>
+              <span className={p.loMinor === 0 && p.hiMinor === 0 ? "text-muted-foreground" : p.stock < 10 ? "font-bold text-warning" : "tabular-nums"}>
                 {p.loMinor === 0 && p.hiMinor === 0 ? "Availability unconfirmed" : `${p.stock} in stock`}
               </span>
               <div className="ml-auto flex items-center gap-3">
@@ -147,7 +147,7 @@ export default async function AdminProductsPage({
                 </td>
                 <td className="px-4 py-3 tabular-nums">{p.variantCount}</td>
                 <td className="px-4 py-3">
-                  <span className={p.stock < 10 ? "font-bold text-warning" : "tabular-nums"}>
+                  <span className={p.loMinor === 0 && p.hiMinor === 0 ? "text-muted-foreground" : p.stock < 10 ? "font-bold text-warning" : "tabular-nums"}>
                     {p.loMinor === 0 && p.hiMinor === 0 ? "Unconfirmed" : p.stock}
                   </span>
                 </td>

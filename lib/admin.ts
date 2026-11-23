@@ -2,6 +2,7 @@ import "server-only";
 import { OrderStatus, Prisma, Role } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { TYRE_CATEGORY_SLUGS } from "@/lib/tyres";
+import { formatVariantLabel } from "@/lib/variant-label";
 
 const PAID_STATES = [
   OrderStatus.PAID,
@@ -20,14 +21,14 @@ export async function getDashboard() {
       }),
       prisma.order.count(),
       prisma.order.count({ where: { status: OrderStatus.PENDING } }),
-      prisma.productVariant.count({ where: { stock: { lt: LOW_STOCK }, product: { status: "ACTIVE", deletedAt: null, category: { slug: { in: [...TYRE_CATEGORY_SLUGS] } } } } }),
+      prisma.productVariant.count({ where: { stock: { lt: LOW_STOCK }, priceMinor: { gt: 0 }, product: { status: "ACTIVE", deletedAt: null, category: { slug: { in: [...TYRE_CATEGORY_SLUGS] } } } } }),
       prisma.order.findMany({
         orderBy: { createdAt: "desc" },
         take: 6,
         include: { user: { select: { name: true } } },
       }),
       prisma.productVariant.findMany({
-        where: { stock: { lt: LOW_STOCK }, product: { status: "ACTIVE", deletedAt: null, category: { slug: { in: [...TYRE_CATEGORY_SLUGS] } } } },
+        where: { stock: { lt: LOW_STOCK }, priceMinor: { gt: 0 }, product: { status: "ACTIVE", deletedAt: null, category: { slug: { in: [...TYRE_CATEGORY_SLUGS] } } } },
         orderBy: { stock: "asc" },
         take: 6,
         include: { product: { select: { name: true } } },
@@ -145,7 +146,7 @@ export async function getAdminProduct(id: string) {
       sku: v.sku,
       priceMinor: v.priceMinor,
       stock: v.stock,
-      label: Object.values((v.attributes as Record<string, string>) ?? {}).join(" · "),
+      label: formatVariantLabel(v.attributes),
     })),
   };
 }
@@ -167,7 +168,8 @@ export async function getInventory() {
   return variants.map((v) => ({
     id: v.id,
     name: v.product.name,
-    label: Object.values((v.attributes as Record<string, string>) ?? {}).join(" · "),
+    label: formatVariantLabel(v.attributes),
+    priceConfirmed: v.priceMinor > 0,
     sku: v.sku,
     stock: v.stock,
     reserved: reserved.get(v.id) ?? 0,

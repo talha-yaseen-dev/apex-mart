@@ -12,7 +12,7 @@ export default async function AdminInventoryPage() {
     <div className="animate-fade">
       <h1 className="mb-1.5 font-display text-2xl font-bold tracking-tight">Inventory</h1>
       <p className="mb-5 text-[13px] text-muted-foreground">
-        Adjustments write an InventoryLog entry with a reason and actor.
+        Adjustments write an InventoryLog entry with a reason and actor. Quote-only tyres need a confirmed selling price before checkout is enabled.
       </p>
       <InventoryTable rows={rows} />
     </div>

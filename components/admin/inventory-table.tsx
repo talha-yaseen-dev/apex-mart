@@ -12,6 +12,7 @@ type Row = {
   sku: string;
   stock: number;
   reserved: number;
+  priceConfirmed: boolean;
 };
 
 const REASONS = [
@@ -85,17 +86,17 @@ export function InventoryTable({ rows }: { rows: Row[] }) {
                 </div>
                 <div>
                   <dt className="text-[10.5px] uppercase tracking-wide text-muted-foreground">Available</dt>
-                  <dd className="font-medium tabular-nums">{available}</dd>
+                  <dd className="font-medium tabular-nums">{r.priceConfirmed ? available : "Unconfirmed"}</dd>
                 </div>
                 <div>
                   <dt className="text-[10.5px] uppercase tracking-wide text-muted-foreground">On hand</dt>
                   <dd
                     className={cn(
                       "font-bold tabular-nums",
-                      r.stock === 0 ? "text-destructive" : r.stock < 10 ? "text-warning" : "",
+                      !r.priceConfirmed ? "text-muted-foreground" : r.stock === 0 ? "text-destructive" : r.stock < 10 ? "text-warning" : "",
                     )}
                   >
-                    {r.stock}
+                    {r.priceConfirmed ? r.stock : "—"}
                   </dd>
                 </div>
               </dl>
@@ -128,10 +129,10 @@ export function InventoryTable({ rows }: { rows: Row[] }) {
                   </td>
                   <td className="px-4 py-3 font-mono text-[12px] text-muted-foreground">{r.sku}</td>
                   <td className="px-4 py-3 tabular-nums">{r.reserved}</td>
-                  <td className="px-4 py-3 tabular-nums">{available}</td>
+                  <td className="px-4 py-3 tabular-nums">{r.priceConfirmed ? available : "Unconfirmed"}</td>
                   <td className="px-4 py-3">
-                    <span className={cn("font-bold tabular-nums", r.stock === 0 ? "text-destructive" : r.stock < 10 ? "text-warning" : "")}>
-                      {r.stock}
+                    <span className={cn("font-bold tabular-nums", !r.priceConfirmed ? "text-muted-foreground" : r.stock === 0 ? "text-destructive" : r.stock < 10 ? "text-warning" : "")}>
+                      {r.priceConfirmed ? r.stock : "—"}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right">
@@ -185,6 +186,11 @@ export function InventoryTable({ rows }: { rows: Row[] }) {
             </div>
 
             <div className="p-5">
+              {!active.priceConfirmed && (
+                <p className="mb-3 rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground">
+                  This tyre is quote-only. Set a selling price in Products before checkout can be enabled.
+                </p>
+              )}
               {/* Current-stock context strip */}
               <dl className="mb-4 grid grid-cols-3 divide-x rounded-xl border bg-muted/20 text-center">
                 {[
