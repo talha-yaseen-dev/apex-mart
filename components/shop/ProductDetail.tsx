@@ -50,6 +50,7 @@ export function ProductDetail({
   const selected = variants.find((v) => v.id === selectedId) ?? variants[0];
   const stock = selected?.stock ?? 0;
   const quoteOnly = selected?.priceMinor <= 0;
+  const projectListing = Boolean(selected?.attrs.sourceUrl);
   const enquiryUrl = `https://wa.me/${STORE.whatsapp}?text=${encodeURIComponent(`Hello, please confirm the price and availability of ${name} (${selected?.attrs.size ?? "tyre"}).`)}`;
   const item = itemForVariant(selected?.id);
   const qty = item?.qty ?? 0;
@@ -94,7 +95,7 @@ export function ProductDetail({
     }
   };
 
-  const stockLabel = stock <= 0 ? "Out of stock" : stock <= 5 ? `Only ${stock} left` : "In stock";
+  const stockLabel = stock <= 0 ? "Out of stock" : projectListing ? "Available to order" : stock <= 5 ? `Only ${stock} left` : "In stock";
 
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,420px)_minmax(0,620px)] lg:items-start lg:justify-center">
@@ -163,7 +164,7 @@ export function ProductDetail({
             )}
           </div>
           <p className="mt-1.5 text-[13px] text-muted-foreground">
-            {quoteOnly ? "Price and availability are confirmed by the shop before purchase." : "Price in PKR · Cash on delivery available"}
+            {quoteOnly ? "Price and availability are confirmed by the shop before purchase." : projectListing ? "Project list price in PKR · Store confirmation required" : "Price in PKR · Cash on delivery available"}
           </p>
         </div>
 
@@ -279,14 +280,14 @@ export function ProductDetail({
               <span className={cn("size-[7px] rounded-full", stock > 0 ? "bg-primary" : "bg-muted-foreground")} />
               {stockLabel}
             </div>
-            <p className="mt-1.5 text-xs text-muted-foreground">Ships from the Sargodha City store</p>
+            <p className="mt-1.5 text-xs text-muted-foreground">{projectListing ? "Availability confirmed before fulfillment" : "Ships from the Sargodha City store"}</p>
           </div>
           <div className="bg-card p-4">
             <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
               <Truck className="size-4 text-primary" aria-hidden />
-              {deliveryEstimate}
+              {projectListing ? "Delivery options" : deliveryEstimate}
             </div>
-            <p className="mt-1.5 text-xs text-muted-foreground">Choose a delivery slot at checkout</p>
+            <p className="mt-1.5 text-xs text-muted-foreground">{projectListing ? "Details confirmed by the store" : "Choose a delivery slot at checkout"}</p>
           </div>
         </div>}
 

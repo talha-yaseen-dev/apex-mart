@@ -142,7 +142,7 @@ export const getActiveCards = unstable_cache(
     });
     return rows.map(toCard);
   },
-  ["catalog:cards:v4"],
+  ["catalog:cards:v5"],
   { tags: ["catalog"], revalidate: 300 },
 );
 
@@ -204,7 +204,7 @@ export function getProductDetail(slug: string) {
         })),
       };
     },
-    ["product", slug],
+    ["product:priced-v2", slug],
     { tags: [`product:${slug}`, "catalog"], revalidate: 300 },
   )();
 }

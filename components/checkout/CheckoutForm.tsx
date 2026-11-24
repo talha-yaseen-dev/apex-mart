@@ -125,6 +125,9 @@ export function CheckoutForm({
       className="mx-auto max-w-7xl px-4 py-5 pb-28 md:pb-8"
     >
       <h1 className="text-2xl font-extrabold tracking-tight text-foreground">Checkout</h1>
+      <p className="mt-2 rounded-xl border border-primary/20 bg-primary-tint px-4 py-3 text-sm text-foreground">
+        Class project demo: listed prices and availability are illustrative. Orders are recorded for demonstration and require store confirmation.
+      </p>
 
       <div className="mt-5 flex flex-col gap-6 lg:flex-row lg:items-start">
         <div className="flex-1 space-y-6">

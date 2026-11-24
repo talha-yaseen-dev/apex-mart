@@ -1,6 +1,6 @@
 # Manufacturer catalog sources
 
-Reviewed 2026-11-24. All products are real Michelin models. Sizes and specifications come from the linked official pages and manufacturer product-image labels. Images are downloaded from the same official product pages. This is a class-project catalog: it does not establish that Apex Tyres stocks these tyres. Prices and stock are blank and checkout is disabled until the store owner confirms them. Internal MIC-prefixed SKUs identify rows in this project; they are not manufacturer part numbers.
+Reviewed 2026-11-24. All products are real Michelin models. Sizes and specifications come from the linked official pages and manufacturer product-image labels. Images are downloaded from the same official product pages. PKR prices and five units per variant are project selling values to demonstrate ordering; they are not verified Apex Tyres quotes or physical stock. Internal MIC-prefixed SKUs identify rows in this project; they are not manufacturer part numbers.
 
 | Product | Official page | Official image |
 |---|---|---|

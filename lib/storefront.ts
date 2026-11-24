@@ -38,7 +38,7 @@ export async function getCatalog(
 ): Promise<CatalogResponse> {
   const base = await baseUrl();
   const params = new URLSearchParams(search);
-  params.set("_catalog", "manufacturer-20261124");
+  params.set("_catalog", "priced-20261124");
   const res = await fetch(`${base}/api/v1/catalog?${params.toString()}`, {
     next: { revalidate: 300, tags: ["catalog"] },
   });
@@ -81,7 +81,7 @@ export type ProductDetailView = {
 export async function getProduct(slug: string): Promise<ProductDetailView | null> {
   const base = await baseUrl();
   const res = await fetch(
-    `${base}/api/v1/products/${encodeURIComponent(slug)}`,
+    `${base}/api/v1/products/${encodeURIComponent(slug)}?v=priced-20261124`,
     { next: { revalidate: 300, tags: ["catalog", `product:${slug}`] } },
   );
   if (res.status === 404) return null;
